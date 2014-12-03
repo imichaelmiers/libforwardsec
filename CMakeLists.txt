@@ -1,8 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
-project (libforwardsec C)
-
-
+project (libforwardsec)
 enable_testing()
 add_subdirectory(src)
+add_subdirectory(googletest)
 add_subdirectory(test)
-add_test(NAME checkTest COMMAND check)
+add_test(NAME test COMMAND tests)

@@ -1,2 +1,4 @@
-add_executable(check check.c)
-target_link_libraries (check LINK_PUBLIC forwardsec relic)
+include_directories(${gtest_SOURCE_DIR}/include)
+
+add_executable(tests tests.cpp)
+target_link_libraries (tests LINK_PUBLIC gtest_main)
