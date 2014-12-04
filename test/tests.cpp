@@ -125,4 +125,15 @@ TEST_F(pg,G2Sub){
 	EXPECT_EQ(a-i,a) << "identity is wrong";
 	EXPECT_EQ(a-a,i) << "no inverse for subtraction";
 }
+TEST_F(pg,Pair){
+	G1 g1 = group.random(G1_t);
+	G2 g2 = group.random(G2_t);
+	ZR r = group.random(ZR_t);
+	GT u;
+	EXPECT_NE(group.pair(g1,g2),u) << "pairing degenerate";
+	GT e1 = group.pair(group.exp(g1,r),g2);
+	GT e2 = group.pair(g1,group.exp(g2,r));
+	EXPECT_EQ(e1,e2) << "Not bilnelear: e(g1^r,g2)!=e(g1,g2^r)";
+
+}
 
