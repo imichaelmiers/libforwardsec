@@ -9,6 +9,17 @@ void ro_error(void)
 	exit(0);
 }
 
+void invertZR(ZR & c, const ZR & a,const bn_t order)
+{
+	ZR a1 =a;
+	bn_t s;
+	bn_inits(s);
+	// compute c = (1 / a) mod n
+	bn_gcd_ext(s, c.z, NULL, a1.z, order);
+	if(bn_sign(c.z) == BN_NEG) bn_add(c.z, c.z, order);
+	bn_free(s);
+}
+
 // Begin ZR-specific classes
 ZR::ZR(int x)
 {
@@ -33,6 +44,11 @@ ZR::ZR(char *str)
 	isInit = true;
 	bn_read_str(z, (const char *) str, strlen(str), DECIMAL);
 	// bn_mod(z, z, order);
+}
+const ZR ZR::inverse(){
+	ZR i;
+	invertZR(i,z,i.order);
+	return i;
 }
 
 ZR operator+(const ZR& x, const ZR& y)
@@ -79,22 +95,11 @@ ZR operator*(const ZR& x, const ZR& y)
 
 	return zr;
 }
-
 int bn_is_one(bn_t a)
 {
 	if(a->used == 0) return 0; // false
 	else if((a->used == 1) && (a->dp[0] == 1)) return 1; // true
 	else return 0; // false
-}
-
-void invertZR(ZR & c, ZR & a, bn_t order)
-{
-	bn_t s;
-	bn_inits(s);
-	// compute c = (1 / a) mod n
-	bn_gcd_ext(s, c.z, NULL, a.z, order);
-	if(bn_sign(c.z) == BN_NEG) bn_add(c.z, c.z, order);
-	bn_free(s);
 }
 
 ZR operator/(const ZR& x, const ZR& y)
@@ -103,9 +108,9 @@ ZR operator/(const ZR& x, const ZR& y)
 		cout << "Divide by zero error!" << endl;
 		return 0;
 	}
-	ZR c;
-	bn_div(c.z,x.z,y.z);
-	return c;
+	ZR i;
+	invertZR(i,y,i.order);
+	return x*i;
 }
 
 ZR power(const ZR& x, int r)

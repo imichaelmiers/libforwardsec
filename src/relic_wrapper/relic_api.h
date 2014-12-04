@@ -60,6 +60,7 @@ public:
 		return *this;
 	}
 	bool ismember();
+	const ZR inverse();
 	friend ZR hashToZR(string);
 	friend ZR power(const ZR&, int);
 	friend ZR power(const ZR&, const ZR&);
@@ -171,6 +172,12 @@ class PairingGroup
 public:
 	PairingGroup();
 	PairingGroup(int);
+	// PairingGroup(int ptype,bool init,bn_t o){
+	// 	pairingType = ptype;
+	// 	isInit = init;
+	// 	bn_copy(o,grp_order);
+	// }
+
 	~PairingGroup();
 	void setCurve(int sec_level);
 

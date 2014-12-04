@@ -3,8 +3,9 @@
 
 class pg : public ::testing::Test {
 protected: 
-	 virtual void SetUp() {int a = 1+1;}
+	 virtual void SetUp(){} 
 	 PairingGroup group;
+	// static PairingGroup _group;
 };
 
 #define randabcd(T) 		\
@@ -74,6 +75,23 @@ TEST_F(pg,GTIdentity){
 	EXPECT_EQ(a*d,d);
 	EXPECT_EQ(d,d);
 }
+TEST_F(pg,ZRrandom){
+	randabcd(ZR)
+	EXPECT_NE(a,b);
+}
+
+TEST_F(pg,G1random){
+	randabcd(G1)
+	EXPECT_NE(a,b);
+}
+TEST_F(pg,G2random){
+	randabcd(G2)
+	EXPECT_NE(a,b);
+}
+TEST_F(pg,GTrandom){
+	randabcd(GT)
+	EXPECT_NE(a,b);
+}
 
 TEST_F(pg,G1Add){
 	randabcd(G1)
@@ -100,6 +118,22 @@ TEST_F(pg,G2Add){
 	EXPECT_EQ(-a+a,i) << "no inverse";
 
 }
+TEST_F(pg,ZRAdd){
+	ZR a = group.random(ZR_t);
+	ZR b = group.random(ZR_t);
+	ZR c = group.random(ZR_t);
+	ZR z = 0;	EXPECT_EQ(a+b,b+a) << "not commutative";
+	ZR d,e;
+	EXPECT_EQ(a+z,a) << "identity is wrong";
+	d= a+b;
+	d= d+c;
+	e= b+c;
+	e = e+a;
+	EXPECT_EQ(d,e) << "not associative";
+	EXPECT_EQ(-a+a,z) << "no inverse";
+
+}
+
 TEST_F(pg,GTMul){
 	randabcd(GT)
 	EXPECT_EQ(a*b,b*a) << "not commutative";
@@ -125,6 +159,42 @@ TEST_F(pg,G2Sub){
 	EXPECT_EQ(a-i,a) << "identity is wrong";
 	EXPECT_EQ(a-a,i) << "no inverse for subtraction";
 }
+TEST_F(pg,ZRSub){
+	ZR a = group.random(ZR_t);
+	ZR b = group.random(ZR_t);
+	ZR z = 0;
+	EXPECT_EQ(-(b-a),a-b) << "not anti-commutative";
+	EXPECT_EQ(a-z,a) << "identity is wrong";
+	EXPECT_EQ(a-a,z) << "no inverse for subtraction";
+}
+
+TEST_F(pg,ZRMul){
+	ZR a = 11;
+	ZR b = 17;
+	ZR c = 17*11;
+	EXPECT_EQ(a*b,c);
+}
+
+TEST_F(pg,ZRinv){
+	ZR a = group.random(ZR_t);
+	ZR b = group.random(ZR_t);
+	EXPECT_EQ(a*a.inverse(),1);
+	EXPECT_EQ(a*b*a.inverse(),b);
+	EXPECT_EQ(a*b*b.inverse(),a);
+	EXPECT_EQ((a*b)/a,b);
+	EXPECT_EQ((a*b)/b,a);
+
+}
+
+TEST_F(pg,ZRDiv){
+	ZR a = group.random(ZR_t);
+	ZR b = group.random(ZR_t);
+	ZR c = a*b;
+	ZR d = group.div(a*b,b);
+	EXPECT_EQ(d,a);
+
+}
+
 TEST_F(pg,Pair){
 	G1 g1 = group.random(G1_t);
 	G2 g2 = group.random(G2_t);
@@ -135,5 +205,45 @@ TEST_F(pg,Pair){
 	GT e2 = group.pair(g1,group.exp(g2,r));
 	EXPECT_EQ(e1,e2) << "Not bilnelear: e(g1^r,g2)!=e(g1,g2^r)";
 
+}
+
+TEST_F(pg,GTExp){
+	GT a,i;
+	GT b= group.random(GT_t);
+	gt_get_gen(a.g);
+
+	ZR n = group.order();
+	ZR n1;
+	gt_get_ord(n1.z);
+	EXPECT_EQ(n1,n);
+	EXPECT_EQ(group.exp(a,n),i);
+	EXPECT_EQ(group.exp(b,n),i);
+
+}
+TEST_F(pg,GTInv){
+	GT a = group.random(GT_t);
+	GT u;
+	EXPECT_EQ(a*(-a),u);
+}
+
+TEST_F(pg,G1group){
+	randabcd(G1)
+	EXPECT_EQ(group.mul(a,b),a+b);// multiplicitve vs additive notation
+
+}
+TEST_F(pg,G2group){
+	randabcd(G2)
+	EXPECT_EQ(group.mul(a,b),a+b);// multiplicitve vs additive notation
+}
+TEST_F(pg,GTgroup){
+	randabcd(GT)
+	EXPECT_EQ(group.mul(a,b),a*b);
+}
+
+TEST_F(pg,DISABLED_PairUnity){
+	G1 g1;
+	G2 g2;
+	GT u;
+	EXPECT_EQ(group.pair(g1,g2),u) << "known bug. Should be fixed in relic or our wrapper" ;
 }
 
