@@ -41,7 +41,6 @@ void ro_error(void);
 class CharmList;
 class CharmListZR;
 
-
 class ZR
 {
 public:
@@ -162,9 +161,9 @@ public:
 	friend GT operator*(const GT&,const GT&);
 	friend ostream& operator<<(ostream& s, const GT&);
 	friend bool operator==(const GT& x,const GT& y)
-      { return gt_cmp(const_cast<GT&>(x).g, const_cast<GT&>(y).g) == CMP_EQ ;}
+      { return gt_cmp(const_cast<GT&>(x).g, const_cast<GT&>(y).g) == CMP_EQ;}
 	friend bool operator!=(const GT& x,const GT& y)
-      { return  gt_cmp(const_cast<GT&>(x).g, const_cast<GT&>(y).g) != CMP_EQ; }
+      { return  gt_cmp(const_cast<GT&>(x).g, const_cast<GT&>(y).g) != CMP_EQ;}
 };
 
 class PairingGroup
@@ -186,10 +185,12 @@ public:
 	G1 init(G1_type, int);
 	GT init(GT_type);
 	GT init(GT_type, int);
-
 	ZR random(ZR_type);
 	G1 random(G1_type);
 	GT random(GT_type);
+	//template<typename T> T random12(){ T foo; return foo;};
+
+
 //	bool ismember(CharmMetaListZR&);
 //	bool ismember(CharmMetaListG1&);
 //	bool ismember(CharmMetaListG2&);
@@ -199,7 +200,9 @@ public:
 //	bool ismember(CharmListG1&);
 //	bool ismember(CharmListG2&);
 //	bool ismember(CharmListGT&);
-	// bool ismember(CharmList&);
+#ifdef USE_CHARMLISTS
+    bool ismember(CharmList&);
+#endif
 	bool ismember(ZR&);
 	bool ismember(G1&);
 	bool ismember(GT&);
@@ -222,9 +225,11 @@ public:
 	G1 hashListToG1(string);
 	G2 hashListToG2(string);
 
-	// ZR hashListToZR(CharmList);
-	// G1 hashListToG1(CharmList);
-	// G2 hashListToG2(CharmList);
+#ifdef USE_CHARMLISTS
+	ZR hashListToZR(CharmList);
+	G1 hashListToG1(CharmList);
+	G2 hashListToG2(CharmList);
+#endif
 
 	GT pair(G1, G1);
 	int mul(int, int);
@@ -259,5 +264,9 @@ private:
 	bool isInit;
 	bn_t grp_order;
 };
-// CharmListZR intToBits(ZR id, int l);
+//template<> 
+//ZR PairingGroup::random12<ZR>(){return this->random(ZR_t);}
+#ifdef USE_CHARMLISTS
+CharmListZR intToBits(ZR id, int l);
+#endif 
 #endif

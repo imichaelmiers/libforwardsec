@@ -1,7 +1,8 @@
-
-#include "relic_api.h"
-//#include "CharmList.h"
 #include <assert.h>
+#include "relic_api.h"
+#ifdef USE_CHARMLISTS
+	#include "CharmList.h"
+#endif
 void ro_error(void)
 {
 	cout << "Writing to read only object." << endl;
@@ -228,6 +229,8 @@ G1 operator+(const G1& x,const G1& y)
 {
 	G1 z;
 	g1_add(z.g, x.g, y.g);
+	g1_norm(z.g,z.g);
+
 	return z;
 }
 
@@ -308,6 +311,7 @@ G2 operator+(const G2& x,const G2& y)
 {
 	G2 z, x1=x,y1=y ;
 	g2_add(z.g, x1.g, y1.g);
+	g2_norm(z.g,z.g);
 	return z;
 }
 
@@ -504,9 +508,9 @@ PairingGroup::PairingGroup(int sec_level)
 
 void PairingGroup::setCurve(int sec_level)
 {
-	cout << "Initializing PairingGroup: RELIC" << endl;
+//	cout << "Initializing PairingGroup: RELIC" << endl;
 	int err_code = core_init();
-	cout <<"core_init_done" << endl;
+//	cout <<"core_init_done" << endl;
 	if(err_code != STS_OK) isInit = false;
 //	conf_print();
 	pc_param_set_any(); // see if we can open this up?
@@ -882,80 +886,82 @@ G2 PairingGroup::hashListToG2(string str)
 	return l;
 }
 
-// string getBytesOverList(CharmList s)
-// {
-// 	int i, type, data_len, len = s.length();
-// 	 string str = "";
-// 	for(i = 0; i < len; i++) {
-// 		type = s[i].type;
-// 		if(type == Str_t) {
-// 			str = str + s[i].strPtr;
-// 		}
-// 		else if(type == ZR_t) {
-// 			data_len = compute_length(type);
-// 			uint8_t data[data_len + 1];
-// 			memset(data, 0, data_len);
-// 			bn_write_bin(data, data_len, s[i].zr.z);
-// 			string tmp((char *) data, data_len);
-// 			str = str + tmp;
-// 		}
-// 		else if(type == G1_t) {
-// 			data_len = compute_length(type);
-// 			uint8_t data[data_len + 1];
-// 			memset(data, 0, data_len);
-// 			g1_write_bin( data, data_len,s[i].g1.g,POINT_COMPRESS); // x & y
-// 			string tmp((char *) data, data_len);
-// 			str = str + tmp;
-// 		}
-// 		else if(type == G2_t) {
-// 			data_len = compute_length(type);
-// 			uint8_t data[data_len + 1];
-// 			memset(data, 0, data_len);
-// 			g2_write_bin( data, data_len,s[i].g2.g, POINT_COMPRESS); // x1, y1  & x2, y2
-// 			string tmp((char *) data, data_len,POINT_COMPRESS);
-// 			str = str + tmp;
-// 		}
-// 		else if(type == GT_t) {
-// 			data_len = compute_length(type);
-// 			uint8_t data[data_len + 1];
-// 			memset(data, 0, data_len);
-// 			gt_write_bin(data, data_len, s[i].gt.g, POINT_COMPRESS); // x1-6 && y1-6
-// 			string tmp((char *) data, data_len);
-// 			str = str + tmp;
-// 		}
-// 	}
-// 	return str;
-// }
+#ifdef USE_CHARMLISTS
+string getBytesOverList(CharmList s)
+{
+	int i, type, data_len, len = s.length();
+	 string str = "";
+	for(i = 0; i < len; i++) {
+		type = s[i].type;
+		if(type == Str_t) {
+			str = str + s[i].strPtr;
+		}
+		else if(type == ZR_t) {
+			data_len = compute_length(type);
+			uint8_t data[data_len + 1];
+			memset(data, 0, data_len);
+			bn_write_bin(data, data_len, s[i].zr.z);
+			string tmp((char *) data, data_len);
+			str = str + tmp;
+		}
+		else if(type == G1_t) {
+			data_len = compute_length(type);
+			uint8_t data[data_len + 1];
+			memset(data, 0, data_len);
+			g1_write_bin( data, data_len,s[i].g1.g,POINT_COMPRESS); // x & y
+			string tmp((char *) data, data_len);
+			str = str + tmp;
+		}
+		else if(type == G2_t) {
+			data_len = compute_length(type);
+			uint8_t data[data_len + 1];
+			memset(data, 0, data_len);
+			g2_write_bin( data, data_len,s[i].g2.g, POINT_COMPRESS); // x1, y1  & x2, y2
+			string tmp((char *) data, data_len,POINT_COMPRESS);
+			str = str + tmp;
+		}
+		else if(type == GT_t) {
+			data_len = compute_length(type);
+			uint8_t data[data_len + 1];
+			memset(data, 0, data_len);
+			gt_write_bin(data, data_len, s[i].gt.g, POINT_COMPRESS); // x1-6 && y1-6
+			string tmp((char *) data, data_len);
+			str = str + tmp;
+		}
+	}
+	return str;
+}
 
-// ZR PairingGroup::hashListToZR(CharmList s)
-// {
-// 	string s2 = getBytesOverList(s);
-// 	ZR r = hashToZR(s2);
-// 	return r;
-// }
+ZR PairingGroup::hashListToZR(CharmList s)
+{
+	string s2 = getBytesOverList(s);
+	ZR r = hashToZR(s2);
+	return r;
+}
 
-// G1 PairingGroup::hashListToG1(CharmList s)
-// {
-// 	string s2 = getBytesOverList(s);
-// 	return hashToG1(s2);
-// }
+G1 PairingGroup::hashListToG1(CharmList s)
+{
+	string s2 = getBytesOverList(s);
+	return hashToG1(s2);
+}
 
-// G2 PairingGroup::hashListToG2(CharmList s)
-// {
-// 	string s2 = getBytesOverList(s);
-// 	return hashToG2(s2);
-// }
+G2 PairingGroup::hashListToG2(CharmList s)
+{
+	string s2 = getBytesOverList(s);
+	return hashToG2(s2);
+}
 
-// CharmListZR intToBits(ZR id, int l)
-// {
-//     CharmListZR zrlist;
-//     int intval;
-//     int j = l-1;
+CharmListZR intToBits(ZR id, int l)
+{
+    CharmListZR zrlist;
+    int intval;
+    int j = l-1;
 
-//     for(int i = 0; i < l; i++) {
-//     	intval = bn_get_bit(id.z,i);
-//     	/* store in reverse */
-//     	zrlist[j-i] = ZR(intval);
-//     }
-//     return zrlist;
-// }
+    for(int i = 0; i < l; i++) {
+    	intval = bn_get_bit(id.z,i);
+    	/* store in reverse */
+    	zrlist[j-i] = ZR(intval);
+    }
+    return zrlist;
+}
+#endif
