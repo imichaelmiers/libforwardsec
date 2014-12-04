@@ -238,6 +238,8 @@ G1 operator-(const G1& x,const G1& y)
 {
 	G1 z ;
 	g1_sub(z.g,x.g, y.g);
+	g1_norm(z.g,z.g);
+
 	return z;
 }
 
@@ -319,6 +321,7 @@ G2 operator-(const G2& x,const G2& y)
 {
 	G2 z,x1=x,y1=y;
 	g2_sub(z.g,x1.g, y1.g);
+	g2_norm(z.g,z.g);
 	return z;
 }
 
