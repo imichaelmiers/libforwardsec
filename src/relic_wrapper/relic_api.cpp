@@ -654,15 +654,19 @@ ZR PairingGroup::neg(ZR r)
 
 ZR PairingGroup::inv(ZR r)
 {
-     ZR zr;
-     invertZR(zr, r, r.order);
-     return zr;
+     return r.inverse();
 }
-
+G1 PairingGroup::inv(G1 g)
+{
+	return -g;
+}
+G2 PairingGroup::inv(G2 g)
+{
+	return -g;
+}
 GT PairingGroup::inv(GT g)
 {
-	GT gt;
-	return -gt;
+	return -g;
 }
 
 //bool PairingGroup::ismember(CharmMetaListZR & g)
@@ -893,6 +897,7 @@ G2 PairingGroup::hashListToG2(string str)
 	G2 l = hashToG2(str);
 	return l;
 }
+
 
 #ifdef USE_CHARMLISTS
 string getBytesOverList(CharmList s)

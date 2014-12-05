@@ -1,12 +1,38 @@
 #include "gtest/gtest.h"
 #include "relic_wrapper/relic_api.h"
 
+void rand(ZR &a, PairingGroup &g){
+	a= g.random(ZR_t);
+}
+void rand(G1 &a, PairingGroup &g){
+	a= g.random(G1_t);
+}
+void rand(G2 &a, PairingGroup &g){
+	a= g.random(G2_t);
+}
+void rand(GT &a, PairingGroup &g){
+	a= g.random(GT_t);
+}
+
+
+template <typename T>
+class AlgTest : public :: testing::Test{
+public:
+int a;
+//PairingGroup g;
+};
+
+
+typedef ::testing::Types<ZR, G1, G2,GT> numerics;
+TYPED_TEST_CASE(AlgTest	, numerics);
+
 class pg : public ::testing::Test {
 protected: 
 	 virtual void SetUp(){} 
 	 PairingGroup group;
 	// static PairingGroup _group;
 };
+
 
 #define randabcd(T) 		\
 T a = group.random( T##_t );\
@@ -16,7 +42,54 @@ T d = group.random( T##_t); \
 T e = group.random( T##_t); \
 T i;
 
+TYPED_TEST(AlgTest,cmp){
+	PairingGroup g;
+	TypeParam a,b,c;
+	rand(a,g);rand(b,g);rand(c,g);
+	EXPECT_NE(a,b);
+	ASSERT_EQ(a,a);
+	ASSERT_EQ(b,b);
+}
 
+
+TYPED_TEST(AlgTest,identity){
+	PairingGroup g;
+	TypeParam a,b,c,d;
+	rand(d,g);
+	EXPECT_EQ(a,b);
+	EXPECT_EQ(g.mul(a,b),c);
+	EXPECT_EQ(d,d);
+	EXPECT_NE(a,d);
+	EXPECT_EQ(g.mul(a,d),d);
+}
+TYPED_TEST(AlgTest,random){
+	PairingGroup g;
+	TypeParam a,b;
+	rand(a,g);rand(b,g);
+	EXPECT_NE(a,b);
+}
+
+TYPED_TEST(AlgTest,MultiplicationIsCommunitive){
+	PairingGroup g;
+	TypeParam a,b;
+	rand(a,g);rand(b,g);
+	EXPECT_EQ(g.mul(a,b),g.mul(b,a));
+}
+
+TYPED_TEST(AlgTest,MultiplicationIsAssociative){
+	PairingGroup g;
+	TypeParam a,b,c,d;
+	rand(a,g);rand(b,g);rand(c,g);rand(d,g);
+	EXPECT_EQ(g.mul(g.mul(a,b),c),g.mul(g.mul(a,c),b));
+}
+TYPED_TEST(AlgTest,Inverse){
+	PairingGroup g;
+	TypeParam a,b,i;
+	rand(a,g);rand(b,g);
+	EXPECT_EQ(g.mul(g.mul(a,b),g.inv(b)),a);
+	EXPECT_EQ( g.mul(a,g.inv(a)),i );
+
+}
 
 TEST_F(pg,G1Comp){
 	G1 a = group.random(G1_t);
@@ -118,21 +191,6 @@ TEST_F(pg,G2Add){
 	EXPECT_EQ(-a+a,i) << "no inverse";
 
 }
-TEST_F(pg,ZRAdd){
-	ZR a = group.random(ZR_t);
-	ZR b = group.random(ZR_t);
-	ZR c = group.random(ZR_t);
-	ZR z = 0;	EXPECT_EQ(a+b,b+a) << "not commutative";
-	ZR d,e;
-	EXPECT_EQ(a+z,a) << "identity is wrong";
-	d= a+b;
-	d= d+c;
-	e= b+c;
-	e = e+a;
-	EXPECT_EQ(d,e) << "not associative";
-	EXPECT_EQ(-a+a,z) << "no inverse";
-
-}
 
 TEST_F(pg,GTMul){
 	randabcd(GT)
@@ -159,6 +217,24 @@ TEST_F(pg,G2Sub){
 	EXPECT_EQ(a-i,a) << "identity is wrong";
 	EXPECT_EQ(a-a,i) << "no inverse for subtraction";
 }
+
+
+TEST_F(pg,ZRAdd){
+	ZR a = group.random(ZR_t);
+	ZR b = group.random(ZR_t);
+	ZR c = group.random(ZR_t);
+	ZR z = 0;	EXPECT_EQ(a+b,b+a) << "not commutative";
+	ZR d,e;
+	EXPECT_EQ(a+z,a) << "identity is wrong";
+	d= a+b;
+	d= d+c;
+	e= b+c;
+	e = e+a;
+	EXPECT_EQ(d,e) << "not associative";
+	EXPECT_EQ(-a+a,z) << "no inverse";
+
+}
+
 TEST_F(pg,ZRSub){
 	ZR a = group.random(ZR_t);
 	ZR b = group.random(ZR_t);
@@ -222,6 +298,7 @@ TEST_F(pg,GTExp){
 }
 TEST_F(pg,GTInv){
 	GT a = group.random(GT_t);
+	GT b = group.random(GT_t);
 	GT u;
 	EXPECT_EQ(a*(-a),u);
 }

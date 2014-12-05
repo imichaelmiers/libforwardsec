@@ -47,7 +47,7 @@ public:
 	bn_t z;
 	bn_t order;
 	bool isInit;
-	ZR() 	 { bn_inits(z); bn_inits(order); g1_get_ord(order); isInit = true; }
+	ZR() 	 { bn_inits(z); bn_inits(order); g1_get_ord(order); isInit = true;bn_set_dig(z,1); }
 	ZR(int);
 	ZR(char*);
 	ZR(bn_t y) { bn_inits(z); bn_inits(order); g1_get_ord(order); isInit = true; bn_copy(z, y); }
@@ -263,6 +263,8 @@ public:
 	ZR sub(ZR, ZR);
 	ZR neg(ZR);
 	ZR inv(ZR);
+	G1 inv(G1);
+	G2 inv(G2);
 	GT inv(GT);
 	string aes_key(GT & g);
 
@@ -276,4 +278,5 @@ private:
 #ifdef USE_CHARMLISTS
 CharmListZR intToBits(ZR id, int l);
 #endif 
+
 #endif
