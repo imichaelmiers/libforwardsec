@@ -1,0 +1,12 @@
+This project builds with cmake.
+cd build/ #(If you are reading this you may already be there)
+cmake ../
+make 
+make check # runs tests.
+
+Note, Cmake supports a bunch of other build systems via "cmake -G 'generator name' ../"
+Among them Ninja (which is possibly faster than make) and project files for your favorite/
+least favorite IDEs (xcode, eclipse,visualstudio, etc)
+
+For a full list of supported buld systems run:
+cmake --help
