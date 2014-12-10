@@ -14,6 +14,16 @@ void rand(GT &a, PairingGroup &g){
 	a= g.random(GT_t);
 }
 
+class Environment {
+ public:
+  virtual ~Environment() {}
+  // Override this to define how to set up the environment.
+  virtual void SetUp() {}
+  // Override this to define how to tear down the environment.
+  virtual void TearDown() {}
+  PairingGroup groups;
+};
+Environment* AddGlobalTestEnvironment(Environment* env);
 
 template <typename T>
 class AlgTest : public :: testing::Test{
@@ -44,11 +54,17 @@ T i;
 
 TYPED_TEST(AlgTest,cmp){
 	PairingGroup g;
-	TypeParam a,b,c;
+	TypeParam a,b,c,d;
 	rand(a,g);rand(b,g);rand(c,g);
+	d=a;
+
 	EXPECT_NE(a,b);
-	ASSERT_EQ(a,a);
-	ASSERT_EQ(b,b);
+	EXPECT_NE(b,a);
+
+	EXPECT_EQ(a,a);
+	EXPECT_EQ(b,b);
+	EXPECT_EQ(a,d);
+	EXPECT_EQ(d,a);
 }
 
 
@@ -58,7 +74,6 @@ TYPED_TEST(AlgTest,identity){
 	rand(d,g);
 	EXPECT_EQ(a,b);
 	EXPECT_EQ(g.mul(a,b),c);
-	EXPECT_EQ(d,d);
 	EXPECT_NE(a,d);
 	EXPECT_EQ(g.mul(a,d),d);
 }
@@ -89,6 +104,15 @@ TYPED_TEST(AlgTest,Inverse){
 	EXPECT_EQ(g.mul(g.mul(a,b),g.inv(b)),a);
 	EXPECT_EQ( g.mul(a,g.inv(a)),i );
 
+}
+TYPED_TEST(AlgTest,copy){
+	PairingGroup g;
+	TypeParam a;
+	rand(a,g);
+	TypeParam b = a;
+	TypeParam c(a); 
+	EXPECT_EQ(b,a);
+	EXPECT_EQ(c,a);
 }
 
 TEST_F(pg,G1Comp){

@@ -8,6 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>
+#include <bitset> 
 
 
 // define classes
@@ -207,9 +208,6 @@ public:
 //	bool ismember(CharmListG1&);
 //	bool ismember(CharmListG2&);
 //	bool ismember(CharmListGT&);
-#ifdef USE_CHARMLISTS
-    bool ismember(CharmList&);
-#endif
 	bool ismember(ZR&);
 	bool ismember(G1&);
 	bool ismember(GT&);
@@ -231,12 +229,6 @@ public:
 	ZR hashListToZR(string);
 	G1 hashListToG1(string);
 	G2 hashListToG2(string);
-
-#ifdef USE_CHARMLISTS
-	ZR hashListToZR(CharmList);
-	G1 hashListToG1(CharmList);
-	G2 hashListToG2(CharmList);
-#endif
 
 	GT pair(G1, G1);
 	int mul(int, int);
@@ -273,10 +265,9 @@ private:
 	bool isInit;
 	bn_t grp_order;
 };
+
 //template<> 
 //ZR PairingGroup::random12<ZR>(){return this->random(ZR_t);}
-#ifdef USE_CHARMLISTS
-CharmListZR intToBits(ZR id, int l);
-#endif 
+std::bitset<256> intToBits(ZR id);
 
 #endif

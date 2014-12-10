@@ -1,4 +1,4 @@
-file(GLOB FORWARDSEC_SRCS *.c)
+file(GLOB FORWARDSEC_SRCS *.cpp)
 file(GLOB FORWARDSEC_INCS *.h)
 file(GLOB_RECURSE RELIC_WARPER_SRCS relic_wrapper/*.c*)
 file(GLOB_RECURSE RELIC_WARPER_INCS relic_wrapper/*h)
