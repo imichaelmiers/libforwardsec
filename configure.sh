@@ -1,2 +1,3 @@
 #/bin/sh/
-cat build/README
+This project uses cmake.
+See README
