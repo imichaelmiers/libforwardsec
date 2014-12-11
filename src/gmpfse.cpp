@@ -9,7 +9,7 @@
 #include "gmpfse.h"
 using namespace std;
 #define splitkey 0
-int d = 1;
+uint d = 1;
 int tag0=42;
 
 
@@ -69,7 +69,7 @@ void Pfse::prepareNextInterval(){
     assert(Hibeprivatekeys.count(latestInterval) ==1);
 
     std::vector<ZR> path = hibe.indexToPath(latestInterval,depth);
-    int pathlength = path.size();
+    uint pathlength = path.size();
     HIBEkey skparent = Hibeprivatekeys[latestInterval];
     // if(skparent.ppke.length()>1){
     //     throw logic_error("The parent tag is already punctured. You must call prepareNextInterval before starting");
@@ -153,7 +153,7 @@ void Pfse::puncture(uint interval, string tag){
 PseCipherText Pfse::encrypt(pfsepubkey & pk, AESKey aes_key,uint interval,vector<string> tags){
     vector<ZR> tagsZR;
 
-    for(int i=0;i<tags.size();i++){
+    for(uint i=0;i<tags.size();i++){
         ZR tag =  group.hashListToZR(tags[i]);
         tagsZR.push_back(tag);
     }
@@ -230,7 +230,7 @@ AESKey Pfse::decryptFO(PseCipherText &ct){
 
 
 GT Pfse::decryptGT(PseCipherText &ct){
-    GT b1,b2,result;
+    GT b1,b2;
     int interval = ct.interval;
 
     // if(privatekeys.count(interval) != 1){
@@ -238,8 +238,7 @@ GT Pfse::decryptGT(PseCipherText &ct){
     //     throw invalid_argument("No key for this interval. Cannot decrypt" + interval);
     // }
     if(Hibeprivatekeys.count(interval) != 1){
-        cout << "we don't have key for that interval. Maybe it was deleted " <<interval << endl;
-        throw invalid_argument("No key for this interval. Cannot decrypt" + interval);
+        throw invalid_argument("No key for this interval. Cannot decrypt" + std:: to_string(interval));
     }
 
     HIBEkey sk = Hibeprivatekeys[interval];
@@ -248,8 +247,7 @@ GT Pfse::decryptGT(PseCipherText &ct){
    // assert(b1== group.exp(group.exp(group.pair(g2G1,gG2),group.mul(ss,group.sub(aa,gam1))),neg));
     ppke.decrypt(pk.ppke,activeKey,ct.ppkeCT,b2);
    // assert(b2 ==group.exp(group.pair(g2G1,gG2),group.mul(ss,gam1)));
-    result = group.div(group.mul(ct.ct0,b1),b2);
-    return result;
+    return group.div(group.mul(ct.ct0,b1),b2);
 }
 
 uint treeSize(uint k){
@@ -295,7 +293,7 @@ ZR Gmppke::LagrangeInterp(const ZR &x , const vector<ZR> & polynomial_xcordinate
 }
 
 template <class type> type Gmppke::LagrangeInterpInExponent(const ZR &x , const vector<ZR> & polynomial_xcordinates,
-    const vector<type> & exp_polynomial_ycordinates, uint degree, const type & g){
+    const vector<type> & exp_polynomial_ycordinates,const  uint degree) {
     uint k = degree + 1;
     assert(k == d+1);
     assert(exp_polynomial_ycordinates.size()==k);
@@ -308,7 +306,7 @@ template <class type> type Gmppke::LagrangeInterpInExponent(const ZR &x , const 
     return prod;
 }
 
-void  Gmppke::vG1(const std::vector<G1> & gqofxG1,const G1 & gG1, const ZR & x, G1 & result){
+G1  Gmppke::vG1(const std::vector<G1> & gqofxG1, const ZR & x){
     vector<ZR> xcords;
     //     cout << "\n\n XXXX" << endl;
 
@@ -323,10 +321,10 @@ void  Gmppke::vG1(const std::vector<G1> & gqofxG1,const G1 & gG1, const ZR & x, 
     // cout << "length of gqofxv in VG1 " << gqofxv.size() << endl;
     //     cout << "XXXX\n\n" << endl;
 
-    result = LagrangeInterpInExponent(x,xcords,gqofxG1,d,gG1);
+    return LagrangeInterpInExponent(x,xcords,gqofxG1,d);
 
 }
-void Gmppke::vG2(const std::vector<G2> & gqofxG2,const G2 & gG2,const ZR & x, G2 & result){
+G2 Gmppke::vG2(const std::vector<G2> & gqofxG2,const ZR & x){
     vector<ZR> xcords;
         // cout << "\n\n XXXX" << endl;
 
@@ -344,7 +342,7 @@ void Gmppke::vG2(const std::vector<G2> & gqofxG2,const G2 & gG2,const ZR & x, G2
     // cout << "length of gqofxv in VG2 " << gqofxv.size() << endl;
     // cout << "XXXX\n\n" << endl;
 
-    result = LagrangeInterpInExponent(x,xcords,gqofxG2,d,gG2);
+    return LagrangeInterpInExponent(x,xcords,gqofxG2,d);
 
 }
 void Gmppke::keygen(const BbhHIBEPublicKey & pkhibe,ZR & gamma, GmppkePublicKey & pk, GmppkePrivateKey & sk)
@@ -379,7 +377,7 @@ void Gmppke::keygen(const BbhHIBEPublicKey & pkhibe,ZR & gamma, GmppkePublicKey 
     // the next d points y values  are random
     // we use x= 1...d becuase the has the side effect
     // of easily computing g^q(0).... g^q(d).
-    for (int i = 1; i <= d; i++)
+    for (uint i = 1; i <= d; i++)
     {
         ZR x = i;
         ZR ry = group.random(ZR_t); // 17
@@ -401,8 +399,8 @@ void Gmppke::keygen(const BbhHIBEPublicKey & pkhibe,ZR & gamma, GmppkePublicKey 
         // cout << "\n\n" << endl;
 //    cout << "random points picked"<< endl;
     // Sanity check that Lagrant interpt works to get us g^beta on q(0).
-    G2 test2 = LagrangeInterpInExponent<G2>(0,polynomial_xcordinates,pk.gqofxG2,d,pk.gG2);
-    assert(pk.g2G1 == LagrangeInterpInExponent<G1>(0,polynomial_xcordinates,pk.gqofxG1,d,pk.gG1));
+    G2 test2 = LagrangeInterpInExponent<G2>(0,polynomial_xcordinates,pk.gqofxG2,d);
+    assert(pk.g2G1 == LagrangeInterpInExponent<G1>(0,polynomial_xcordinates,pk.gqofxG1,d));
     assert(pk.g2G2 == test2); // FIXME i should be able to put the extression for test2 here, but that doesn't compile;
 
 
@@ -417,12 +415,11 @@ void Gmppke::keygen(const BbhHIBEPublicKey & pkhibe,ZR & gamma, GmppkePublicKey 
     return;
 }
 void Gmppke::skgen(const GmppkePublicKey &pk,const ZR & alpha, GmppkePrivateKeyShare & skentry0){
-    G2 vofx;
     ZR t0 = tag0; // The special zero tag;
     skentry0.sk4 = t0; 
     ZR r = group.random(ZR_t);
     skentry0.sk1 = group.exp(pk.g2G2, group.add(r,alpha));
-    vG2(pk.gqofxG2,pk.gG2 ,t0,vofx); // calculate v(t0).
+    G2 vofx = vG2(pk.gqofxG2,t0); // calculate v(t0).
     skentry0.sk2 = group.exp(vofx, r);// v(t0)^r
     skentry0.sk3 = group.exp(pk.gG2, r);
 }
@@ -439,14 +436,12 @@ void Gmppke::puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const Z
     assert(skentry0.sk4 == ZR(tag0));
 
     skentry0.sk1 = group.mul(skentry0.sk1,group.exp(pk.g2G2,group.sub(r0,lambda))); // sk1 * g2g2^{r0- lambda}
-    G2 vofx; 
-    vG2(pk.gqofxG2,pk.gG2,skentry0.sk4,vofx);
+    G2 vofx = vG2(pk.gqofxG2,skentry0.sk4);
     skentry0.sk2 = group.mul(skentry0.sk2,group.exp(vofx,r0));  // sk2 * V(t0)^r0
     skentry0.sk3 = group.mul(skentry0.sk3,group.exp(pk.gG2,r0));  // sk3 * g2G2^r0
 
     skentryn.sk1=group.exp(pk.g2G2,group.add(r1,lambda));  // gG2 ^ (r1+lambda)
-    G2 vofx2;   
-    vG2(pk.gqofxG2,pk.gG2,tag,vofx2);  
+    G2 vofx2 = vG2(pk.gqofxG2,tag);  
     skentryn.sk2 = group.exp(vofx2,r1); // V(tag) ^ r1
     skentryn.sk3 = group.exp(pk.gG2,r1);  // G^ r1
     skentryn.sk4 = tag;
@@ -457,14 +452,13 @@ void Gmppke::puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const Z
 }
 void Gmppke::encrypt(const GmppkePublicKey & pk, const GT & M, const ZR & s, const std::vector<ZR> & tags, GmmppkeCT & ct)
 {
-    G1 vofx;
     assert(tags.size()==d);
     ct.ct1 = group.mul(group.exp(group.pair(pk.g2G1, pk.g1), s), M);
     ct.ct2 = group.exp(pk.gG1, s);
 
-    for (int i = 0; i < pk.d; i++)
+    for (uint i = 0; i < pk.d; i++)
     {
-        vG1(pk.gqofxG1,pk.gG1,tags[i], vofx);
+        G1 vofx = vG1(pk.gqofxG1,tags[i]);
         ct.ct3.push_back(group.exp(vofx, s));
     }
     ct.tags = tags;
@@ -481,7 +475,7 @@ void Gmppke::decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, co
     assert(d==pk.d);
 
     vector<ZR> shareTags(ct.tags.size()+1);// allow one more tag for share the private key holds
-    for(int i =0; i < ct.tags.size();i++){
+    for(uint i =0; i < ct.tags.size();i++){
             shareTags[i]=ct.tags[i];//(hashresult);
     }
     assert(shareTags.size() == pk.d+1);
@@ -489,7 +483,7 @@ void Gmppke::decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, co
     // Compute w_i coefficients for recovery
     // FIXME check that points are unique.
 
-    int numshares = sk.shares.size();
+    uint numshares = sk.shares.size();
 
     // G2 sk1prod = group.init(G2_t);
     // G2 sk2prod = group.init(G2_t);
@@ -504,7 +498,7 @@ void Gmppke::decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, co
     // ZR sumwstar = 0;
     vector<GT> z(numshares);
 
-    for (int i = 0; i < numshares; i++)
+    for (uint i = 0; i < numshares; i++)
     {
         const GmppkePrivateKeyShare & s0 = sk.shares[i];
 
@@ -520,7 +514,7 @@ void Gmppke::decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, co
         wstar = w[w.size() - 1];
 
         G1 ct3prod_j;
-        for (int j = 0; j < d; j++)
+        for (uint j = 0; j < d; j++)
         {
             ct3prod_j = group.mul(ct3prod_j, group.exp(ct.ct3[j],w[j])); // w[0] = wstar
 
@@ -543,7 +537,7 @@ void Gmppke::decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, co
     }
 
     GT zprod;
-    for (int i = 0; i < numshares; i++)
+    for (uint i = 0; i < numshares; i++)
     {
         zprod = group.mul(zprod, z[i]);
     }
@@ -578,7 +572,7 @@ std::vector<ZR>  Bbghibe::indexToPath(uint index,uint l){
 
 uint Bbghibe::pathToIndex(std::vector<ZR> & path, uint l){
     uint index = 0;
-    int pathsize = path.size();
+    uint pathsize = path.size();
     if(pathsize > l){
         throw invalid_argument("path too long for tree depth");
     }

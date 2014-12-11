@@ -71,13 +71,13 @@ public:
 
 
 	template <class type> type LagrangeInterpInExponent( const ZR &x, const vector<ZR> & polynomial_xcordinates,
-    const vector<type> & exp_polynomial_ycordinates, uint degree, const type & g);
+    const vector<type> & exp_polynomial_ycordinates, const uint degree);
 	ZR LagrangeInterp(const ZR &x , const vector<ZR> & polynomial_xcordinates,
     const vector<ZR> & polynomial_ycordinates, uint degree);
 
 
-	void vG1(const std::vector<G1> & gqofxG1,const  G1 & gG1, const ZR & x, G1 & result);
-	void vG2(const std::vector<G2> & gqofxG2, const G2 & gG2,const ZR & x, G2 & result);
+	G1 vG1(const std::vector<G1> & gqofxG1, const ZR & x);
+	G2 vG2(const std::vector<G2> & gqofxG2, const ZR & x);
 
 	void keygen(const BbhHIBEPublicKey & pkhibe, ZR & gamma,GmppkePublicKey & pk, GmppkePrivateKey & sk);
 	void skgen(const GmppkePublicKey &pk,const ZR & alpha, GmppkePrivateKeyShare & skentry0);
