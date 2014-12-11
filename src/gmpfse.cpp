@@ -14,7 +14,6 @@ int tag0=42;
 
 
 
-#define BENCH
 Pfse::Pfse(uint d):hibe(),ppke(),depth(d){
     // group.setCurve(BN256);
     // cout << "depth" << depth << endl;
@@ -75,52 +74,31 @@ void Pfse::prepareNextInterval(){
     // if(skparent.ppke.length()>1){
     //     throw logic_error("The parent tag is already punctured. You must call prepareNextInterval before starting");
     // }
-   // CharmList ppkeparententry0 = skparent.ppke[0].getList();
+
     if (pathlength  < depth){ // Not a leaf node, so derive new keys.
         HIBEkey sklefthibe; 
         HIBEkey skrighthibe;
 
+        // compute left key
         path.push_back(ZR(0)); // FIXME
         int leftChildIndex = hibe.pathToIndex(path,depth);
         hibe.keygen(pk.hibe,skparent,path,sklefthibe);
-       // cout << "deriving key for " << leftChildIndex << " ";
-#ifndef BENCH
-        cout << "derived  hibe left key for " << leftChildIndex <<  endl;
-       for(int i = 0; i <=pathlength ; i++){
-            cout <<  path[i];
-        }
-
-        cout << endl;
-#endif
 
         // compute right key;
         path[pathlength]=ZR(1);
         int rightChildIndex = hibe.pathToIndex(path,depth);
         hibe.keygen(pk.hibe,skparent,path,skrighthibe);
 
-
-#ifndef BENCH
-
-        cout << "derived hibe right key for " << rightChildIndex <<  endl;
-        for(int i = 0; i <=pathlength ; i++){
-            cout << path[i];
-        }
-        cout << endl;
-#endif
+        //store keys
         Hibeprivatekeys[leftChildIndex] = sklefthibe;
         Hibeprivatekeys[rightChildIndex] = skrighthibe;
 
-
-        // G2 a0left = group.mul(sklefthibe[0].getG2(),group.exp(g2G2,group.neg(gamma1)));
-        // G2 a0right = group.mul(skrighthibe[0].getG2(),group.exp(g2G2,group.neg(gamma2)));
-        // sklefthibe[0] = a0left;
-        // skrighthibe[0] =a0right;
- // FIXME secure delete;
     }
-        // NOW that we have derived the hibe key for the next intervals if necessary
+        // NOW that we have derived the hibe key for the next intervals if necessary,
+        // update other keys
        
 
-
+        // re-randomize all existing keys
         ZR gamma = group.random(ZR_t);
          for(auto& x: this->Hibeprivatekeys){
              HIBEkey s;
@@ -136,31 +114,22 @@ void Pfse::prepareNextInterval(){
 
         Hibeprivatekeys[latestInterval]=nextIntervalHIBEKey;
         GmppkePrivateKeyShare newActiveKeyPPKEKeyEntry;
+
         ppke.skgen(pk.ppke,gamma,newActiveKeyPPKEKeyEntry);
+        
         GmppkePrivateKey newActiveKeyPPKEKey;
-        GmppkePrivateKeyShare pristineKeyEntry = unpucturedKey.shares[0];
-        updateppkesk(newActiveKeyPPKEKeyEntry,pristineKeyEntry);
+        
+        updateppkesk(newActiveKeyPPKEKeyEntry,unpucturedKey.shares[0]);
         newActiveKeyPPKEKey.shares.push_back(newActiveKeyPPKEKeyEntry);
         this->unpucturedKey = newActiveKeyPPKEKey;
         this->activeKey = newActiveKeyPPKEKey;
-        // updateppkesk(skleftppkeentry,ppkeparententry0);
-        // updateppkesk(skrightppkeentry,ppkeparententry0);
-
-        // skleftppke.insert(0,skleftppkeentry);
-        // skrightppke.insert(0,skrightppkeentry);
-        // skleft.ppke= skleftppke;
-        // skleft.hibe = sklefthibe;
-        // skright.ppke = skrightppke;
-        // skright.hibe = skrighthibe;
-        // privatekeys[leftChildIndex] = skleft;
-        // privatekeys[rightChildIndex] = skright;
-        
 }
 void Pfse::updateppkesk(GmppkePrivateKeyShare & skentry,GmppkePrivateKeyShare & skentryold){
     skentry.sk1 = group.mul(skentry.sk1,skentryold.sk1);
     skentry.sk2 = group.mul(skentry.sk2,skentryold.sk2);
     skentry.sk3 = group.mul(skentry.sk3,skentryold.sk3);
 }
+
 void Pfse::puncture(string tag){
     puncture(latestInterval,tag);
 }
@@ -183,11 +152,7 @@ void Pfse::puncture(uint interval, string tag){
 }
 PseCipherText Pfse::encrypt(pfsepubkey & pk, AESKey aes_key,uint interval,vector<string> tags){
     vector<ZR> tagsZR;
-    // for(int i=0;i<aes_key.size();i++){
-    //     ZR zrz(0);
-    //     ZR zro(1);
-    //     bitmsg[i]=  aes_key[i] ? zro :zrz;
-    // }
+
     for(int i=0;i<tags.size();i++){
         ZR tag =  group.hashListToZR(tags[i]);
         tagsZR.push_back(tag);
@@ -207,6 +172,7 @@ PseCipherText Pfse::encryptFO(pfsepubkey & pk,  AESKey  & aes_key, GT & x, uint 
    
     PseCipherText ct = encrypt(pk,x,s,interval,tags);
 
+    // since we don't have a different hash function, we simply prefix it
     std::stringstream sss;
     sss << "0xDEADBEEF";
     sss << x;
@@ -224,34 +190,26 @@ PseCipherText Pfse::encrypt(pfsepubkey & pk, GT & M,uint interval, vector<ZR>  &
 
 PseCipherText Pfse::encrypt(pfsepubkey & pk, GT & M, ZR & s,uint interval, vector<ZR>  & tags){
     PseCipherText ct;
-    GmmppkeCT ctppke;
-    BbghCT cthibe;
+    
+    ct.interval = interval;
+
     std::vector<ZR> id= hibe.indexToPath(interval,depth);
-    GT ct0 =  group.mul(group.exp(group.pair(pk.hibe.g2G1, pk.hibe.g1), s), M);
+    ct.ct0 =  group.mul(group.exp(group.pair(pk.hibe.g2G1, pk.hibe.g1), s), M);
 
-    hibe.encrypt(pk.hibe,M,s,id,cthibe);
-    ppke.encrypt(pk.ppke,M,s,tags,ctppke);
+    hibe.encrypt(pk.hibe,M,s,id,ct.hibeCT);
+    ppke.encrypt(pk.ppke,M,s,tags,ct.ppkeCT);
     ct.interval = interval;
 
-    ct.ct0= ct0;
-    ct.hibeCT = cthibe;
-    ct.ppkeCT = ctppke;
-    ct.interval = interval;
     return ct;
 }
 AESKey Pfse::decrypt(PseCipherText &ct){
-    //AESKey k;
-
     return decryptFO(ct);
-    // for(int i=0;i<k.size();i++){
-    //     k[i]= r[i].getZR() == ZR(1)? true : false;
-    // }
-    //return k;
 }
 
 AESKey Pfse::decryptFO(PseCipherText &ct){
     GT x = decryptGT(ct);
 
+    // since we don't have a different hash function, we simply prefix it
     std::stringstream sss;
     sss << "0xDEADBEEF";
     sss << x;
@@ -305,8 +263,6 @@ ZR Gmppke::LagrangeBasisCoefficients(uint j,const ZR &x , const vector<ZR> & pol
     ZR prod = 1;
     for(uint  m=0;m<k;m++){
         if(j != m){
-            
-        
         // cout << "<<<<<<<<<<<<<<<<<<<<<<<" << endl;
         // cout  << "j:" << j << " m:" << m << endl;
         // cout << "(" << x << "-" <<  polynomial_xcordinates[m] << ")/" << endl;
@@ -324,8 +280,8 @@ ZR Gmppke::LagrangeInterp(const ZR &x , const vector<ZR> & polynomial_xcordinate
     const vector<ZR> & polynomial_ycordinates, uint degree){
     uint k = degree + 1;
     assert(k == d+1);
-   assert(polynomial_ycordinates.size()==k);
-   assert(polynomial_xcordinates.size()==k);
+    assert(polynomial_ycordinates.size()==k);
+    assert(polynomial_xcordinates.size()==k);
     ZR prod = 0;
     for(uint j = 0; j < k;j++){
             ZR lagrangeBasisPolyatX = LagrangeBasisCoefficients(j,x,polynomial_xcordinates);
@@ -342,8 +298,8 @@ template <class type> type Gmppke::LagrangeInterpInExponent(const ZR &x , const 
     const vector<type> & exp_polynomial_ycordinates, uint degree, const type & g){
     uint k = degree + 1;
     assert(k == d+1);
-   assert(exp_polynomial_ycordinates.size()==k);
-   assert(polynomial_xcordinates.size()==k);
+    assert(exp_polynomial_ycordinates.size()==k);
+    assert(polynomial_xcordinates.size()==k);
     type prod;
     for(uint j = 0; j < k;j++){
             ZR lagrangeBasisPolyatX = LagrangeBasisCoefficients(j,x,polynomial_xcordinates);
@@ -462,9 +418,6 @@ void Gmppke::keygen(const BbhHIBEPublicKey & pkhibe,ZR & gamma, GmppkePublicKey 
 }
 void Gmppke::skgen(const GmppkePublicKey &pk,const ZR & alpha, GmppkePrivateKeyShare & skentry0){
     G2 vofx;
-    // gG2 = pk[1].getG2();
-    // g2G2 = pk[4].getG2();
-    // gqofxG2 = pk[7].getListG2();
     ZR t0 = tag0; // The special zero tag;
     skentry0.sk4 = t0; 
     ZR r = group.random(ZR_t);
@@ -485,21 +438,11 @@ void Gmppke::puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const Z
 
     assert(skentry0.sk4 == ZR(tag0));
 
-   // G2 laminv = group.inv(group.exp(gG2,lambda));
-  //  sk1p = group.mul(group.mul(sk1,group.exp(g2G2,r0)),laminv); // sk1 * g2g2^{r0- lambda}
     skentry0.sk1 = group.mul(skentry0.sk1,group.exp(pk.g2G2,group.sub(r0,lambda))); // sk1 * g2g2^{r0- lambda}
     G2 vofx; 
     vG2(pk.gqofxG2,pk.gG2,skentry0.sk4,vofx);
     skentry0.sk2 = group.mul(skentry0.sk2,group.exp(vofx,r0));  // sk2 * V(t0)^r0
     skentry0.sk3 = group.mul(skentry0.sk3,group.exp(pk.gG2,r0));  // sk3 * g2G2^r0
-
-    //vG2(gqofxG2,gG2 ,t1,vofx); // calculate v(t0).
- //   G2 tsk1n = group.exp(g2G2, group.add(group.add(alphat,rt),group.sub(r0,lambda)));
-    //sk1p == tsk1n;
-    //assert(tsk1n == sk1p);
-    //G2 tsk2n = group.exp(vofx,r1);
-    //G2 tsk3n = group.exp(gG2,r1);
-    //ZR tsk4n = t1;
 
     skentryn.sk1=group.exp(pk.g2G2,group.add(r1,lambda));  // gG2 ^ (r1+lambda)
     G2 vofx2;   
@@ -521,15 +464,7 @@ void Gmppke::encrypt(const GmppkePublicKey & pk, const GT & M, const ZR & s, con
 
     for (int i = 0; i < pk.d; i++)
     {
-#ifndef BENCH
-
-        cout << "\t encrypting with tag tag_" << i <<" = " << tags[i] << endl;
-#endif
         vG1(pk.gqofxG1,pk.gG1,tags[i], vofx);
-        // G1 hardresult = group.exp(gG1,89);
-        // cout <<"testing of v(x) was computed correctly " << endl;
-        // assert(vofx == hardresult);
-
         ct.ct3.push_back(group.exp(vofx, s));
     }
     ct.tags = tags;
@@ -555,10 +490,6 @@ void Gmppke::decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, co
     // FIXME check that points are unique.
 
     int numshares = sk.shares.size();
-#ifndef BENCH
-
-    cout << "total number of shares " << numshares << endl;
-#endif
 
     // G2 sk1prod = group.init(G2_t);
     // G2 sk2prod = group.init(G2_t);
@@ -577,17 +508,14 @@ void Gmppke::decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, co
     {
         const GmppkePrivateKeyShare & s0 = sk.shares[i];
 
-        // FIXME DO NOT COPY an entire fucking vector for christ sakes 
-       // vector<ZR> tagv(hashtags);
-        //tagv.push_back(s0.sk4);
+        // FIXME DO NOT COPY an entire fucking vector for if possible.
+
         shareTags[shareTags.size()-1] = s0.sk4; 
-        //assert(hashtags.size() == pk.d+1);
-        //assert(tagv.size()==pk.d+1);
+
         vector<ZR> w;
 
         for(uint j=0;j < shareTags.size(); j++){
             w.push_back(LagrangeBasisCoefficients(j,0,shareTags));
-      //      cout << "w[" << j << "]= " << w[j] << endl; 
         }
         wstar = w[w.size() - 1];
 
@@ -615,20 +543,11 @@ void Gmppke::decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, co
     }
 
     GT zprod;
-#ifndef BENCH
-    cout << "\tComputeding zprod . numshares =" << numshares << endl;
-#endif
     for (int i = 0; i < numshares; i++)
     {
         zprod = group.mul(zprod, z[i]);
     }
     b =  zprod;
-
-   //  GT nominator = group.pair(ct2prod,sk1prod);
-   //  GT denominator = group.mul(group.pair(ct3prod,sk3prod),group.pair(sk2prod,ct2prodexp));
-   // assert(nominator == nomprod);
-
-   // b = group.div(nominator,denominator);
     return;
 }
 
@@ -640,7 +559,6 @@ std::vector<ZR>  Bbghibe::indexToPath(uint index,uint l){
     ZR zero = 0;
     for(uint level =0 ; level < l ; level++){
         uint subtree_height = treeSize(l-level-1);
-    //    cout << "l " << l << " level " << level  <<" subtee " << (l-level-1) << " size " << subtree_height << endl;
         if (nodesSoFar == index){
             return path;
         }else if(index <= (subtree_height + nodesSoFar)){
@@ -706,10 +624,6 @@ void Bbghibe::setup(int l, BbhHIBEPublicKey & pk, G2 & msk)
 
     return;
 }
-void Bbghibe::keygen(BbhHIBEPublicKey & pk, G2 & msk, int ID, int k, BbghPrivatekey & sk){
-  //  CharmListZR id = intToBits(ID, k);
-   // keygen(pk,msk,id,sk);
-}
 
 void Bbghibe::keygen(BbhHIBEPublicKey & pk, G2 & msk, std::vector<ZR> & id, BbghPrivatekey & sk)
 {
@@ -733,10 +647,7 @@ void Bbghibe::keygen(BbhHIBEPublicKey & pk, G2 & msk, std::vector<ZR> & id, Bbgh
     }
     return;
 }
-void Bbghibe::keygen(BbhHIBEPublicKey & pk, BbghPrivatekey & sk, int ID, int k,BbghPrivatekey & skout){
-  // CharmListZR id = intToBits(ID, k);
-   // keygen(pk,sk,id,skout);
-}
+
 void Bbghibe::keygen(BbhHIBEPublicKey & pk, BbghPrivatekey & sk, std::vector<ZR> &id,BbghPrivatekey & skout){
 
     ZR t;
@@ -771,11 +682,6 @@ void Bbghibe::keygen(BbhHIBEPublicKey & pk, BbghPrivatekey & sk, std::vector<ZR>
     return;
 }
 
-void Bbghibe::encrypt(const BbhHIBEPublicKey & pk, GT & M, int ID, int k, BbghCT & ct){
-    // ZR s = group.random(ZR_t);
-    // CharmListZR id = intToBits(ID, k);
-    // encrypt(pk,M,s,id,ct);
-}
 void Bbghibe::encrypt(const BbhHIBEPublicKey & pk, GT & M, std::vector<ZR> & id, BbghCT & ct){
     ZR r = group.random(ZR_t);
     encrypt(pk,M,r,id,ct);

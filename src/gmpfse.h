@@ -132,19 +132,15 @@ public:
 	std::vector<ZR>  indexToPath(uint index,uint l);
 	uint pathToIndex(std::vector<ZR> & path, uint l);
 	void setup(int l, BbhHIBEPublicKey & pk, G2 & msk);
-	void keygen( BbhHIBEPublicKey & pk, G2 & msk, int ID, int k, BbghPrivatekey & sk);
+
 	void keygen( BbhHIBEPublicKey & pk, G2 & msk, std::vector<ZR> & id, BbghPrivatekey & sk);
-
-    void keygen( BbhHIBEPublicKey & pk, BbghPrivatekey & sk, int ID, int k,BbghPrivatekey & skout);
-
     void keygen( BbhHIBEPublicKey & pk, BbghPrivatekey & sk,std::vector<ZR> & id,BbghPrivatekey & skout);
 
-	void encrypt(const BbhHIBEPublicKey & pk, GT & M, int ID, int k, BbghCT & ct);
 	void encrypt(const BbhHIBEPublicKey & pk, GT & M, ZR &s, std::vector<ZR>  & id, BbghCT & ct);
 	void encrypt(const BbhHIBEPublicKey & pk, GT & M, std::vector<ZR>  & id, BbghCT & ct);
 
-	void decrypt(BbghPrivatekey & sk, BbghCT & ct, GT & m);
-	GT decrypt(BbghPrivatekey & sk, BbghCT & ct);
+	void decrypt(BbghPrivatekey & sk, BbghCT & ct, GT & m); // decrypt for PFSE
+	GT decrypt(BbghPrivatekey & sk, BbghCT & ct); // actual decrypt
 
 };
 typedef  bitset<256> AESKey;

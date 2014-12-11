@@ -16,3 +16,14 @@ least favorite IDEs (xcode, eclipse,visualstudio, etc)
 
 For a full list of supported buld systems run:
 cmake --help
+
+
+
+Recommendation  for building relic (note, depends on gmp)
+#from a suitable directory
+git clone https://github.com/relic-toolkit/relic.git
+cd relic
+git checkout relic-toolkit-0.4.0 
+cmake -G "Unix Makefiles" -DCOMP="-O2 -funroll-loops -fomit-frame-pointer" -DARCH="X64"  -DWITH="BN;DV;FP;FPX;EP;EPX;PP;PC;MD" -DCHECK=off -DVERBS=off -DDEBUG=on -DBENCH=0 -DTESTS=1 -DARITH=gmp -DFP_PRIME=256 -DFP_QNRES=off -DFP_METHD="BASIC;COMBA;COMBA;MONTY;LOWER;SLIDE" -DFPX_METHD="INTEG;INTEG;LAZYR" -DPP_METHD="LAZYR;OATEP"
+make 
+make install 

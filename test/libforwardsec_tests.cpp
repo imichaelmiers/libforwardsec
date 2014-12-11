@@ -189,33 +189,6 @@ TEST_F(BbghhibeTests,derivedFurther){
 
 }
 
-TEST_F(BbghhibeTests,DISABLED_basic_idint){
-    G2 msk;
-    BbhHIBEPublicKey  pk;
-    BbghPrivatekey sk,skdir; 
-    BbghCT ct;
-    GT M, newM;
-    Bbghibe foo;
-    foo.setup(3,pk, msk);
-    foo.keygen(pk, msk, 5,2, sk);
-    M = group.random(GT_t);
-    foo.encrypt(pk,M,5,2,ct);
-    newM = foo.decrypt(sk, ct);
-    //cout << convert_str(M) << endl;
-    //cout << convert_str(newM) << endl;
-    EXPECT_EQ(newM,M);
-    foo.setup(3,pk, msk);
-    foo.keygen(pk, msk, 1,1, sk);
-    foo.keygen(pk, sk, 3,2, skdir);
-
-    M = group.random(GT_t);
-    foo.encrypt(pk,M,3,2,ct);
-    newM = foo.decrypt(skdir, ct);
-    //cout << convert_str(M) << endl;
-    //cout << convert_str(newM) << endl;
-    EXPECT_EQ(newM,M);
-
-}
 
 
 // TEST_F(PFSETests,Basic){
