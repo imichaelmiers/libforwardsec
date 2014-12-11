@@ -4,7 +4,6 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <list>
 #include <map>
 #include <bitset>
 #include "relic_wrapper/relic_api.h"

@@ -130,7 +130,7 @@ ZR power(const ZR& x, const ZR& r)
 ZR hashToZR(string str)
 {
 	ZR zr;
-	int digest_len = SHA_LEN;
+	unsigned int digest_len = SHA_LEN;
 	unsigned char digest[digest_len + 1];
 	memset(digest, 0, digest_len);
 	string str2 = string(HASH_FUNCTION_STR_TO_Zr_CRH) + str;
