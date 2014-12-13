@@ -1,9 +1,7 @@
 #include <assert.h>
 #include <stdexcept>
 #include "relic_api.h"
-#ifdef USE_CHARMLISTS
-	#include "CharmList.h"
-#endif
+
 void ro_error(void)
 {
 	throw  std::invalid_argument("writing to read only object");
@@ -668,46 +666,6 @@ GT PairingGroup::inv(GT g)
 	return -g;
 }
 
-//bool PairingGroup::ismember(CharmMetaListZR & g)
-//{
-//	return true;
-//}
-//
-//bool PairingGroup::ismember(CharmMetaListG1 & g)
-//{
-//	return true;
-//}
-//
-//bool PairingGroup::ismember(CharmMetaListG2 & g)
-//{
-//	return true;
-//}
-//
-//bool PairingGroup::ismember(CharmMetaListGT & g)
-//{
-//	return true;
-//}
-
-// bool PairingGroup::ismember(CharmList & g)
-// {
-// 	return true;
-// }
-
-//bool PairingGroup::ismember(CharmListZR & g)
-//{
-//	return true;
-//}
-//
-//bool PairingGroup::ismember(CharmListG1 & g)
-//{
-//	return true;
-//}
-//
-//bool PairingGroup::ismember(CharmListGT & g)
-//{
-//	return true;
-//}
-//
 bool PairingGroup::ismember(ZR & zr)
 {
 	return zr.ismember();
@@ -723,10 +681,6 @@ bool PairingGroup::ismember(G2 & g)
 	return g.ismember(grp_order); // add code to check
 }
 
-//bool PairingGroup::ismember(CharmListG2 & g)
-//{
-//	return true;
-//}
 
 G2 PairingGroup::mul(G2 g, G2 h)
 {
