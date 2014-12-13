@@ -13,11 +13,47 @@ uint d = 1;
 int tag0=42;
 
 
+const PfsePuncturedPrivateKey PfseKeyStore::getKey(unsigned int i) {
+	PfsePuncturedPrivateKey p;
+	auto x = puncturedKeys.find(i);
+	if(x == puncturedKeys.end()){
+		auto y = unpucturedHIBEKeys.find(i);
+		if(y == unpucturedHIBEKeys.end() ){
+  			  throw invalid_argument("No key for this interval: " + std::to_string(i));
+		}
+		p.hibeSK = y->second;
+		p.ppkeSK = unpucturedPPKEKey;
+	}else{
+		p = x->second;
+	}
+	return p;
+}
 
+void PfseKeyStore::updateKey(unsigned int i, const PfsePuncturedPrivateKey & p){
+	if(p.ppkeSK == unpucturedPPKEKey){
+		throw invalid_argument("Key not punctured");
+	}
+	puncturedKeys[i] = p;
+	unpucturedHIBEKeys.erase(i);
+}
+
+
+
+void PfseKeyStore::addkey(unsigned int i, const BbghPrivatekey & h){
+	unpucturedHIBEKeys[i] = h;
+}
+void PfseKeyStore::erase(unsigned int i) {
+	unpucturedHIBEKeys.erase(i);
+	puncturedKeys.erase(i);
+
+}
 Pfse::Pfse(uint d):hibe(),ppke(),depth(d){
+	this->latestInterval = 1 ;
     // group.setCurve(BN256);
     // cout << "depth" << depth << endl;
 }
+
+
 void Pfse::keygen(){
     G2 msk;
     hibe.setup(depth,this->pk.hibe,msk);
@@ -47,8 +83,8 @@ void Pfse::keygen(){
     this->activeKey = skleftppke;
     // skright.hibe = skrighthibe;
     // skright.ppke = skrightppke;
-    this->Hibeprivatekeys[l] = sklefthibe;
-    this->Hibeprivatekeys[r] = skrighthibe;
+    this->privatekeys.addkey(l,sklefthibe);
+    this->privatekeys.addkey(r,skrighthibe);
     latestInterval = 1;
 }
 // void Pfse::deleteInterval(uint interval){
@@ -66,16 +102,15 @@ void Pfse::keygen(){
 //     privatekeys[interval] = empty;
 // }
 void Pfse::prepareNextInterval(){
-    assert(Hibeprivatekeys.count(latestInterval) ==1);
 
     std::vector<ZR> path = hibe.indexToPath(latestInterval,depth);
     uint pathlength = path.size();
-    HIBEkey skparent = Hibeprivatekeys[latestInterval];
+    const HIBEkey &skparent = privatekeys.getKey(latestInterval).hibeSK;
     // if(skparent.ppke.length()>1){
     //     throw logic_error("The parent tag is already punctured. You must call prepareNextInterval before starting");
     // }
 
-    if (pathlength  < depth){ // Not a leaf node, so derive new keys.
+    if (pathlength  < depth){ // Not a leaf node, so derive new hibe keys.
         HIBEkey sklefthibe; 
         HIBEkey skrighthibe;
 
@@ -90,9 +125,8 @@ void Pfse::prepareNextInterval(){
         hibe.keygen(pk.hibe,skparent,path,skrighthibe);
 
         //store keys
-        Hibeprivatekeys[leftChildIndex] = sklefthibe;
-        Hibeprivatekeys[rightChildIndex] = skrighthibe;
-
+        privatekeys.addkey(leftChildIndex,sklefthibe);
+        privatekeys.addkey(rightChildIndex,skrighthibe);
     }
         // NOW that we have derived the hibe key for the next intervals if necessary,
         // update other keys
@@ -100,29 +134,28 @@ void Pfse::prepareNextInterval(){
 
         // re-randomize all existing keys
         ZR gamma = group.random(ZR_t);
-         for(auto& x: this->Hibeprivatekeys){
-             HIBEkey s;
-             s = x.second;
+         for(auto& x: this->privatekeys.unpucturedHIBEKeys){
+             HIBEkey &s = x.second;
              s.a0 = group.mul(s.a0,group.exp(pk.hibe.g2G2,group.neg(gamma)));
-             Hibeprivatekeys[x.first]=s;
          }
 
-        Hibeprivatekeys.erase(latestInterval);
-        latestInterval ++;
-        HIBEkey nextIntervalHIBEKey = Hibeprivatekeys[latestInterval];
-
-
-        Hibeprivatekeys[latestInterval]=nextIntervalHIBEKey;
-        GmppkePrivateKeyShare newActiveKeyPPKEKeyEntry;
-
-        ppke.skgen(pk.ppke,gamma,newActiveKeyPPKEKeyEntry);
-        
-        GmppkePrivateKey newActiveKeyPPKEKey;
-        
-        updateppkesk(newActiveKeyPPKEKeyEntry,unpucturedKey.shares[0]);
-        newActiveKeyPPKEKey.shares.push_back(newActiveKeyPPKEKeyEntry);
-        this->unpucturedKey = newActiveKeyPPKEKey;
-        this->activeKey = newActiveKeyPPKEKey;
+     //    privatekeys.erase(latestInterval);
+         latestInterval ++;
+//        const HIBEkey nextIntervalHIBEKey = privatekeys.getKey(latestInterval).hibeSK;
+//
+//        GmppkePrivateKeyShare newActiveKeyPPKEKeyEntry;
+//
+//        ppke.skgen(pk.ppke,gamma,newActiveKeyPPKEKeyEntry);
+//
+//        PfsePuncturedPrivateKey newPuncturedKey;
+//
+//        updateppkesk(newActiveKeyPPKEKeyEntry,unpucturedKey.shares[0]);
+//
+//
+//
+//        newActiveKeyPPKEKey.shares.push_back(newActiveKeyPPKEKeyEntry);
+//        this->unpucturedKey = newActiveKeyPPKEKey;
+//        this->activeKey = newActiveKeyPPKEKey;
 }
 void Pfse::updateppkesk(GmppkePrivateKeyShare & skentry,GmppkePrivateKeyShare & skentryold){
     skentry.sk1 = group.mul(skentry.sk1,skentryold.sk1);
@@ -619,7 +652,7 @@ void Bbghibe::setup(int l, BbhHIBEPublicKey & pk, G2 & msk)
     return;
 }
 
-void Bbghibe::keygen(BbhHIBEPublicKey & pk, G2 & msk, std::vector<ZR> & id, BbghPrivatekey & sk)
+void Bbghibe::keygen(const BbhHIBEPublicKey & pk, const G2 & msk, const std::vector<ZR> & id, BbghPrivatekey & sk)
 {
     ZR r = group.random(ZR_t);    
     int k = id.size();
@@ -642,7 +675,7 @@ void Bbghibe::keygen(BbhHIBEPublicKey & pk, G2 & msk, std::vector<ZR> & id, Bbgh
     return;
 }
 
-void Bbghibe::keygen(BbhHIBEPublicKey & pk, BbghPrivatekey & sk, std::vector<ZR> &id,BbghPrivatekey & skout){
+void Bbghibe::keygen(const BbhHIBEPublicKey & pk,const  BbghPrivatekey & sk, const std::vector<ZR> &id,BbghPrivatekey & skout){
 
     ZR t;
     G2 hprod;
@@ -676,12 +709,12 @@ void Bbghibe::keygen(BbhHIBEPublicKey & pk, BbghPrivatekey & sk, std::vector<ZR>
     return;
 }
 
-void Bbghibe::encrypt(const BbhHIBEPublicKey & pk, GT & M, std::vector<ZR> & id, BbghCT & ct){
+void Bbghibe::encrypt(const BbhHIBEPublicKey & pk, const GT & M, const std::vector<ZR> & id, BbghCT & ct){
     ZR r = group.random(ZR_t);
     encrypt(pk,M,r,id,ct);
 }
 
-void Bbghibe::encrypt(const BbhHIBEPublicKey & pk, GT & M, ZR & s, std::vector<ZR> & id, BbghCT & ct)
+void Bbghibe::encrypt(const BbhHIBEPublicKey & pk,const GT & M, const ZR & s,const std::vector<ZR> & id, BbghCT & ct)
 {
 
  

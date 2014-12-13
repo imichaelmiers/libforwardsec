@@ -44,7 +44,10 @@ public:
  class GmppkePrivateKey{
 public:
 	std::vector<GmppkePrivateKeyShare> shares;
-};
+	friend bool operator==(const GmppkePrivateKey & l, const GmppkePrivateKey &r){
+		return l.shares == r.shares;
+	}
+ };
 
 class GmmppkeCT{
 public:
@@ -132,11 +135,11 @@ public:
 	uint pathToIndex(std::vector<ZR> & path, uint l);
 	void setup(int l, BbhHIBEPublicKey & pk, G2 & msk);
 
-	void keygen( BbhHIBEPublicKey & pk, G2 & msk, std::vector<ZR> & id, BbghPrivatekey & sk);
-    void keygen( BbhHIBEPublicKey & pk, BbghPrivatekey & sk,std::vector<ZR> & id,BbghPrivatekey & skout);
+	void keygen(const BbhHIBEPublicKey & pk,const G2 & msk,const  std::vector<ZR> & id, BbghPrivatekey & sk);
+    void keygen(const BbhHIBEPublicKey & pk,const  BbghPrivatekey & sk, const std::vector<ZR> & id,BbghPrivatekey & skout);
 
-	void encrypt(const BbhHIBEPublicKey & pk, GT & M, ZR &s, std::vector<ZR>  & id, BbghCT & ct);
-	void encrypt(const BbhHIBEPublicKey & pk, GT & M, std::vector<ZR>  & id, BbghCT & ct);
+	void encrypt(const BbhHIBEPublicKey & pk, const GT & M ,const ZR &s, const  std::vector<ZR>  & id, BbghCT & ct);
+	void encrypt(const BbhHIBEPublicKey & pk, const GT & M, const std::vector<ZR>  & id, BbghCT & ct);
 
 	void decrypt(BbghPrivatekey & sk, BbghCT & ct, GT & m); // decrypt for PFSE
 	GT decrypt(BbghPrivatekey & sk, BbghCT & ct); // actual decrypt
@@ -163,12 +166,29 @@ public:
 	GmppkePublicKey ppke;
 };
 
+class PfsePuncturedPrivateKey{
+public:
+	BbghPrivatekey hibeSK;
+	GmppkePrivateKey ppkeSK;
+};
+
+class PfseKeyStore{
+public:
+	map<uint,PfsePuncturedPrivateKey> puncturedKeys;
+	map<uint,BbghPrivatekey> unpucturedHIBEKeys;
+	GmppkePrivateKey unpucturedPPKEKey;
+	const PfsePuncturedPrivateKey getKey(unsigned int i);
+	void updateKey(unsigned int i, const PfsePuncturedPrivateKey & p);
+	void addkey(unsigned int i, const BbghPrivatekey & h);
+	void erase(unsigned int i);
+};
+
 class Pfse
 {
 public:
 	PairingGroup group;
 	pfsepubkey pk;
-	map<int,BbghPrivatekey> Hibeprivatekeys;
+	PfseKeyStore privatekeys;
 	PPKEKey unpucturedKey;
 	PPKEKey activeKey;
 
