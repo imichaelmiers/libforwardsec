@@ -14,6 +14,10 @@ endif()
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra ")
 
+if (NOT CMAKE_BUILD_TYPE)
+	message(STATUS "No build type selected, default to Debug. Use cmake -DCMAKE_BUILD_TYPE=Release to make release build ")
+	set(CMAKE_BUILD_TYPE "Debug")
+endif()
 
 #DEPENDENCY CHECKS FOR RELIC 
 find_library(RELIC_LIBRARY relic)

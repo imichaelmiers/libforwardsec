@@ -192,8 +192,7 @@ public:
 	PairingGroup group;
 	pfsepubkey pk;
 	PfseKeyStore privatekeys;
-	PPKEKey unpucturedKey;
-	PPKEKey activeKey;
+
 
 	Pfse(uint d);
 	void keygen();

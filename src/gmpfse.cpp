@@ -79,10 +79,7 @@ void Pfse::keygen(){
    // ppke.skgen(pk.ppke,gamma2,skrightppkeentry);
    // skrightppke.insert(0,skrightppkeentry);
 
-    this->unpucturedKey = skleftppke;
-    this->activeKey = skleftppke;
-    // skright.hibe = skrighthibe;
-    // skright.ppke = skrightppke;
+    this->privatekeys.unpucturedPPKEKey = skleftppke;
     this->privatekeys.addkey(l,sklefthibe);
     this->privatekeys.addkey(r,skrighthibe);
     latestInterval = 1;
@@ -183,15 +180,21 @@ void Pfse::puncture(uint interval, string tag){
 
     //if the key is unpunctured, we need to bind in a new punctured key
     if(!k.punctured()){
+    	cout << "not already punctured" << endl;
         ZR gamma = group.random(ZR_t);
         GmppkePrivateKey puncturedKey;
     	GmppkePrivateKeyShare newActiveKeyPPKEKeyEntry;
+
+    	k.hibeSK.a0 = group.mul(k.hibeSK.a0,group.exp(pk.hibe.g2G2,group.neg(gamma)));
+
     	ppke.skgen(pk.ppke,gamma,newActiveKeyPPKEKeyEntry);
     	updateppkesk(newActiveKeyPPKEKeyEntry,k.ppkeSK.shares[0]);
     	puncturedKey.shares.push_back(newActiveKeyPPKEKeyEntry);
+
     	k.ppkeSK = puncturedKey;
+    	privatekeys.updateKey(interval,k);
     }
-    ppke.puncture(pk.ppke,activeKey,tagZR);
+    ppke.puncture(pk.ppke,k.ppkeSK,tagZR);
 //privatekeys[interval] = sk;
 
 }
