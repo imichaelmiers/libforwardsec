@@ -30,9 +30,9 @@ const PfsePuncturedPrivateKey PfseKeyStore::getKey(unsigned int i) {
 }
 
 void PfseKeyStore::updateKey(unsigned int i, const PfsePuncturedPrivateKey & p){
-	if(p.ppkeSK == unpucturedPPKEKey){
-		throw invalid_argument("Key not punctured");
-	}
+//	if(p.ppkeSK == unpucturedPPKEKey){
+//		throw invalid_argument("Key not punctured");
+//	}
 	puncturedKeys[i] = p;
 	unpucturedHIBEKeys.erase(i);
 }
@@ -133,11 +133,11 @@ void Pfse::prepareNextInterval(){
        
 
         // re-randomize all existing keys
-        ZR gamma = group.random(ZR_t);
-         for(auto& x: this->privatekeys.unpucturedHIBEKeys){
-             HIBEkey &s = x.second;
-             s.a0 = group.mul(s.a0,group.exp(pk.hibe.g2G2,group.neg(gamma)));
-         }
+//        ZR gamma = group.random(ZR_t);
+//         for(auto& x: this->privatekeys.unpucturedHIBEKeys){
+//             HIBEkey &s = x.second;
+//             s.a0 = group.mul(s.a0,group.exp(pk.hibe.g2G2,group.neg(gamma)));
+//         }
 
      //    privatekeys.erase(latestInterval);
          latestInterval ++;
@@ -175,10 +175,22 @@ void Pfse::puncture(uint interval, string tag){
     //     cout << "we don't have key for " <<interval << endl;
     //     throw invalid_argument("Hipster !!!. We don't have that key yet. Current interval is earlier. " + interval);
     // }
-    if(interval != latestInterval){
-        throw invalid_argument("can only puncture on the current interval");
-    }
+//    if(interval != latestInterval){
+//        throw invalid_argument("can only puncture on the current interval");
+//    }
  //   PfseIntervalKey sk = [interval];
+    PfsePuncturedPrivateKey k = privatekeys.getKey(interval);
+
+    //if the key is unpunctured, we need to bind in a new punctured key
+    if(!k.punctured()){
+        ZR gamma = group.random(ZR_t);
+        GmppkePrivateKey puncturedKey;
+    	GmppkePrivateKeyShare newActiveKeyPPKEKeyEntry;
+    	ppke.skgen(pk.ppke,gamma,newActiveKeyPPKEKeyEntry);
+    	updateppkesk(newActiveKeyPPKEKeyEntry,k.ppkeSK.shares[0]);
+    	puncturedKey.shares.push_back(newActiveKeyPPKEKeyEntry);
+    	k.ppkeSK = puncturedKey;
+    }
     ppke.puncture(pk.ppke,activeKey,tagZR);
 //privatekeys[interval] = sk;
 
@@ -187,6 +199,7 @@ PseCipherText Pfse::encrypt(pfsepubkey & pk, AESKey aes_key,uint interval,vector
     vector<ZR> tagsZR;
 
     for(uint i=0;i<tags.size();i++){
+
         ZR tag =  group.hashListToZR(tags[i]);
         tagsZR.push_back(tag);
     }
@@ -264,21 +277,11 @@ AESKey Pfse::decryptFO(PseCipherText &ct){
 
 GT Pfse::decryptGT(PseCipherText &ct){
     GT b1,b2;
-    int interval = ct.interval;
-
-    // if(privatekeys.count(interval) != 1){
-    //     cout << "we don't have key for that interval. Maybe it was deleted " <<interval << endl;
-    //     throw invalid_argument("No key for this interval. Cannot decrypt" + interval);
-    // }
-    if(Hibeprivatekeys.count(interval) != 1){
-        throw invalid_argument("No key for this interval. Cannot decrypt" + std:: to_string(interval));
-    }
-
-    HIBEkey sk = Hibeprivatekeys[interval];
-    hibe.decrypt(sk,ct.hibeCT,b1);
+    const PfsePuncturedPrivateKey & k = privatekeys.getKey(ct.interval);
+    hibe.decrypt(k.hibeSK,ct.hibeCT,b1);
     ZR neg = -1;
    // assert(b1== group.exp(group.exp(group.pair(g2G1,gG2),group.mul(ss,group.sub(aa,gam1))),neg));
-    ppke.decrypt(pk.ppke,activeKey,ct.ppkeCT,b2);
+    ppke.decrypt(pk.ppke,k.ppkeSK,ct.ppkeCT,b2);
    // assert(b2 ==group.exp(group.pair(g2G1,gG2),group.mul(ss,gam1)));
     return group.div(group.mul(ct.ct0,b1),b2);
 }
@@ -733,12 +736,12 @@ void Bbghibe::encrypt(const BbhHIBEPublicKey & pk,const GT & M, const ZR & s,con
     return;
 }
 
-void Bbghibe::decrypt(BbghPrivatekey & sk, BbghCT & ct, GT & b){
+void Bbghibe::decrypt(const BbghPrivatekey & sk, BbghCT & ct, GT & b){
 
     b = group.div(group.pair(ct.C, sk.a1), group.pair(ct.B, sk.a0));
     return;
 }
-GT Bbghibe::decrypt(BbghPrivatekey & sk, BbghCT & ct)
+GT Bbghibe::decrypt(const BbghPrivatekey & sk, BbghCT & ct)
 {
 
     return group.mul(ct.A, group.div(group.pair(ct.C, sk.a1), group.pair(ct.B, sk.a0)));

@@ -44,9 +44,9 @@ public:
  class GmppkePrivateKey{
 public:
 	std::vector<GmppkePrivateKeyShare> shares;
-	friend bool operator==(const GmppkePrivateKey & l, const GmppkePrivateKey &r){
-		return l.shares == r.shares;
-	}
+//	friend bool operator==(const GmppkePrivateKey & l, const GmppkePrivateKey &r){
+//		return l.shares == r.shares;
+//	}
  };
 
 class GmmppkeCT{
@@ -141,8 +141,8 @@ public:
 	void encrypt(const BbhHIBEPublicKey & pk, const GT & M ,const ZR &s, const  std::vector<ZR>  & id, BbghCT & ct);
 	void encrypt(const BbhHIBEPublicKey & pk, const GT & M, const std::vector<ZR>  & id, BbghCT & ct);
 
-	void decrypt(BbghPrivatekey & sk, BbghCT & ct, GT & m); // decrypt for PFSE
-	GT decrypt(BbghPrivatekey & sk, BbghCT & ct); // actual decrypt
+	void decrypt(const BbghPrivatekey & sk, BbghCT & ct, GT & m); // decrypt for PFSE
+	GT decrypt(const BbghPrivatekey & sk, BbghCT & ct); // actual decrypt
 
 };
 typedef  bitset<256> AESKey;
@@ -170,6 +170,9 @@ class PfsePuncturedPrivateKey{
 public:
 	BbghPrivatekey hibeSK;
 	GmppkePrivateKey ppkeSK;
+	const bool punctured(){
+		return ppkeSK.shares.size() > 1;
+	}
 };
 
 class PfseKeyStore{
