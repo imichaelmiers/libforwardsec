@@ -52,6 +52,24 @@ T d = group.random( T##_t); \
 T e = group.random( T##_t); \
 T i;
 
+TYPED_TEST(AlgTest,serialization){
+	std::stringstream ss;
+	PairingGroup g;
+
+	TypeParam a,b;
+	rand(a,g);
+	EXPECT_NE(a,b);
+	{
+		boost::archive::text_oarchive oa(ss);
+		oa << a;
+	}
+	ss.seekg(0);
+	{
+		boost::archive::text_iarchive ia(ss);
+		ia >> b;
+	}
+	EXPECT_EQ(a,b);
+}
 TYPED_TEST(AlgTest,cmp){
 	PairingGroup g;
 	TypeParam a,b,c,d;

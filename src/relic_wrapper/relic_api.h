@@ -9,7 +9,10 @@
 #include <fstream>
 #include <math.h>
 #include <bitset> 
-
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/binary_object.hpp>
+#include <boost/serialization/split_member.hpp>
 
 // define classes
 #ifdef __cplusplus
@@ -44,6 +47,24 @@ class CharmListZR;
 
 class ZR
 {
+    friend class boost::serialization::access;
+    template<class Archive>
+    void save(Archive & ar, const unsigned int version) const
+    {
+		uint8_t data[BN_BYTES];
+		memset(data, 0, BN_BYTES);
+		bn_write_bin(data, BN_BYTES, z);
+		ar &  boost::serialization::make_binary_object(data,BN_BYTES);
+		ar & isInit;
+    }
+    template<class Archive>
+    void load(Archive & ar, const unsigned int version){
+		uint8_t data[BN_BYTES];
+    	ar & boost::serialization::make_binary_object(data, BN_BYTES);
+    	bn_read_bin(z,data,BN_BYTES);
+		ar & isInit;
+    }
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
 public:
 	bn_t z;
 	bn_t order;
@@ -62,6 +83,8 @@ public:
 	}
 	bool ismember();
 	const ZR inverse();
+
+
 	friend ZR hashToZR(string);
 	friend ZR power(const ZR&, int);
 	friend ZR power(const ZR&, const ZR&);
@@ -99,6 +122,27 @@ public:
 		return *this;
 	}
 	bool ismember(bn_t);
+    template<class Archive>
+    void save(Archive & ar, const unsigned int version) const
+    {
+    	unsigned int l = 2 * FP_BYTES + 1;
+		uint8_t data[l];
+		memset(data, 0, l);
+		g1_write_bin(data, l, g,POINT_COMPRESS);
+		ar &  boost::serialization::make_binary_object(data,l);
+		ar & isInit;
+    }
+    template<class Archive>
+    void load(Archive & ar, const unsigned int version){
+    	unsigned int l = 2 * FP_BYTES + 1;
+		uint8_t data[l];
+    	ar & boost::serialization::make_binary_object(data, l);
+    	g1_read_bin(g,data,l);
+		ar & isInit;
+    }
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
+    friend class boost::serialization::access;
+
 	friend G1 hashToG1(string);
 	friend G1 power(const G1&, const ZR&);
 	friend G1 operator-(const G1&);
@@ -127,6 +171,28 @@ public:
 		return *this;
 	}
 	bool ismember(bn_t);
+
+    template<class Archive>
+    void save(Archive & ar, const unsigned int version) const
+    {
+
+		G2 gg(*this);
+		unsigned int l = 4 * FP_BYTES + 1;//G2_LEN; //g2_size_bin(gg.g,POINT_COMPRESS);
+		uint8_t data[l];
+		memset(data, 0, l);
+		g2_write_bin(data, l,gg.g,POINT_COMPRESS);
+		ar &  boost::serialization::make_binary_object(data,l);
+    }
+    template<class Archive>
+    void load(Archive & ar, const unsigned int version){
+		unsigned int l = 4 * FP_BYTES + 1;//G2_LEN;// g2_size_bin(g,POINT_COMPRESS);
+		uint8_t data[l];
+    	ar & boost::serialization::make_binary_object(data, l);
+    	g2_read_bin(g,data,l);
+    }
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
+    friend class boost::serialization::access;
+
 	friend G2 hashToG2(string);
 	friend G2 power(const G2&, const ZR&);
 	friend G2 operator-(const G2&);
@@ -155,6 +221,26 @@ public:
 		return *this;
 	}
 	bool ismember(bn_t);
+    template<class Archive>
+    void save(Archive & ar, const unsigned int version) const
+    {
+		uint8_t data[GT_LEN];
+		memset(data, 0, GT_LEN);
+		GT gg(*this);
+		gt_write_bin(data, GT_LEN, gg.g,POINT_COMPRESS);
+		ar &  boost::serialization::make_binary_object(data,GT_LEN);
+		ar & isInit;
+    }
+    template<class Archive>
+    void load(Archive & ar, const unsigned int version){
+		uint8_t data[GT_LEN];
+    	ar & boost::serialization::make_binary_object(data, GT_LEN);
+    	gt_read_bin(g,data,GT_LEN);
+
+		ar & isInit;
+    }
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
+    friend class boost::serialization::access;
 	friend GT pairing(const G1&, const G1&);
 	friend GT pairing(const G1&, const G2&);
 	friend GT power(const GT&, const ZR&);
