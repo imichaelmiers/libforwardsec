@@ -125,17 +125,19 @@ public:
     template<class Archive>
     void save(Archive & ar, const unsigned int version) const
     {
-    	unsigned int l = 2 * FP_BYTES + 1;
+    	unsigned int l  = g1_size_bin(g,POINT_COMPRESS);
 		uint8_t data[l];
 		memset(data, 0, l);
 		g1_write_bin(data, l, g,POINT_COMPRESS);
+		ar & l;
 		ar &  boost::serialization::make_binary_object(data,l);
 		ar & isInit;
     }
     template<class Archive>
     void load(Archive & ar, const unsigned int version){
-    	unsigned int l = 2 * FP_BYTES + 1;
-		uint8_t data[l];
+    	unsigned int l;
+    	ar & l;
+    	uint8_t data[l];
     	ar & boost::serialization::make_binary_object(data, l);
     	g1_read_bin(g,data,l);
 		ar & isInit;
@@ -177,7 +179,8 @@ public:
     {
 
 		G2 gg(*this);
-		unsigned int l = 4 * FP_BYTES + 1;//G2_LEN; //g2_size_bin(gg.g,POINT_COMPRESS);
+    	unsigned int l  = g2_size_bin(gg.g,POINT_COMPRESS);
+    	ar & l;
 		uint8_t data[l];
 		memset(data, 0, l);
 		g2_write_bin(data, l,gg.g,POINT_COMPRESS);
@@ -185,7 +188,8 @@ public:
     }
     template<class Archive>
     void load(Archive & ar, const unsigned int version){
-		unsigned int l = 4 * FP_BYTES + 1;//G2_LEN;// g2_size_bin(g,POINT_COMPRESS);
+		unsigned int l;
+		ar & l;
 		uint8_t data[l];
     	ar & boost::serialization::make_binary_object(data, l);
     	g2_read_bin(g,data,l);
