@@ -27,6 +27,16 @@ IF(NOT RELIC_HEADER)
 ENDIF(NOT RELIC_HEADER)
 
 
+#BOOST dependencies for serialization.
+find_package(Boost 1.5 COMPONENTS serialization)
+if(Boost_SERIALIZATION_FOUND)
+    include_directories(${Boost_INCLUDE_DIRS}) 
+else()
+	message(FATAL_ERROR, "Cannot find boost serialization library")
+endif(Boost_SERIALIZATION_FOUND)
+
+
+
 # emulating gnu autoconf check command c/o http://www.cmake.org/Wiki/CMakeEmulateMakeCheck
 add_custom_target(check COMMAND ${CMAKE_BINARY_DIR}/test/tests PROPERTIES DEPENDS)
 
