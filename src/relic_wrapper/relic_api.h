@@ -9,11 +9,7 @@
 #include <fstream>
 #include <math.h>
 #include <bitset> 
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/binary_object.hpp>
-#include <boost/serialization/split_member.hpp>
-
+#include <cereal/types/vector.hpp>
 // define classes
 #ifdef __cplusplus
 	// gmp.h uses __cplusplus to decide if it's right to include c++ headers.
@@ -47,24 +43,7 @@ class CharmListZR;
 
 class ZR
 {
-    friend class boost::serialization::access;
-    template<class Archive>
-    void save(Archive & ar, const unsigned int version) const
-    {
-		uint8_t data[BN_BYTES];
-		memset(data, 0, BN_BYTES);
-		bn_write_bin(data, BN_BYTES, z);
-		ar &  boost::serialization::make_binary_object(data,BN_BYTES);
-		ar & isInit;
-    }
-    template<class Archive>
-    void load(Archive & ar, const unsigned int version){
-		uint8_t data[BN_BYTES];
-    	ar & boost::serialization::make_binary_object(data, BN_BYTES);
-    	bn_read_bin(z,data,BN_BYTES);
-		ar & isInit;
-    }
-    BOOST_SERIALIZATION_SPLIT_MEMBER()
+
 public:
 	bn_t z;
 	bn_t order;
@@ -84,7 +63,22 @@ public:
 	bool ismember();
 	const ZR inverse();
 
-
+    friend class cereal::access;
+    template <class Archive>
+    void save( Archive & ar, const unsigned int version ) const
+    {
+    	std:vector<uint8_t>data(BN_BYTES);
+    	cout <<"BN BYTES" << BN_BYTES << endl;
+		bn_write_bin(&data[0], BN_BYTES, z);
+		ar(data);
+    }
+    template <class Archive>
+    void load( Archive & ar, const unsigned int version )
+    {
+    	std:vector<uint8_t>data(BN_BYTES);
+		ar(data);
+    	bn_read_bin(z,&data[0],BN_BYTES);
+    }
 	friend ZR hashToZR(string);
 	friend ZR power(const ZR&, int);
 	friend ZR power(const ZR&, const ZR&);
@@ -126,24 +120,18 @@ public:
     void save(Archive & ar, const unsigned int version) const
     {
     	unsigned int l  = g1_size_bin(g,POINT_COMPRESS);
-		uint8_t data[l];
-		memset(data, 0, l);
-		g1_write_bin(data, l, g,POINT_COMPRESS);
-		ar & l;
-		ar &  boost::serialization::make_binary_object(data,l);
-		ar & isInit;
+    	cout << "G1 " << l << endl;
+    	std:vector<uint8_t>data(l);
+		g1_write_bin(&data[0], data.size(), g,POINT_COMPRESS);
+		ar(data);
     }
     template<class Archive>
     void load(Archive & ar, const unsigned int version){
-    	unsigned int l;
-    	ar & l;
-    	uint8_t data[l];
-    	ar & boost::serialization::make_binary_object(data, l);
-    	g1_read_bin(g,data,l);
-		ar & isInit;
+    	std:vector<uint8_t>data;
+		ar(data);
+    	g1_read_bin(g,&data[0],data.size());
     }
-    BOOST_SERIALIZATION_SPLIT_MEMBER()
-    friend class boost::serialization::access;
+    friend class cereal::access;
 
 	friend G1 hashToG1(string);
 	friend G1 power(const G1&, const ZR&);
@@ -180,23 +168,19 @@ public:
 
 		G2 gg(*this);
     	unsigned int l  = g2_size_bin(gg.g,POINT_COMPRESS);
-    	ar & l;
-		cout << l << endl;
-		uint8_t data[l];
-		memset(data, 0, l);
-		g2_write_bin(data, l,gg.g,POINT_COMPRESS);
-		ar &  boost::serialization::make_binary_object(data,l);
+    	cout << "G2 " << l << endl;
+
+    	std:vector<uint8_t>data(l);
+		g2_write_bin(&data[0], l,gg.g,POINT_COMPRESS);
+		ar(data,l);
     }
     template<class Archive>
     void load(Archive & ar, const unsigned int version){
-		unsigned int l;
-		ar & l;
-		uint8_t data[l];
-    	ar & boost::serialization::make_binary_object(data, l);
-    	g2_read_bin(g,data,l);
+    	std:vector<uint8_t>data;
+		ar(data);
+    	g2_read_bin(g,&data[0],data.size());
     }
-    BOOST_SERIALIZATION_SPLIT_MEMBER()
-    friend class boost::serialization::access;
+    friend class cereal::access;
 
 	friend G2 hashToG2(string);
 	friend G2 power(const G2&, const ZR&);
@@ -231,25 +215,20 @@ public:
     {
 		GT gg(*this);
     	unsigned int l  = gt_size_bin(gg.g,POINT_COMPRESS);
-    	ar & l;
-		uint8_t data[l];
-		memset(data, 0, l);
-		gt_write_bin(data, l, gg.g,POINT_COMPRESS);
-		ar &  boost::serialization::make_binary_object(data,l);
-		ar & isInit;
+    	cout << "GT " << l << endl;
+
+    	std:vector<uint8_t>data(l);
+		gt_write_bin(&data[0], l, gg.g,POINT_COMPRESS);
+		ar(data);
     }
     template<class Archive>
     void load(Archive & ar, const unsigned int version){
-    	unsigned int l;
-    	ar & l;
-		uint8_t data[l];
-    	ar & boost::serialization::make_binary_object(data, l);
-    	gt_read_bin(g,data,l);
-
-		ar & isInit;
+    	std:vector<uint8_t>data;
+		ar(data);
+    	gt_read_bin(g,&data[0],data.size());
     }
-    BOOST_SERIALIZATION_SPLIT_MEMBER()
-    friend class boost::serialization::access;
+    friend class cereal::access;
+
 	friend GT pairing(const G1&, const G1&);
 	friend GT pairing(const G1&, const G2&);
 	friend GT power(const GT&, const ZR&);

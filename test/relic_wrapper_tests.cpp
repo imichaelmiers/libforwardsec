@@ -1,7 +1,6 @@
 #include "gtest/gtest.h"
 #include "relic_wrapper/relic_api.h"
-#include "boost/archive/binary_oarchive.hpp"
-#include "boost/archive/binary_iarchive.hpp"
+#include <cereal/archives/binary.hpp>
 
 void rand(ZR &a, PairingGroup &g){
 	a= g.random(ZR_t);
@@ -54,6 +53,25 @@ T d = group.random( T##_t); \
 T e = group.random( T##_t); \
 T i;
 
+//TEST(Foo,serialization){
+//	std::stringstream ss;
+//	PairingGroup g;
+//
+//	ZR a,b;
+//	rand(a,g);
+//	EXPECT_NE(a,b);
+//	{
+//		cereal::BinaryOutputArchive oarchive(ss);
+//		oarchive(a);
+//	}
+//	int size = ss.tellp();
+//	cout << "size " << size << endl;
+//	{
+//	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
+//	    iarchive(b);
+//	}
+//	EXPECT_EQ(a,b);
+//}
 TYPED_TEST(AlgTest,serialization){
 	std::stringstream ss;
 	PairingGroup g;
@@ -62,15 +80,15 @@ TYPED_TEST(AlgTest,serialization){
 	rand(a,g);
 	EXPECT_NE(a,b);
 	{
-		boost::archive::binary_oarchive oa(ss);
-		oa << a;
+		cereal::BinaryOutputArchive oarchive(ss);
+		oarchive(a);
 	}
 	int size = ss.tellp();
 	cout << "size " << size << endl;
 	ss.seekg(0);
 	{
-		boost::archive::binary_iarchive ia(ss);
-		ia >> b;
+	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
+	    iarchive(b);
 	}
 	EXPECT_EQ(a,b);
 }
