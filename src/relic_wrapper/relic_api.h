@@ -181,6 +181,7 @@ public:
 		G2 gg(*this);
     	unsigned int l  = g2_size_bin(gg.g,POINT_COMPRESS);
     	ar & l;
+		cout << l << endl;
 		uint8_t data[l];
 		memset(data, 0, l);
 		g2_write_bin(data, l,gg.g,POINT_COMPRESS);
@@ -228,18 +229,22 @@ public:
     template<class Archive>
     void save(Archive & ar, const unsigned int version) const
     {
-		uint8_t data[GT_LEN];
-		memset(data, 0, GT_LEN);
 		GT gg(*this);
-		gt_write_bin(data, GT_LEN, gg.g,POINT_COMPRESS);
-		ar &  boost::serialization::make_binary_object(data,GT_LEN);
+    	unsigned int l  = gt_size_bin(gg.g,POINT_COMPRESS);
+    	ar & l;
+		uint8_t data[l];
+		memset(data, 0, l);
+		gt_write_bin(data, l, gg.g,POINT_COMPRESS);
+		ar &  boost::serialization::make_binary_object(data,l);
 		ar & isInit;
     }
     template<class Archive>
     void load(Archive & ar, const unsigned int version){
-		uint8_t data[GT_LEN];
-    	ar & boost::serialization::make_binary_object(data, GT_LEN);
-    	gt_read_bin(g,data,GT_LEN);
+    	unsigned int l;
+    	ar & l;
+		uint8_t data[l];
+    	ar & boost::serialization::make_binary_object(data, l);
+    	gt_read_bin(g,data,l);
 
 		ar & isInit;
     }

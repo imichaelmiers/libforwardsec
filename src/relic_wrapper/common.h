@@ -17,7 +17,7 @@
 	#undef  ___cplusplus
 #endif
 
-#define POINT_COMPRESS 0
+#define POINT_COMPRESS 1
 #define DECIMAL 10
 #define BASE	16
 #define MAX_BUF	1024

@@ -1,5 +1,7 @@
 #include "gtest/gtest.h"
 #include "relic_wrapper/relic_api.h"
+#include "boost/archive/binary_oarchive.hpp"
+#include "boost/archive/binary_iarchive.hpp"
 
 void rand(ZR &a, PairingGroup &g){
 	a= g.random(ZR_t);
@@ -60,12 +62,14 @@ TYPED_TEST(AlgTest,serialization){
 	rand(a,g);
 	EXPECT_NE(a,b);
 	{
-		boost::archive::text_oarchive oa(ss);
+		boost::archive::binary_oarchive oa(ss);
 		oa << a;
 	}
+	int size = ss.tellp();
+	cout << "size " << size << endl;
 	ss.seekg(0);
 	{
-		boost::archive::text_iarchive ia(ss);
+		boost::archive::binary_iarchive ia(ss);
 		ia >> b;
 	}
 	EXPECT_EQ(a,b);
