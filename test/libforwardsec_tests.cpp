@@ -147,7 +147,7 @@ TEST_F(PFSETests,PassOnPunctureNextInterval){
 }
 TEST_F(PFSETests,PunctureAndDeriveAll){
 	// there are 2^d =1 nodes in a tree of depth d.
-	// we don't hav
+	// we don't have the root, so we subtrct one more.
 	unsigned int intervals = std::pow(2,d)-2;
 	for(unsigned int i =1;i< intervals; i++){
 	    vector<string> tags;
@@ -179,6 +179,9 @@ TEST_F(PFSETests,Delete){
     test.eraseKey(1);
     EXPECT_THROW(test.decrypt(ct),invalid_argument); // no key
     EXPECT_THROW(test.eraseKey(2),invalid_argument); // no child keys so count delete
+}
+TEST_F(PFSETests,PunctureWrongInterval){
+    EXPECT_THROW( test.puncture(2,"8");,invalid_argument); // can't puncture key we don't have children for.
 }
 
 TEST_F(BbghhibeTests,basic){

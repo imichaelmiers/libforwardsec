@@ -175,10 +175,6 @@ void Pfse::bindKey(PfsePuncturedPrivateKey & k) {
 	k.ppkeSK = puncturedKey;
 }
 
-void Pfse::puncture(string tag){
-	// The current active interval is one behind the nextParentInterval
-    puncture(nextParentInterval-1,tag);
-}
 
 void Pfse::eraseKey(unsigned int interval) {
 	if(privatekeys.needsChildKeys(interval,depth)){
@@ -189,23 +185,17 @@ void Pfse::eraseKey(unsigned int interval) {
 	}
 }
 
+void Pfse::puncture(string tag){
+	// The current active interval is one behind the nextParentInterval
+    puncture(nextParentInterval-1,tag);
+}
+
 void Pfse::puncture(uint interval, string tag){
-	if(interval >= nextParentInterval){
+	if(privatekeys.needsChildKeys(interval,depth)){
 		throw invalid_argument("Cannot puncture key for  interval "+std::to_string(interval)+
 				" , haven't derived keys yet. Last interval with keys is " +std::to_string(nextParentInterval-1));
 	}
-    ZR tagZR = group.hashListToZR(tag);
-    // if(interval >= latestInterval){
-    //     throw invalid_argument("We cannot puncture on this interval. First run prepareNextInterval ");
-    // }
-    // if(privatekeys.count(interval) != 1){
-    //     cout << "we don't have key for " <<interval << endl;
-    //     throw invalid_argument("Hipster !!!. We don't have that key yet. Current interval is earlier. " + interval);
-    // }
-//    if(interval != latestInterval){
-//        throw invalid_argument("can only puncture on the current interval");
-//    }
- //   PfseIntervalKey sk = [interval];
+
     PfsePuncturedPrivateKey k = privatekeys.getKey(interval);
 
     //if the key is unpunctured, we need to bind in a new punctured key
@@ -213,7 +203,7 @@ void Pfse::puncture(uint interval, string tag){
     	DBGG(cout << interval << "not already punctured" << endl;)
 		bindKey(k);
     }
-    ppke.puncture(pk.ppke,k.ppkeSK,tagZR);
+    ppke.puncture(pk.ppke,k.ppkeSK,group.hashListToZR(tag));
 	privatekeys.updateKey(interval,k);
 
 //privatekeys[interval] = sk;
