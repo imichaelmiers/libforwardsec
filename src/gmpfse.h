@@ -180,7 +180,7 @@ public:
 	map<uint,PfsePuncturedPrivateKey> puncturedKeys;
 	map<uint,BbghPrivatekey> unpucturedHIBEKeys;
 	GmppkePrivateKey unpucturedPPKEKey;
-	const PfsePuncturedPrivateKey getKey(unsigned int i);
+	PfsePuncturedPrivateKey getKey(unsigned int i) const;
 	void updateKey(unsigned int i, const PfsePuncturedPrivateKey & p);
 	void addkey(unsigned int i, const BbghPrivatekey & h);
 	void erase(unsigned int i);
@@ -189,25 +189,57 @@ public:
 class Pfse
 {
 public:
-	PairingGroup group;
 	pfsepubkey pk;
 	PfseKeyStore privatekeys;
 
 
 	Pfse(uint d);
+	/**Generates the public and private key. These are stored in object
+	 *
+	 */
 	void keygen();
+
+	/** Encryptes a message. Messages are limmited to 256 bits. (e.g. and AES key).
+	 *
+	 * @param pk the public key of the recipient
+	 * @param aes_key the message
+	 * @param interval the time interval the message is in
+	 * @param tags the tags for the message
+	 * @return the ciphertext
+	 */
 	PseCipherText encrypt(pfsepubkey & pk, AESKey aes_key,uint interval,vector<string> tags);
+
+	/**Decrypt   a message using the private key stored in the object.
+	 *
+	 * @param ct the ciphertext
+	 * @return the decrypted message.
+	 */
 	AESKey decrypt(PseCipherText &ct);
 	
+	/**Derives the keys needed to decrypt the next interval.
+	 *
+	 */
 	void prepareNextInterval();
-	//void deleteInterval(uint interval);
-
+	/** Erases the key for a given interval
+	 *
+	 * @param interval the interval to erase.
+	 */
+	void eraseKey(unsigned int interval);
+    /** Punctures the key for the given time period.
+     *
+     * @param interval the time period
+     * @param str the tag to puncture on
+     */
 	void puncture(uint interval, string str);
+	/**Punctures the key for the current interval.
+	 *
+	 * @param str the tag to puncture on.
+	 */
 	void puncture( string str);
 
-	PseCipherText encrypt(pfsepubkey & pk, GT & M,uint interval, vector<ZR>  & tags);
-	GT decryptGT(PseCipherText &ct);	
+
 private:
+	PairingGroup group;
 	Bbghibe hibe;
 	Gmppke ppke;
 	uint depth;
@@ -218,7 +250,8 @@ private:
 	PseCipherText encrypt(pfsepubkey & pk, GT & M, ZR & s,uint interval, vector<ZR>  & tags);
 
 	AESKey decryptFO(PseCipherText &ct);
-
+	PseCipherText encrypt(pfsepubkey & pk, GT & M,uint interval, vector<ZR>  & tags);
+	GT decryptGT(PseCipherText &ct);
 	uint nextParentInterval;
 };
 

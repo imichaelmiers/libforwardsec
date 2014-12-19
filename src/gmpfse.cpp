@@ -18,7 +18,7 @@ int tag0=42;
 #define DBGG(x)
 #endif
 
-const PfsePuncturedPrivateKey PfseKeyStore::getKey(unsigned int i) {
+PfsePuncturedPrivateKey PfseKeyStore::getKey(unsigned int i)  const{
 	PfsePuncturedPrivateKey p;
 	auto x = puncturedKeys.find(i);
 	if(x == puncturedKeys.end()){
@@ -44,17 +44,16 @@ void PfseKeyStore::updateKey(unsigned int i, const PfsePuncturedPrivateKey & p){
 	puncturedKeys[i] = p;
 	unpucturedHIBEKeys.erase(i);
 }
+void PfseKeyStore::erase(unsigned int i){
+	puncturedKeys.erase(i); //FIXME secure erase.
+	unpucturedHIBEKeys.erase(i);
+}
 
 
 
 void PfseKeyStore::addkey(unsigned int i, const BbghPrivatekey & h){
 	DBGG(cout << "added key for interval " << i << endl;);
 	unpucturedHIBEKeys[i] = h;
-}
-void PfseKeyStore::erase(unsigned int i) {
-	unpucturedHIBEKeys.erase(i);
-	puncturedKeys.erase(i);
-
 }
 Pfse::Pfse(uint d):hibe(),ppke(),depth(d){
 	this->nextParentInterval = 1 ;
@@ -135,34 +134,7 @@ void Pfse::prepareNextInterval(){
         privatekeys.addkey(leftChildIndex,sklefthibe);
         privatekeys.addkey(rightChildIndex,skrighthibe);
     }
-        // NOW that we have derived the hibe key for the next intervals if necessary,
-        // update other keys
-       
-
-        // re-randomize all existing keys
-//        ZR gamma = group.random(ZR_t);
-//         for(auto& x: this->privatekeys.unpucturedHIBEKeys){
-//             HIBEkey &s = x.second;
-//             s.a0 = group.mul(s.a0,group.exp(pk.hibe.g2G2,group.neg(gamma)));
-//         }
-
-     //    privatekeys.erase(latestInterval);
-    	nextParentInterval ++;
-//        const HIBEkey nextIntervalHIBEKey = privatekeys.getKey(latestInterval).hibeSK;
-//
-//        GmppkePrivateKeyShare newActiveKeyPPKEKeyEntry;
-//
-//        ppke.skgen(pk.ppke,gamma,newActiveKeyPPKEKeyEntry);
-//
-//        PfsePuncturedPrivateKey newPuncturedKey;
-//
-//        updateppkesk(newActiveKeyPPKEKeyEntry,unpucturedKey.shares[0]);
-//
-//
-//
-//        newActiveKeyPPKEKey.shares.push_back(newActiveKeyPPKEKeyEntry);
-//        this->unpucturedKey = newActiveKeyPPKEKey;
-//        this->activeKey = newActiveKeyPPKEKey;
+   	nextParentInterval ++;
 }
 
 void Pfse::bindKey(PfsePuncturedPrivateKey & k) {
@@ -189,6 +161,11 @@ void Pfse::puncture(string tag){
 	// The current active interval is one behind the nextParentInterval
     puncture(nextParentInterval-1,tag);
 }
+
+void Pfse::eraseKey(unsigned int interval) {
+	privatekeys.erase(interval);
+}
+
 void Pfse::puncture(uint interval, string tag){
 	if(interval >= nextParentInterval){
 		throw invalid_argument("Cannot puncture on interval "+std::to_string(interval)+
@@ -296,6 +273,7 @@ AESKey Pfse::decryptFO(PseCipherText &ct){
       throw BadCiphertext("Fujisaki Okamoto integrety check failed ");
     }
 }
+
 
 
 GT Pfse::decryptGT(PseCipherText &ct){
