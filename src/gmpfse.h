@@ -170,7 +170,7 @@ class PfsePuncturedPrivateKey{
 public:
 	BbghPrivatekey hibeSK;
 	GmppkePrivateKey ppkeSK;
-	const bool punctured(){
+	 bool punctured() const{
 		return ppkeSK.shares.size() > 1;
 	}
 };
@@ -211,7 +211,7 @@ private:
 	Bbghibe hibe;
 	Gmppke ppke;
 	uint depth;
-	void updateppkesk(GmppkePrivateKeyShare & skentry,GmppkePrivateKeyShare & skentryold);
+	void bindKey(PfsePuncturedPrivateKey & k);
 	PseCipherText encryptFO(pfsepubkey & pk, AESKey & bitmsg,uint interval,vector<ZR>  & tags);
 	PseCipherText encryptFO(pfsepubkey & pk,  AESKey & bitmsg,GT & x, uint interval,vector<ZR>  & tags);
 

@@ -144,6 +144,8 @@ TEST_F(PFSETests,PassOnPunctureNextInterval){
 
 }
 TEST_F(PFSETests,PunctureAndDeriveAll){
+	// there are 2^d =1 nodes in a tree of depth d.
+	// we don't hav
 	unsigned int intervals = std::pow(2,d)-2;
 	for(unsigned int i =1;i< intervals; i++){
 	    vector<string> tags;

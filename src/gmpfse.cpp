@@ -122,7 +122,7 @@ void Pfse::prepareNextInterval(){
         HIBEkey skrighthibe;
 
         // compute left key
-        path.push_back(ZR(0)); // FIXME
+        path.push_back(ZR(0));
         int leftChildIndex = hibe.pathToIndex(path,depth);
         hibe.keygen(pk.hibe,skparent,path,sklefthibe);
 
@@ -164,10 +164,24 @@ void Pfse::prepareNextInterval(){
 //        this->unpucturedKey = newActiveKeyPPKEKey;
 //        this->activeKey = newActiveKeyPPKEKey;
 }
-void Pfse::updateppkesk(GmppkePrivateKeyShare & skentry,GmppkePrivateKeyShare & skentryold){
-    skentry.sk1 = group.mul(skentry.sk1,skentryold.sk1);
-    skentry.sk2 = group.mul(skentry.sk2,skentryold.sk2);
-    skentry.sk3 = group.mul(skentry.sk3,skentryold.sk3);
+void Pfse::bindKey(PfsePuncturedPrivateKey & k) {
+    ZR gamma = group.random(ZR_t);
+    GmppkePrivateKey puncturedKey;
+	GmppkePrivateKeyShare newActiveKeyPPKEKeyEntry;
+
+	k.hibeSK.a0 = group.mul(k.hibeSK.a0,group.exp(pk.hibe.g2G2,group.neg(gamma)));
+
+	ppke.skgen(pk.ppke,gamma,newActiveKeyPPKEKeyEntry);
+	GmppkePrivateKeyShare & skentryold = k.ppkeSK.shares[0];
+	newActiveKeyPPKEKeyEntry.sk1 = group.mul(newActiveKeyPPKEKeyEntry.sk1,skentryold.sk1);
+	newActiveKeyPPKEKeyEntry.sk2 = group.mul(newActiveKeyPPKEKeyEntry.sk2,skentryold.sk2);
+	newActiveKeyPPKEKeyEntry.sk3 = group.mul(newActiveKeyPPKEKeyEntry.sk3,skentryold.sk3);
+
+
+
+	puncturedKey.shares.push_back(newActiveKeyPPKEKeyEntry);
+
+	k.ppkeSK = puncturedKey;
 }
 
 void Pfse::puncture(string tag){
@@ -196,17 +210,18 @@ void Pfse::puncture(uint interval, string tag){
     //if the key is unpunctured, we need to bind in a new punctured key
     if(!k.punctured()){
     	DBGG(cout << "not already punctured" << endl;)
-        ZR gamma = group.random(ZR_t);
-        GmppkePrivateKey puncturedKey;
-    	GmppkePrivateKeyShare newActiveKeyPPKEKeyEntry;
-
-    	k.hibeSK.a0 = group.mul(k.hibeSK.a0,group.exp(pk.hibe.g2G2,group.neg(gamma)));
-
-    	ppke.skgen(pk.ppke,gamma,newActiveKeyPPKEKeyEntry);
-    	updateppkesk(newActiveKeyPPKEKeyEntry,k.ppkeSK.shares[0]);
-    	puncturedKey.shares.push_back(newActiveKeyPPKEKeyEntry);
-
-    	k.ppkeSK = puncturedKey;
+//        ZR gamma = group.random(ZR_t);
+//        GmppkePrivateKey puncturedKey;
+//    	GmppkePrivateKeyShare newActiveKeyPPKEKeyEntry;
+//
+//    	k.hibeSK.a0 = group.mul(k.hibeSK.a0,group.exp(pk.hibe.g2G2,group.neg(gamma)));
+//
+//    	ppke.skgen(pk.ppke,gamma,newActiveKeyPPKEKeyEntry);
+//    	updateppkesk(newActiveKeyPPKEKeyEntry,k.ppkeSK.shares[0]);
+//    	puncturedKey.shares.push_back(newActiveKeyPPKEKeyEntry);
+//
+//    	k.ppkeSK = puncturedKey;
+		bindKey(k);
     }
     ppke.puncture(pk.ppke,k.ppkeSK,tagZR);
 	privatekeys.updateKey(interval,k);
@@ -259,11 +274,10 @@ PseCipherText Pfse::encrypt(pfsepubkey & pk, GT & M, ZR & s,uint interval, vecto
     ct.interval = interval;
 
     std::vector<ZR> id= hibe.indexToPath(interval,depth);
-    ct.ct0 =  group.mul(group.exp(group.pair(pk.hibe.g2G1, pk.hibe.g1), s), M);
 
     hibe.encrypt(pk.hibe,M,s,id,ct.hibeCT);
     ppke.encrypt(pk.ppke,M,s,tags,ct.ppkeCT);
-    ct.interval = interval;
+    ct.ct0 =  group.mul(group.exp(group.pair(pk.hibe.g2G1, pk.hibe.g1), s), M);
 
     return ct;
 }
