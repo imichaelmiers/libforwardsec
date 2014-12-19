@@ -12,18 +12,26 @@ using namespace std;
 uint d = 1;
 int tag0=42;
 
+#ifdef DDDEBUG
+#define DBGG(x) x
+#else
+#define DBGG(x)
+#endif
 
 const PfsePuncturedPrivateKey PfseKeyStore::getKey(unsigned int i) {
 	PfsePuncturedPrivateKey p;
 	auto x = puncturedKeys.find(i);
 	if(x == puncturedKeys.end()){
 		auto y = unpucturedHIBEKeys.find(i);
+		DBGG(cout << "found key in unpunctured keys for interval " << i << endl;)
+
 		if(y == unpucturedHIBEKeys.end() ){
   			  throw invalid_argument("No key for this interval: " + std::to_string(i));
 		}
 		p.hibeSK = y->second;
 		p.ppkeSK = unpucturedPPKEKey;
 	}else{
+		DBGG(cout << "found key in punctured keys for interval " << i << endl;)
 		p = x->second;
 	}
 	return p;
@@ -40,6 +48,7 @@ void PfseKeyStore::updateKey(unsigned int i, const PfsePuncturedPrivateKey & p){
 
 
 void PfseKeyStore::addkey(unsigned int i, const BbghPrivatekey & h){
+	DBGG(cout << "added key for interval " << i << endl;);
 	unpucturedHIBEKeys[i] = h;
 }
 void PfseKeyStore::erase(unsigned int i) {
@@ -83,6 +92,7 @@ void Pfse::keygen(){
     this->privatekeys.addkey(l,sklefthibe);
     this->privatekeys.addkey(r,skrighthibe);
     latestInterval = 1;
+    this->prepareNextInterval();
 }
 // void Pfse::deleteInterval(uint interval){
 //     if(interval < 1){
@@ -161,9 +171,12 @@ void Pfse::updateppkesk(GmppkePrivateKeyShare & skentry,GmppkePrivateKeyShare & 
 }
 
 void Pfse::puncture(string tag){
-    puncture(latestInterval,tag);
+    puncture(latestInterval-1,tag);
 }
 void Pfse::puncture(uint interval, string tag){
+	if(interval >= latestInterval){
+		throw invalid_argument("Cannot puncture on interval "+std::to_string(interval)+" , haven't derived keys yet");
+	}
     ZR tagZR = group.hashListToZR(tag);
     // if(interval >= latestInterval){
     //     throw invalid_argument("We cannot puncture on this interval. First run prepareNextInterval ");
@@ -180,7 +193,7 @@ void Pfse::puncture(uint interval, string tag){
 
     //if the key is unpunctured, we need to bind in a new punctured key
     if(!k.punctured()){
-    	cout << "not already punctured" << endl;
+    	DBGG(cout << "not already punctured" << endl;)
         ZR gamma = group.random(ZR_t);
         GmppkePrivateKey puncturedKey;
     	GmppkePrivateKeyShare newActiveKeyPPKEKeyEntry;
@@ -192,9 +205,10 @@ void Pfse::puncture(uint interval, string tag){
     	puncturedKey.shares.push_back(newActiveKeyPPKEKeyEntry);
 
     	k.ppkeSK = puncturedKey;
-    	privatekeys.updateKey(interval,k);
     }
     ppke.puncture(pk.ppke,k.ppkeSK,tagZR);
+	privatekeys.updateKey(interval,k);
+
 //privatekeys[interval] = sk;
 
 }

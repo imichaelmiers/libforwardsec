@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <bitset>
 #include <assert.h>
+#include <cmath>
 #include "gmpfse.h"
 #include "gtest/gtest.h"
 
@@ -13,7 +14,8 @@ protected:
 	 	test.keygen();
 	 	pk = test.pk;
 	 } 
-	 PFSETests():test(3),testkey(teststring){}
+	 unsigned int d=3;
+	 PFSETests():test(d),testkey(teststring){}
  	 //PairingGroup group;
 	 Pfse test;
 	 pfsepubkey pk ;
@@ -88,38 +90,40 @@ TEST_F(PFSETests,Decrypt){
 }
 
 TEST_F(PFSETests,FailWhenPunctured){
-    test.prepareNextInterval();
-
     vector<string> tags;
     tags.push_back("9");
-    PseCipherText ct1 = test.encrypt(pk,testkey,2,tags);
-    test.puncture(2,"9");
+    PseCipherText ct1 = test.encrypt(pk,testkey,1,tags);
+    test.puncture("9");
     //test.puncture(1,eight);
    // test.decrypt(ct1);
    EXPECT_THROW(test.decrypt(ct1),invalid_argument); //FIXME
 }
 
 TEST_F(PFSETests,DecryptOnPuncture){
-	test.prepareNextInterval();
     vector<string> tags;
     tags.push_back("9");
-    PseCipherText ct = test.encrypt(pk,testkey,2,tags);
-    test.puncture(2,"8");
+
+    PseCipherText ct = test.encrypt(pk,testkey,1,tags);
+
+    test.puncture(1,"8");
 
     AESKey result = test.decrypt(ct);
-    EXPECT_EQ(testkey,result); 
+
+    EXPECT_EQ(testkey,result);
+
     // test multiple punctures;
-    test.puncture(2,"1");
-    test.puncture(2,"2");
-    test.puncture(2,"3");
+    test.puncture(1,"1");
+    test.puncture(1,"2");
+    test.puncture(1,"3");
+
     EXPECT_EQ(testkey,test.decrypt(ct));
 	test.prepareNextInterval();
 
-    PseCipherText ct1 = test.encrypt(pk,testkey,3,tags);
+    PseCipherText ct2 = test.encrypt(pk,testkey,2,tags);
 
-    AESKey result1 = test.decrypt(ct1);
-    EXPECT_EQ(testkey,result1);
+    AESKey result1 = test.decrypt(ct2);
 
+    EXPECT_EQ(testkey,result1) ;
 }
 
 //
@@ -139,6 +143,23 @@ TEST_F(PFSETests,PassOnPunctureNextInterval){
     EXPECT_EQ(testkey,result);
 
 }
+TEST_F(PFSETests,PunctureAndDeriveAll){
+	unsigned int intervals = std::pow(2,d)-2;
+	for(unsigned int i =1;i< intervals; i++){
+	    vector<string> tags;
+	    tags.push_back("9");
+	    test.puncture(i,"8");
+	    test.puncture(i,"10");
+	    test.puncture("11");
+	    test.puncture("12");
+	    PseCipherText ct1 = test.encrypt(pk,testkey,i,tags);
+	    AESKey result = test.decrypt(ct1);
+	    EXPECT_EQ(testkey,result);
+		test.prepareNextInterval();
+	}
+}
+
+
 TEST_F(BbghhibeTests,basic){
     GT m = group.random(GT_t);
 
