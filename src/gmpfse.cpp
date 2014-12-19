@@ -75,8 +75,8 @@ void Pfse::keygen(){
 
     hibe.keygen(this->pk.hibe,msk,left,sklefthibe);
     hibe.keygen(this->pk.hibe,msk,right,skrighthibe);
-    int l = hibe.pathToIndex(left,depth);
-    int r = hibe.pathToIndex(right,depth); 
+    int l = pathToIndex(left,depth);
+    int r = pathToIndex(right,depth);
     ZR gamma1 = group.random(ZR_t);
     ZR gamma2 = group.random(ZR_t);
 
@@ -109,7 +109,7 @@ void Pfse::keygen(){
 // }
 void Pfse::prepareNextInterval(){
 
-    std::vector<ZR> path = hibe.indexToPath(nextParentInterval,depth);
+    std::vector<ZR> path = indexToPath(nextParentInterval,depth);
     uint pathlength = path.size();
     const HIBEkey &skparent = privatekeys.getKey(nextParentInterval).hibeSK;
     // if(skparent.ppke.length()>1){
@@ -122,12 +122,12 @@ void Pfse::prepareNextInterval(){
 
         // compute left key
         path.push_back(ZR(0));
-        int leftChildIndex = hibe.pathToIndex(path,depth);
+        int leftChildIndex = pathToIndex(path,depth);
         hibe.keygen(pk.hibe,skparent,path,sklefthibe);
 
         // compute right key;
         path[pathlength]=ZR(1);
-        int rightChildIndex = hibe.pathToIndex(path,depth);
+        int rightChildIndex = pathToIndex(path,depth);
         hibe.keygen(pk.hibe,skparent,path,skrighthibe);
 
         //store keys
@@ -240,7 +240,7 @@ PseCipherText Pfse::encrypt(pfsepubkey & pk, GT & M, ZR & s,uint interval, vecto
     
     ct.interval = interval;
 
-    std::vector<ZR> id= hibe.indexToPath(interval,depth);
+    std::vector<ZR> id= indexToPath(interval,depth);
 
     hibe.encrypt(pk.hibe,M,s,id,ct.hibeCT);
     ppke.encrypt(pk.ppke,M,s,tags,ct.ppkeCT);
@@ -584,7 +584,7 @@ void Gmppke::decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, co
 
 
 
-std::vector<ZR>  Bbghibe::indexToPath(uint index,uint l){
+std::vector<ZR>  indexToPath(uint index,uint l){
     std::vector<ZR> path;
     uint nodesSoFar = 0;
     ZR zero = 0;
@@ -607,7 +607,7 @@ std::vector<ZR>  Bbghibe::indexToPath(uint index,uint l){
     return path;
 }
 
-uint Bbghibe::pathToIndex(std::vector<ZR> & path, uint l){
+uint pathToIndex(std::vector<ZR> & path, uint l){
     uint index = 0;
     uint pathsize = path.size();
     if(pathsize > l){

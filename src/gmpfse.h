@@ -125,14 +125,15 @@ friend bool operator==(const BbghCT& x,const BbghCT& y){
 	return x.A == y.A && x.B == y.B && x.C == y.C;
 }
 };
+std::vector<ZR>  indexToPath(uint index,uint l);
+uint pathToIndex(std::vector<ZR> & path, uint l);
 class Bbghibe
 {
 public:
 	PairingGroup group;
 	Bbghibe(){};
 	~Bbghibe() {};
-	std::vector<ZR>  indexToPath(uint index,uint l);
-	uint pathToIndex(std::vector<ZR> & path, uint l);
+
 	void setup(int l, BbhHIBEPublicKey & pk, G2 & msk);
 
 	void keygen(const BbhHIBEPublicKey & pk,const G2 & msk,const  std::vector<ZR> & id, BbghPrivatekey & sk);
