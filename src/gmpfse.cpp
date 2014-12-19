@@ -164,6 +164,7 @@ void Pfse::prepareNextInterval(){
 //        this->unpucturedKey = newActiveKeyPPKEKey;
 //        this->activeKey = newActiveKeyPPKEKey;
 }
+
 void Pfse::bindKey(PfsePuncturedPrivateKey & k) {
     ZR gamma = group.random(ZR_t);
     GmppkePrivateKey puncturedKey;
@@ -209,18 +210,7 @@ void Pfse::puncture(uint interval, string tag){
 
     //if the key is unpunctured, we need to bind in a new punctured key
     if(!k.punctured()){
-    	DBGG(cout << "not already punctured" << endl;)
-//        ZR gamma = group.random(ZR_t);
-//        GmppkePrivateKey puncturedKey;
-//    	GmppkePrivateKeyShare newActiveKeyPPKEKeyEntry;
-//
-//    	k.hibeSK.a0 = group.mul(k.hibeSK.a0,group.exp(pk.hibe.g2G2,group.neg(gamma)));
-//
-//    	ppke.skgen(pk.ppke,gamma,newActiveKeyPPKEKeyEntry);
-//    	updateppkesk(newActiveKeyPPKEKeyEntry,k.ppkeSK.shares[0]);
-//    	puncturedKey.shares.push_back(newActiveKeyPPKEKeyEntry);
-//
-//    	k.ppkeSK = puncturedKey;
+    	DBGG(cout << interval << "not already punctured" << endl;)
 		bindKey(k);
     }
     ppke.puncture(pk.ppke,k.ppkeSK,tagZR);
