@@ -219,7 +219,7 @@ private:
 
 	AESKey decryptFO(PseCipherText &ct);
 
-	uint latestInterval;
+	uint nextParentInterval;
 };
 
 

@@ -57,7 +57,7 @@ void PfseKeyStore::erase(unsigned int i) {
 
 }
 Pfse::Pfse(uint d):hibe(),ppke(),depth(d){
-	this->latestInterval = 1 ;
+	this->nextParentInterval = 1 ;
     // group.setCurve(BN256);
     // cout << "depth" << depth << endl;
 }
@@ -91,7 +91,7 @@ void Pfse::keygen(){
     this->privatekeys.unpucturedPPKEKey = skleftppke;
     this->privatekeys.addkey(l,sklefthibe);
     this->privatekeys.addkey(r,skrighthibe);
-    latestInterval = 0;
+    nextParentInterval = 1;
     this->prepareNextInterval();
 }
 // void Pfse::deleteInterval(uint interval){
@@ -110,9 +110,9 @@ void Pfse::keygen(){
 // }
 void Pfse::prepareNextInterval(){
 
-    std::vector<ZR> path = hibe.indexToPath(latestInterval,depth);
+    std::vector<ZR> path = hibe.indexToPath(nextParentInterval,depth);
     uint pathlength = path.size();
-    const HIBEkey &skparent = privatekeys.getKey(latestInterval).hibeSK;
+    const HIBEkey &skparent = privatekeys.getKey(nextParentInterval).hibeSK;
     // if(skparent.ppke.length()>1){
     //     throw logic_error("The parent tag is already punctured. You must call prepareNextInterval before starting");
     // }
@@ -147,7 +147,7 @@ void Pfse::prepareNextInterval(){
 //         }
 
      //    privatekeys.erase(latestInterval);
-         latestInterval ++;
+    	nextParentInterval ++;
 //        const HIBEkey nextIntervalHIBEKey = privatekeys.getKey(latestInterval).hibeSK;
 //
 //        GmppkePrivateKeyShare newActiveKeyPPKEKeyEntry;
@@ -171,11 +171,13 @@ void Pfse::updateppkesk(GmppkePrivateKeyShare & skentry,GmppkePrivateKeyShare & 
 }
 
 void Pfse::puncture(string tag){
-    puncture(latestInterval-1,tag);
+	// The current active interval is one behind the nextParentInterval
+    puncture(nextParentInterval-1,tag);
 }
 void Pfse::puncture(uint interval, string tag){
-	if(interval >= latestInterval){
-		throw invalid_argument("Cannot puncture on interval "+std::to_string(interval)+" , haven't derived keys yet");
+	if(interval >= nextParentInterval){
+		throw invalid_argument("Cannot puncture on interval "+std::to_string(interval)+
+				" , haven't derived keys yet. Last interval with keys is " +std::to_string(nextParentInterval));
 	}
     ZR tagZR = group.hashListToZR(tag);
     // if(interval >= latestInterval){
