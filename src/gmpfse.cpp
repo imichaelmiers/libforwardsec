@@ -91,7 +91,7 @@ void Pfse::keygen(){
     this->privatekeys.unpucturedPPKEKey = skleftppke;
     this->privatekeys.addkey(l,sklefthibe);
     this->privatekeys.addkey(r,skrighthibe);
-    latestInterval = 1;
+    latestInterval = 0;
     this->prepareNextInterval();
 }
 // void Pfse::deleteInterval(uint interval){
