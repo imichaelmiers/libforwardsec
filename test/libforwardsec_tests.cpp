@@ -78,6 +78,8 @@ protected:
     // static PairingGroup _group;
 };
 
+
+
 TEST_F(PFSETests,Decrypt){
     vector<string> tags;
     tags.push_back("9");
@@ -161,6 +163,23 @@ TEST_F(PFSETests,PunctureAndDeriveAll){
 	}
 }
 
+TEST_F(PFSETests,Delete){
+
+    vector<string> tags;
+    tags.push_back("9");
+
+    test.puncture(1,"8");
+    test.puncture(1,"10");
+
+    PseCipherText ct = test.encrypt(pk,testkey,1,tags);
+
+    AESKey result = test.decrypt(ct);
+    EXPECT_EQ(testkey,result);
+    cout << "trying to erase 1" << endl << endl;
+    test.eraseKey(1);
+    EXPECT_THROW(test.decrypt(ct),invalid_argument); // no key
+    EXPECT_THROW(test.eraseKey(2),invalid_argument); // no child keys so count delete
+}
 
 TEST_F(BbghhibeTests,basic){
     GT m = group.random(GT_t);

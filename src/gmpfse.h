@@ -185,6 +185,8 @@ public:
 	void updateKey(unsigned int i, const PfsePuncturedPrivateKey & p);
 	void addkey(unsigned int i, const BbghPrivatekey & h);
 	void erase(unsigned int i);
+	bool hasKey(const unsigned int i) const;
+	bool needsChildKeys(const unsigned int i,const unsigned int d) const;
 };
 
 class Pfse

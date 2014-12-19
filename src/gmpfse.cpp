@@ -17,17 +17,18 @@ int tag0=42;
 #else
 #define DBGG(x)
 #endif
-
 PfsePuncturedPrivateKey PfseKeyStore::getKey(unsigned int i)  const{
 	PfsePuncturedPrivateKey p;
 	auto x = puncturedKeys.find(i);
 	if(x == puncturedKeys.end()){
 		auto y = unpucturedHIBEKeys.find(i);
-		DBGG(cout << "found key in unpunctured keys for interval " << i << endl;)
 
 		if(y == unpucturedHIBEKeys.end() ){
+			DBGG(cout << "did not find   keys for interval " << i << endl;)
+
   			  throw invalid_argument("No key for this interval: " + std::to_string(i));
 		}
+		DBGG(cout << "found key in unpunctured keys for interval " << i << endl;)
 		p.hibeSK = y->second;
 		p.ppkeSK = unpucturedPPKEKey;
 	}else{
@@ -45,16 +46,33 @@ void PfseKeyStore::updateKey(unsigned int i, const PfsePuncturedPrivateKey & p){
 	unpucturedHIBEKeys.erase(i);
 }
 void PfseKeyStore::erase(unsigned int i){
+	DBGG(cout << "Erasing key for inteval " << i << endl;)
+
 	puncturedKeys.erase(i); //FIXME secure erase.
 	unpucturedHIBEKeys.erase(i);
 }
-
+bool PfseKeyStore::hasKey(const unsigned int i) const{
+	return puncturedKeys.count(i) || unpucturedHIBEKeys.count(i);
+}
 
 
 void PfseKeyStore::addkey(unsigned int i, const BbghPrivatekey & h){
 	DBGG(cout << "added key for interval " << i << endl;);
 	unpucturedHIBEKeys[i] = h;
 }
+
+bool PfseKeyStore::needsChildKeys(const unsigned int i, const unsigned int d) const{
+	vector<ZR> path = indexToPath(i,d);
+	if(path.size()==d){ // don't need keys if it's a leaf node.
+		return false;
+	}
+	vector<ZR> lpath(path);
+	vector<ZR> rpath(path);
+	lpath.push_back(ZR(0));
+	rpath.push_back(ZR(1));
+	return !(hasKey(pathToIndex(lpath,d)) && hasKey(pathToIndex(rpath,d)));
+}
+
 Pfse::Pfse(uint d):hibe(),ppke(),depth(d){
 	this->nextParentInterval = 1 ;
     // group.setCurve(BN256);
@@ -163,13 +181,18 @@ void Pfse::puncture(string tag){
 }
 
 void Pfse::eraseKey(unsigned int interval) {
-	privatekeys.erase(interval);
+	if(privatekeys.needsChildKeys(interval,depth)){
+		throw invalid_argument("Cannot delete key for interval "+std::to_string(interval)+
+				" , haven't derived keys yet.");
+	}else{
+		privatekeys.erase(interval);
+	}
 }
 
 void Pfse::puncture(uint interval, string tag){
 	if(interval >= nextParentInterval){
-		throw invalid_argument("Cannot puncture on interval "+std::to_string(interval)+
-				" , haven't derived keys yet. Last interval with keys is " +std::to_string(nextParentInterval));
+		throw invalid_argument("Cannot puncture key for  interval "+std::to_string(interval)+
+				" , haven't derived keys yet. Last interval with keys is " +std::to_string(nextParentInterval-1));
 	}
     ZR tagZR = group.hashListToZR(tag);
     // if(interval >= latestInterval){
