@@ -103,7 +103,7 @@ public:
 
 class BbhHIBEPublicKey{
 public:
-int l;
+unsigned int l;
 PairingGroup group;
 G1 gG1;
 G2 gG2;
@@ -135,7 +135,7 @@ public:
 	Bbghibe(){};
 	~Bbghibe() {};
 
-	void setup(int l, BbhHIBEPublicKey & pk, G2 & msk) const;
+	void setup(const unsigned int & l, BbhHIBEPublicKey & pk, G2 & msk) const;
 
 	void keygen(const BbhHIBEPublicKey & pk,const G2 & msk,const  std::vector<ZR> & id, BbghPrivatekey & sk) const;
     void keygen(const BbhHIBEPublicKey & pk,const  BbghPrivatekey & sk, const std::vector<ZR> & id,BbghPrivatekey & skout) const;
@@ -202,12 +202,12 @@ public:
 
 
 	Pfse(uint d);
-	/**Generates the public and private key. These are stored in object
+	/**Generates the public and private key. These are stored in  the object.
 	 *
 	 */
 	void keygen();
 
-	/** Encryptes a message. Messages are limmited to 256 bits. (e.g. and AES key).
+	/** Encrypts a message. Messages are limited to 256 bits. (e.g. an AES key).
 	 *
 	 * @param pk the public key of the recipient
 	 * @param aes_key the message
@@ -217,7 +217,7 @@ public:
 	 */
 	PseCipherText encrypt (const pfsepubkey & pk, const AESKey aes_key, const uint interval, const vector<string> tags) const;
 
-	/**Decrypt   a message using the private key stored in the object.
+	/**Decrypt a message using the private key stored in the object.
 	 *
 	 * @param ct the ciphertext
 	 * @return the decrypted message.
