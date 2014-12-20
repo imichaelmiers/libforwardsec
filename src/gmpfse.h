@@ -85,8 +85,8 @@ public:
 	void keygen(const BbhHIBEPublicKey & pkhibe, ZR & gamma,GmppkePublicKey & pk, GmppkePrivateKey & sk) const;
 	GmppkePrivateKeyShare skgen(const GmppkePublicKey &pk,const ZR & alpha ) const;
 	void puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const ZR & tag) const;
-	void encrypt(const GmppkePublicKey & pk,const GT & M, const ZR & s,  const std::vector<ZR> & tags, GmmppkeCT & ct) const;
-	void decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct, GT & M) const;
+	GmmppkeCT encrypt(const GmppkePublicKey & pk,const GT & M, const ZR & s,  const std::vector<ZR> & tags) const;
+	GT decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct ) const;
 };
 
 

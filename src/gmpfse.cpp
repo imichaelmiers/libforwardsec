@@ -256,7 +256,7 @@ PseCipherText Pfse::encrypt(const pfsepubkey & pk, const GT & M,  const ZR & s, 
     std::vector<ZR> id= indexToPath(interval,depth);
 
     hibe.encrypt(pk.hibe,M,s,id,ct.hibeCT);
-    ppke.encrypt(pk.ppke,M,s,tags,ct.ppkeCT);
+    ct.ppkeCT =  ppke.encrypt(pk.ppke,M,s,tags);
     ct.ct0 =  group.mul(group.exp(group.pair(pk.hibe.g2G1, pk.hibe.g1), s), M);
 
     return ct;
@@ -289,11 +289,11 @@ AESKey Pfse::decryptFO(const PfsePuncturedPrivateKey & sk,const PseCipherText &c
 
 
 GT Pfse::decryptGT(const PfsePuncturedPrivateKey & sk,const PseCipherText &ct) const {
-    GT b1,b2;
+    GT b1;
     hibe.decrypt(sk.hibeSK,ct.hibeCT,b1);
     ZR neg = -1;
    // assert(b1== group.exp(group.exp(group.pair(g2G1,gG2),group.mul(ss,group.sub(aa,gam1))),neg));
-    ppke.decrypt(pk.ppke,sk.ppkeSK,ct.ppkeCT,b2);
+    GT b2 = ppke.decrypt(pk.ppke,sk.ppkeSK,ct.ppkeCT);
    // assert(b2 ==group.exp(group.pair(g2G1,gG2),group.mul(ss,gam1)));
     return group.div(group.mul(ct.ct0,b1),b2);
 }
@@ -475,9 +475,10 @@ void Gmppke::puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const Z
     sk.shares[0]=skentry0;
     sk.shares.push_back(skentryn);
 }
-void Gmppke::encrypt(const GmppkePublicKey & pk, const GT & M, const ZR & s, const std::vector<ZR> & tags, GmmppkeCT & ct) const
+GmmppkeCT Gmppke::encrypt(const GmppkePublicKey & pk, const GT & M, const ZR & s, const std::vector<ZR> & tags ) const
 {
     assert(tags.size()==d);
+    GmmppkeCT  ct;
     ct.ct1 = group.mul(group.exp(group.pair(pk.g2G1, pk.g1), s), M);
     ct.ct2 = group.exp(pk.gG1, s);
 
@@ -487,15 +488,11 @@ void Gmppke::encrypt(const GmppkePublicKey & pk, const GT & M, const ZR & s, con
         ct.ct3.push_back(group.exp(vofx, s));
     }
     ct.tags = tags;
-    return;
+    return ct;
 }
 
-void Gmppke::decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct, GT & b) const
+GT Gmppke::decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct) const
 {
-
-
-    ZR wstar;
-
     assert(ct.tags.size()==d);
     assert(d==pk.d);
 
@@ -525,7 +522,7 @@ void Gmppke::decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, co
         for(uint j=0;j < shareTags.size(); j++){
             w.push_back(LagrangeBasisCoefficients(j,0,shareTags));
         }
-        wstar = w[w.size() - 1];
+        ZR wstar = w[w.size() - 1];
 
         G1 ct3prod_j;
         for (uint j = 0; j < d; j++)
@@ -545,8 +542,7 @@ void Gmppke::decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, co
     {
         zprod = group.mul(zprod, z[i]);
     }
-    b =  zprod;
-    return;
+    return zprod;
 }
 
 
