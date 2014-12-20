@@ -86,7 +86,7 @@ void Pfse::keygen(){
 
     std::vector<ZR> left, right;
     BbghPrivatekey sklefthibe,  skrighthibe;
-    GmppkePrivateKey skleftppke,skrightppke;
+    GmppkePrivateKey ppkeSK;
     left.push_back(ZR(0));
     right.push_back(ZR(1));
 
@@ -94,16 +94,16 @@ void Pfse::keygen(){
     hibe.keygen(this->pk.hibe,msk,right,skrighthibe);
     int l = pathToIndex(left,depth);
     int r = pathToIndex(right,depth);
-    ZR gamma1 = group.random(ZR_t);
-    ZR gamma2 = group.random(ZR_t);
+    ZR gamma = group.random(ZR_t);
+    ZR gamma1 = group.random(ZR_t); // XXX FIXME . this should break. we are randomizing the left key w/ the wrong alpha
+    assert(!(gamma1 == gamma));
+    sklefthibe.a0 = group.mul(sklefthibe.a0,group.exp(this->pk.hibe.g2G2,group.neg(gamma)));
+    skrighthibe.a0 = group.mul(skrighthibe.a0,group.exp(this->pk.hibe.g2G2,group.neg(gamma1)));
 
-    sklefthibe.a0 = group.mul(sklefthibe.a0,group.exp(this->pk.hibe.g2G2,group.neg(gamma1)));
-    skrighthibe.a0 = group.mul(skrighthibe.a0,group.exp(this->pk.hibe.g2G2,group.neg(gamma2)));
-
-    ppke.keygen(pk.hibe,gamma1,pk.ppke,skleftppke);
+    ppke.keygen(pk.hibe,gamma,pk.ppke,ppkeSK);
 
 
-    this->privatekeys.unpucturedPPKEKey = skleftppke;
+    this->privatekeys.unpucturedPPKEKey = ppkeSK;
     this->privatekeys.addkey(l,sklefthibe);
     this->privatekeys.addkey(r,skrighthibe);
     nextParentInterval = 1;
