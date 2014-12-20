@@ -262,11 +262,13 @@ PseCipherText Pfse::encrypt(pfsepubkey & pk, GT & M, ZR & s,uint interval, vecto
     return ct;
 }
 AESKey Pfse::decrypt(PseCipherText &ct){
-    return decryptFO(ct);
+    const PfsePuncturedPrivateKey & sk = privatekeys.getKey(ct.interval);
+
+    return decryptFO(sk,ct);
 }
 
-AESKey Pfse::decryptFO(PseCipherText &ct){
-    GT x = decryptGT(ct);
+AESKey Pfse::decryptFO(const PfsePuncturedPrivateKey & sk,PseCipherText &ct){
+    GT x = decryptGT(sk,ct);
 
     // since we don't have a different hash function, we simply prefix it
     std::stringstream sss;
@@ -277,10 +279,7 @@ AESKey Pfse::decryptFO(PseCipherText &ct){
     AESKey bits = intToBits(xorash);
     AESKey aes_key = ct.xorct ^ bits;
     PseCipherText cttest = encryptFO(pk,aes_key,x,ct.interval,ct.ppkeCT.tags);
-    if(
-    cttest.ppkeCT == ct.ppkeCT && 
-    cttest.hibeCT == ct.hibeCT
-    ){ 
+    if(ct == cttest ){
         return aes_key;
     }else{
       throw BadCiphertext("Fujisaki Okamoto integrety check failed ");
@@ -289,13 +288,12 @@ AESKey Pfse::decryptFO(PseCipherText &ct){
 
 
 
-GT Pfse::decryptGT(PseCipherText &ct){
+GT Pfse::decryptGT(const PfsePuncturedPrivateKey & sk,PseCipherText &ct){
     GT b1,b2;
-    const PfsePuncturedPrivateKey & k = privatekeys.getKey(ct.interval);
-    hibe.decrypt(k.hibeSK,ct.hibeCT,b1);
+    hibe.decrypt(sk.hibeSK,ct.hibeCT,b1);
     ZR neg = -1;
    // assert(b1== group.exp(group.exp(group.pair(g2G1,gG2),group.mul(ss,group.sub(aa,gam1))),neg));
-    ppke.decrypt(pk.ppke,k.ppkeSK,ct.ppkeCT,b2);
+    ppke.decrypt(pk.ppke,sk.ppkeSK,ct.ppkeCT,b2);
    // assert(b2 ==group.exp(group.pair(g2G1,gG2),group.mul(ss,gam1)));
     return group.div(group.mul(ct.ct0,b1),b2);
 }

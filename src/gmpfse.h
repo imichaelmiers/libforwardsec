@@ -156,6 +156,10 @@ public:
 	GmmppkeCT ppkeCT;
 	unsigned int interval;
 	AESKey xorct;
+friend bool operator==(const PseCipherText& l,const PseCipherText& r){
+		return l.ct0 == r.ct0 && l.hibeCT == r.hibeCT && l.ppkeCT == r.ppkeCT
+				&& l.interval == r.interval && l.xorct == r.xorct;
+	}
 };
 
 
@@ -252,9 +256,9 @@ private:
 
 	PseCipherText encrypt(pfsepubkey & pk, GT & M, ZR & s,uint interval, vector<ZR>  & tags);
 
-	AESKey decryptFO(PseCipherText &ct);
+	AESKey decryptFO(const PfsePuncturedPrivateKey &sk,PseCipherText &ct);
 	PseCipherText encrypt(pfsepubkey & pk, GT & M,uint interval, vector<ZR>  & tags);
-	GT decryptGT(PseCipherText &ct);
+	GT decryptGT(const PfsePuncturedPrivateKey & sk,PseCipherText &ct);
 	uint nextParentInterval;
 };
 
