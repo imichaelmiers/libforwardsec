@@ -209,7 +209,7 @@ void Pfse::puncture(uint interval, string tag){
 //privatekeys[interval] = sk;
 
 }
-PseCipherText Pfse::encrypt(const pfsepubkey & pk, const AESKey aes_key, const uint interval,const vector<string> tags){
+PseCipherText Pfse::encrypt(const pfsepubkey & pk, const AESKey aes_key, const uint interval,const vector<string> tags) const {
     vector<ZR> tagsZR;
 
     for(uint i=0;i<tags.size();i++){
@@ -219,12 +219,14 @@ PseCipherText Pfse::encrypt(const pfsepubkey & pk, const AESKey aes_key, const u
     }
     return encryptFO(pk,aes_key,interval,tagsZR);
 }
-PseCipherText Pfse::encryptFO(const pfsepubkey & pk,const AESKey  & aes_key , const uint interval, const vector<ZR>  & tags ){
+PseCipherText Pfse::encryptFO(const pfsepubkey & pk,const AESKey  & aes_key
+		, const uint interval, const vector<ZR>  & tags ) const {
     GT x = group.random(GT_t);
     return encryptFO(pk,aes_key,x,interval,tags);
 
 }
-PseCipherText Pfse::encryptFO(const pfsepubkey & pk,  const AESKey  & aes_key,const  GT & x, const uint interval, const vector<ZR>  & tags ){
+PseCipherText Pfse::encryptFO(const pfsepubkey & pk,  const AESKey  & aes_key,const  GT & x,
+		const uint interval, const vector<ZR>  & tags ) const {
     std::stringstream ss;
     ss << x;
     ss << aes_key;
@@ -243,12 +245,12 @@ PseCipherText Pfse::encryptFO(const pfsepubkey & pk,  const AESKey  & aes_key,co
     return ct;
 
 }
-PseCipherText Pfse::encrypt(const pfsepubkey & pk,const  GT & M, const uint interval, const vector<ZR>  & tags){
+PseCipherText Pfse::encrypt(const pfsepubkey & pk,const  GT & M, const uint interval, const vector<ZR>  & tags) const{
         ZR s = group.random(ZR_t);
         return Pfse::encrypt(pk,M,s,interval,tags);
 }
 
-PseCipherText Pfse::encrypt(const pfsepubkey & pk, const GT & M,  const ZR & s, const uint interval, const vector<ZR>  & tags){
+PseCipherText Pfse::encrypt(const pfsepubkey & pk, const GT & M,  const ZR & s, const uint interval, const vector<ZR>  & tags) const{
     PseCipherText ct;
     
     ct.interval = interval;
@@ -261,13 +263,13 @@ PseCipherText Pfse::encrypt(const pfsepubkey & pk, const GT & M,  const ZR & s, 
 
     return ct;
 }
-AESKey Pfse::decrypt(const PseCipherText &ct){
+AESKey Pfse::decrypt(const PseCipherText &ct) const{
     const PfsePuncturedPrivateKey & sk = privatekeys.getKey(ct.interval);
 
     return decryptFO(sk,ct);
 }
 
-AESKey Pfse::decryptFO(const PfsePuncturedPrivateKey & sk,const PseCipherText &ct){
+AESKey Pfse::decryptFO(const PfsePuncturedPrivateKey & sk,const PseCipherText &ct) const{
     GT x = decryptGT(sk,ct);
 
     // since we don't have a different hash function, we simply prefix it
@@ -288,7 +290,7 @@ AESKey Pfse::decryptFO(const PfsePuncturedPrivateKey & sk,const PseCipherText &c
 
 
 
-GT Pfse::decryptGT(const PfsePuncturedPrivateKey & sk,const PseCipherText &ct){
+GT Pfse::decryptGT(const PfsePuncturedPrivateKey & sk,const PseCipherText &ct) const {
     GT b1,b2;
     hibe.decrypt(sk.hibeSK,ct.hibeCT,b1);
     ZR neg = -1;
@@ -303,7 +305,7 @@ uint treeSize(uint k){
 }
 
 
-ZR Gmppke::LagrangeBasisCoefficients(uint j,const ZR &x , const vector<ZR> & polynomial_xcordinates){
+ZR Gmppke::LagrangeBasisCoefficients(uint j,const ZR &x , const vector<ZR> & polynomial_xcordinates) const{
     uint k = polynomial_xcordinates.size();
     assert(k==d+1);
     ZR prod = 1;
@@ -323,7 +325,7 @@ ZR Gmppke::LagrangeBasisCoefficients(uint j,const ZR &x , const vector<ZR> & pol
     return prod;
 }
 ZR Gmppke::LagrangeInterp(const ZR &x , const vector<ZR> & polynomial_xcordinates,
-    const vector<ZR> & polynomial_ycordinates, uint degree){
+    const vector<ZR> & polynomial_ycordinates, uint degree) const{
     uint k = degree + 1;
     assert(k == d+1);
     assert(polynomial_ycordinates.size()==k);
@@ -341,7 +343,7 @@ ZR Gmppke::LagrangeInterp(const ZR &x , const vector<ZR> & polynomial_xcordinate
 }
 
 template <class type> type Gmppke::LagrangeInterpInExponent(const ZR &x , const vector<ZR> & polynomial_xcordinates,
-    const vector<type> & exp_polynomial_ycordinates,const  uint degree) {
+    const vector<type> & exp_polynomial_ycordinates,const  uint degree) const{
     uint k = degree + 1;
     assert(k == d+1);
     assert(exp_polynomial_ycordinates.size()==k);
@@ -354,7 +356,7 @@ template <class type> type Gmppke::LagrangeInterpInExponent(const ZR &x , const 
     return prod;
 }
 
-G1  Gmppke::vG1(const std::vector<G1> & gqofxG1, const ZR & x){
+G1  Gmppke::vG1(const std::vector<G1> & gqofxG1, const ZR & x) const{
     vector<ZR> xcords;
     //     cout << "\n\n XXXX" << endl;
 
@@ -372,7 +374,7 @@ G1  Gmppke::vG1(const std::vector<G1> & gqofxG1, const ZR & x){
     return LagrangeInterpInExponent(x,xcords,gqofxG1,d);
 
 }
-G2 Gmppke::vG2(const std::vector<G2> & gqofxG2,const ZR & x){
+G2 Gmppke::vG2(const std::vector<G2> & gqofxG2,const ZR & x) const{
     vector<ZR> xcords;
         // cout << "\n\n XXXX" << endl;
 
@@ -393,7 +395,7 @@ G2 Gmppke::vG2(const std::vector<G2> & gqofxG2,const ZR & x){
     return LagrangeInterpInExponent(x,xcords,gqofxG2,d);
 
 }
-void Gmppke::keygen(const BbhHIBEPublicKey & pkhibe,ZR & gamma, GmppkePublicKey & pk, GmppkePrivateKey & sk)
+void Gmppke::keygen(const BbhHIBEPublicKey & pkhibe,ZR & gamma, GmppkePublicKey & pk, GmppkePrivateKey & sk) const
 {
     pk.d = d;
 
@@ -462,7 +464,7 @@ void Gmppke::keygen(const BbhHIBEPublicKey & pkhibe,ZR & gamma, GmppkePublicKey 
     // }
     return;
 }
-void Gmppke::skgen(const GmppkePublicKey &pk,const ZR & alpha, GmppkePrivateKeyShare & skentry0){
+void Gmppke::skgen(const GmppkePublicKey &pk,const ZR & alpha, GmppkePrivateKeyShare & skentry0) const{
     ZR t0 = tag0; // The special zero tag;
     skentry0.sk4 = t0; 
     ZR r = group.random(ZR_t);
@@ -472,7 +474,7 @@ void Gmppke::skgen(const GmppkePublicKey &pk,const ZR & alpha, GmppkePrivateKeyS
     skentry0.sk3 = group.exp(pk.gG2, r);
 }
 
-void Gmppke::puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const ZR & tag){
+void Gmppke::puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const ZR & tag) const{
 
     GmppkePrivateKeyShare skentryn;
     GmppkePrivateKeyShare & skentry0 = sk.shares[0];
@@ -498,7 +500,7 @@ void Gmppke::puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const Z
     sk.shares[0]=skentry0;
     sk.shares.push_back(skentryn);
 }
-void Gmppke::encrypt(const GmppkePublicKey & pk, const GT & M, const ZR & s, const std::vector<ZR> & tags, GmmppkeCT & ct)
+void Gmppke::encrypt(const GmppkePublicKey & pk, const GT & M, const ZR & s, const std::vector<ZR> & tags, GmmppkeCT & ct) const
 {
     assert(tags.size()==d);
     ct.ct1 = group.mul(group.exp(group.pair(pk.g2G1, pk.g1), s), M);
@@ -513,7 +515,7 @@ void Gmppke::encrypt(const GmppkePublicKey & pk, const GT & M, const ZR & s, con
     return;
 }
 
-void Gmppke::decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct, GT & b)
+void Gmppke::decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct, GT & b) const
 {
 
 
@@ -643,7 +645,7 @@ uint pathToIndex(std::vector<ZR> & path, uint l){
 
 
 
-void Bbghibe::setup(int l, BbhHIBEPublicKey & pk, G2 & msk)
+void Bbghibe::setup(int l, BbhHIBEPublicKey & pk, G2 & msk) const
 {
     ZR alpha = group.random(ZR_t);
     pk.gG1 = group.random(G1_t);
@@ -667,7 +669,7 @@ void Bbghibe::setup(int l, BbhHIBEPublicKey & pk, G2 & msk)
     return;
 }
 
-void Bbghibe::keygen(const BbhHIBEPublicKey & pk, const G2 & msk, const std::vector<ZR> & id, BbghPrivatekey & sk)
+void Bbghibe::keygen(const BbhHIBEPublicKey & pk, const G2 & msk, const std::vector<ZR> & id, BbghPrivatekey & sk) const
 {
     ZR r = group.random(ZR_t);    
     int k = id.size();
@@ -690,7 +692,7 @@ void Bbghibe::keygen(const BbhHIBEPublicKey & pk, const G2 & msk, const std::vec
     return;
 }
 
-void Bbghibe::keygen(const BbhHIBEPublicKey & pk,const  BbghPrivatekey & sk, const std::vector<ZR> &id,BbghPrivatekey & skout){
+void Bbghibe::keygen(const BbhHIBEPublicKey & pk,const  BbghPrivatekey & sk, const std::vector<ZR> &id,BbghPrivatekey & skout) const{
 
     ZR t;
     G2 hprod;
@@ -724,12 +726,12 @@ void Bbghibe::keygen(const BbhHIBEPublicKey & pk,const  BbghPrivatekey & sk, con
     return;
 }
 
-void Bbghibe::encrypt(const BbhHIBEPublicKey & pk, const GT & M, const std::vector<ZR> & id, BbghCT & ct){
+void Bbghibe::encrypt(const BbhHIBEPublicKey & pk, const GT & M, const std::vector<ZR> & id, BbghCT & ct) const{
     ZR r = group.random(ZR_t);
     encrypt(pk,M,r,id,ct);
 }
 
-void Bbghibe::encrypt(const BbhHIBEPublicKey & pk,const GT & M, const ZR & s,const std::vector<ZR> & id, BbghCT & ct)
+void Bbghibe::encrypt(const BbhHIBEPublicKey & pk,const GT & M, const ZR & s,const std::vector<ZR> & id, BbghCT & ct) const
 {
 
  
@@ -748,12 +750,12 @@ void Bbghibe::encrypt(const BbhHIBEPublicKey & pk,const GT & M, const ZR & s,con
     return;
 }
 
-void Bbghibe::decrypt(const BbghPrivatekey & sk, const BbghCT & ct, GT & b){
+void Bbghibe::decrypt(const BbghPrivatekey & sk, const BbghCT & ct, GT & b) const{
 
     b = group.div(group.pair(ct.C, sk.a1), group.pair(ct.B, sk.a0));
     return;
 }
-GT Bbghibe::decrypt(const BbghPrivatekey & sk, const BbghCT & ct)
+GT Bbghibe::decrypt(const BbghPrivatekey & sk, const BbghCT & ct) const
 {
 
     return group.mul(ct.A, group.div(group.pair(ct.C, sk.a1), group.pair(ct.B, sk.a0)));

@@ -51,7 +51,7 @@ public:
 	ZR() 	 { bn_inits(z); bn_inits(order); g1_get_ord(order); isInit = true;bn_set_dig(z,1); }
 	ZR(int);
 	ZR(char*);
-	ZR(bn_t y) { bn_inits(z); bn_inits(order); g1_get_ord(order); isInit = true; bn_copy(z, y); }
+	ZR(const bn_t y) { bn_inits(z); bn_inits(order); g1_get_ord(order); isInit = true; bn_copy(z, y); }
 	ZR(const ZR& w) { bn_inits(z); bn_inits(order); bn_copy(z, w.z); bn_copy(order, w.order); isInit = true; }
 	~ZR() { bn_free(z); bn_free(order); }
 	ZR& operator=(const ZR& w)
@@ -60,7 +60,7 @@ public:
 		else ro_error();
 		return *this;
 	}
-	bool ismember();
+	bool ismember() const;
 	const ZR inverse();
 	friend ZR hashToZR(string);
 	friend ZR power(const ZR&, int);
@@ -98,7 +98,7 @@ public:
 		else ro_error();
 		return *this;
 	}
-	bool ismember(bn_t);
+	bool ismember(const bn_t) const;
 	friend G1 hashToG1(string);
 	friend G1 power(const G1&, const ZR&);
 	friend G1 operator-(const G1&);
@@ -182,20 +182,20 @@ public:
 	~PairingGroup();
 	void setCurve(int sec_level);
 
-	void init(ZR&, char*);
-	void init(ZR&, int);
-	void init(G1&, int);
-	void init(GT&, int);
+	void init(ZR&, char*) const;
+	void init(ZR&, int) const;
+	void init(G1&, int) const;
+	void init(GT&, int) const;
 
-	ZR init(ZR_type);
-	ZR init(ZR_type, int);
-	G1 init(G1_type);
-	G1 init(G1_type, int);
-	GT init(GT_type);
-	GT init(GT_type, int);
-	ZR random(ZR_type);
-	G1 random(G1_type);
-	GT random(GT_type);
+	ZR init(ZR_type) const;
+	ZR init(ZR_type, int) const;
+	G1 init(G1_type) const ;
+	G1 init(G1_type, int) const ;
+	GT init(GT_type) const ;
+	GT init(GT_type, int) const ;
+	ZR random(ZR_type) const;
+	G1 random(G1_type) const;
+	GT random(GT_type) const;
 	//template<typename T> T random12(){ T foo; return foo;};
 
 
@@ -213,51 +213,51 @@ public:
 	bool ismember(GT&);
 	bool ismember(G2&);
 
-	G2 init(G2_type);
-	G2 init(G2_type, int);
-	void init(G2&, int);
-	G2 random(G2_type);
-	G2 mul(G2, G2);
-	G2 div(G2, G2);
-	G2 exp(G2, ZR);
-	G2 exp(G2, int);
-	GT pair(G1, G2);
-	GT pair(G2, G1);
-	ZR order(); // returns the order of the group
+	G2 init(G2_type) const;
+	G2 init(G2_type, int) const;
+	void init(G2&, int) const;
+	G2 random(G2_type) const;
+	G2 mul(G2, G2) const;
+	G2 div(G2, G2) const;
+	G2 exp(G2, ZR) const;
+	G2 exp(G2, int) const;
+	GT pair(G1, G2) const;
+	GT pair(G2, G1) const;
+	ZR order() const; // returns the order of the group
 
 	// hash -- not done
-	ZR hashListToZR(string);
-	G1 hashListToG1(string);
-	G2 hashListToG2(string);
+	ZR hashListToZR(string) const;
+	G1 hashListToG1(string) const;
+	G2 hashListToG2(string) const;
 
-	GT pair(G1, G1);
-	int mul(int, int);
-	ZR mul(ZR, ZR);
-	G1 mul(G1, G1);
-	GT mul(GT, GT);
-	int div(int, int);
-	ZR div(int, ZR);
-	ZR div(ZR, ZR);
-	G1 div(G1, G1);
-	GT div(GT, GT);
+	GT pair(G1, G1) const;
+	int mul(int, int) const;
+	ZR mul(ZR, ZR) const;
+	G1 mul(G1, G1)const ;
+	GT mul(GT, GT)const ;
+	int div(int, int)const ;
+	ZR div(int, ZR) const ;
+	ZR div(ZR, ZR)const ;
+	G1 div(G1, G1)const ;
+	GT div(GT, GT)const ;
 
-	ZR exp(ZR, int);
-	ZR exp(ZR, ZR);
-	G1 exp(G1, ZR);
-	G1 exp(G1, int);
-	GT exp(GT, ZR);
-	GT exp(GT, int);
+	ZR exp(ZR, int)const ;
+	ZR exp(ZR, ZR) const;
+	G1 exp(G1, ZR) const;
+	G1 exp(G1, int) const;
+	GT exp(GT, ZR) const;
+	GT exp(GT, int)const ;
 
-	ZR add(ZR, ZR);
-	int add(int, int);
+	ZR add(ZR, ZR) const;
+	int add(int, int) const;
 
-	int sub(int, int);
-	ZR sub(ZR, ZR);
-	ZR neg(ZR);
-	ZR inv(ZR);
-	G1 inv(G1);
-	G2 inv(G2);
-	GT inv(GT);
+	int sub(int, int)const ;
+	ZR sub(ZR, ZR) const;
+	ZR neg(ZR) const;
+	ZR inv(ZR) const;
+	G1 inv(G1) const;
+	G2 inv(G2)const;
+	GT inv(GT) const;
 	string aes_key(GT & g);
 
 private:
