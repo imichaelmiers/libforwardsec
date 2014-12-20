@@ -140,11 +140,11 @@ public:
 	void keygen(const BbhHIBEPublicKey & pk,const G2 & msk,const  std::vector<ZR> & id, BbghPrivatekey & sk) const;
     void keygen(const BbhHIBEPublicKey & pk,const  BbghPrivatekey & sk, const std::vector<ZR> & id,BbghPrivatekey & skout) const;
 
-	void encrypt(const BbhHIBEPublicKey & pk, const GT & M ,const ZR &s, const  std::vector<ZR>  & id, BbghCT & ct) const;
-	void encrypt(const BbhHIBEPublicKey & pk, const GT & M, const std::vector<ZR>  & id, BbghCT & ct) const;
+    BbghCT encrypt(const BbhHIBEPublicKey & pk, const GT & M ,const ZR &s, const  std::vector<ZR>  & id) const;
+    BbghCT encrypt(const BbhHIBEPublicKey & pk, const GT & M, const std::vector<ZR>  & id ) const;
 
-	void decrypt(const BbghPrivatekey & sk, const BbghCT & ct, GT & m) const; // decrypt for PFSE
-	GT decrypt(const BbghPrivatekey & sk,const BbghCT & ct) const; // actual decrypt
+	GT decrypt(const BbghPrivatekey & sk, const BbghCT & ct) const; // decrypt for PFSE
+	GT decrypt_(const BbghPrivatekey & sk,const BbghCT & ct) const; // actual decrypt
 
 };
 typedef  bitset<256> AESKey;

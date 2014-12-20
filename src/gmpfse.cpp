@@ -255,7 +255,7 @@ PseCipherText Pfse::encrypt(const pfsepubkey & pk, const GT & M,  const ZR & s, 
 
     std::vector<ZR> id= indexToPath(interval,depth);
 
-    hibe.encrypt(pk.hibe,M,s,id,ct.hibeCT);
+    ct.hibeCT = hibe.encrypt(pk.hibe,M,s,id);
     ct.ppkeCT =  ppke.encrypt(pk.ppke,M,s,tags);
     ct.ct0 =  group.mul(group.exp(group.pair(pk.hibe.g2G1, pk.hibe.g1), s), M);
 
@@ -289,9 +289,7 @@ AESKey Pfse::decryptFO(const PfsePuncturedPrivateKey & sk,const PseCipherText &c
 
 
 GT Pfse::decryptGT(const PfsePuncturedPrivateKey & sk,const PseCipherText &ct) const {
-    GT b1;
-    hibe.decrypt(sk.hibeSK,ct.hibeCT,b1);
-    ZR neg = -1;
+    GT b1 = hibe.decrypt(sk.hibeSK,ct.hibeCT);
    // assert(b1== group.exp(group.exp(group.pair(g2G1,gG2),group.mul(ss,group.sub(aa,gam1))),neg));
     GT b2 = ppke.decrypt(pk.ppke,sk.ppkeSK,ct.ppkeCT);
    // assert(b2 ==group.exp(group.pair(g2G1,gG2),group.mul(ss,gam1)));
@@ -676,15 +674,15 @@ void Bbghibe::keygen(const BbhHIBEPublicKey & pk,const  BbghPrivatekey & sk, con
     return;
 }
 
-void Bbghibe::encrypt(const BbhHIBEPublicKey & pk, const GT & M, const std::vector<ZR> & id, BbghCT & ct) const{
+BbghCT Bbghibe::encrypt(const BbhHIBEPublicKey & pk, const GT & M, const std::vector<ZR> & id) const{
     ZR r = group.random(ZR_t);
-    encrypt(pk,M,r,id,ct);
+    return encrypt(pk,M,r,id);
 }
 
-void Bbghibe::encrypt(const BbhHIBEPublicKey & pk,const GT & M, const ZR & s,const std::vector<ZR> & id, BbghCT & ct) const
+BbghCT Bbghibe::encrypt(const BbhHIBEPublicKey & pk,const GT & M, const ZR & s,const std::vector<ZR> & id) const
 {
 
- 
+	BbghCT ct;
     G1 dotProd2 = group.init(G1_t, 1);
     int k = id.size();
     assert(k<=pk.l);
@@ -697,15 +695,14 @@ void Bbghibe::encrypt(const BbhHIBEPublicKey & pk,const GT & M, const ZR & s,con
         dotProd2 = group.mul(dotProd2,group.exp(pk.hG1[i], id[i]));
     }
     ct.C = group.exp(group.mul(dotProd2, pk.g3G1), s);
-    return;
+    return ct;
 }
 
-void Bbghibe::decrypt(const BbghPrivatekey & sk, const BbghCT & ct, GT & b) const{
-
-    b = group.div(group.pair(ct.C, sk.a1), group.pair(ct.B, sk.a0));
-    return;
+GT Bbghibe::decrypt(const BbghPrivatekey & sk, const BbghCT & ct) const{
+    return group.div(group.pair(ct.C, sk.a1), group.pair(ct.B, sk.a0));
 }
-GT Bbghibe::decrypt(const BbghPrivatekey & sk, const BbghCT & ct) const
+
+GT Bbghibe::decrypt_(const BbghPrivatekey & sk, const BbghCT & ct) const
 {
 
     return group.mul(ct.A, group.div(group.pair(ct.C, sk.a1), group.pair(ct.B, sk.a0)));
