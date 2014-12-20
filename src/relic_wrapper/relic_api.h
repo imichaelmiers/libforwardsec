@@ -61,15 +61,15 @@ public:
 		return *this;
 	}
 	bool ismember() const;
-	const ZR inverse();
+	const ZR inverse() const;
 	friend ZR hashToZR(string);
 	friend ZR power(const ZR&, int);
 	friend ZR power(const ZR&, const ZR&);
 	friend ZR operator-(const ZR&);
-	friend ZR operator-(const ZR&,const ZR&);
-	friend ZR operator+(const ZR&,const ZR&);
-	friend ZR operator*(const ZR&,const ZR&);
-	friend ZR operator/(const ZR&,const ZR&);
+	friend ZR operator-(const ZR&, const ZR&);
+	friend ZR operator+(const ZR&, const ZR&);
+	friend ZR operator*(const ZR&, const ZR&);
+	friend ZR operator/(const ZR&, const ZR&);
     friend ZR operator&(const ZR&, const ZR&);  // bitwise-AND
 //    friend ZR operator|(const ZR&, const ZR&);  // bitwise-OR
 //    friend ZR operator^(const ZR&, const ZR&);  // bitwise-XOR
@@ -77,9 +77,9 @@ public:
    friend ZR operator>>(const ZR&, int);
 
    friend ostream& operator<<(ostream&, const ZR&);
-	friend bool operator==(const ZR& x,const ZR& y)
+	friend bool operator==(const ZR& x, const ZR& y)
       {if(bn_cmp(x.z, y.z) == CMP_EQ) return true; else return false; }
-	friend bool operator!=(const ZR& x,const ZR& y)
+	friend bool operator!=(const ZR& x, const ZR& y)
       {if (bn_cmp(x.z, y.z) != CMP_EQ) return true; else return false; }
 };
 
@@ -102,12 +102,12 @@ public:
 	friend G1 hashToG1(string);
 	friend G1 power(const G1&, const ZR&);
 	friend G1 operator-(const G1&);
-	friend G1 operator-(const G1&,const G1&);
-	friend G1 operator+(const G1&,const G1&);
+	friend G1 operator-(const G1&, const G1&);
+	friend G1 operator+(const G1&, const G1&);
    friend ostream& operator<<(ostream&, const G1&);
-	friend bool operator==(const G1& x,const G1& y)
+	friend bool operator==(const G1& x, const G1& y)
       {return g1_cmp(x.g, y.g) == CMP_EQ; }
-	friend bool operator!=(const G1& x,const G1& y)
+	friend bool operator!=(const G1& x, const G1& y)
       {return g1_cmp(x.g, y.g) != CMP_EQ; }
 };
 
@@ -130,12 +130,12 @@ public:
 	friend G2 hashToG2(string);
 	friend G2 power(const G2&, const ZR&);
 	friend G2 operator-(const G2&);
-	friend G2 operator-(const G2&,const G2&);
-	friend G2 operator+(const G2&,const G2&);
+	friend G2 operator-(const G2&, const G2&);
+	friend G2 operator+(const G2&, const G2&);
 	friend ostream& operator<<(ostream& s, const G2&);
-	friend bool operator==(const G2& x,const G2& y)
+	friend bool operator==(const G2& x, const G2& y)
       {return g2_cmp( const_cast<G2&>(x).g,  const_cast<G2&>(y).g) == CMP_EQ;}
-	friend bool operator!=(const G2& x,const G2& y)
+	friend bool operator!=(const G2& x, const G2& y)
       {return g2_cmp( const_cast<G2&>(x).g,  const_cast<G2&>(y).g) != CMP_EQ;}
 };
 
@@ -159,12 +159,12 @@ public:
 	friend GT pairing(const G1&, const G2&);
 	friend GT power(const GT&, const ZR&);
 	friend GT operator-(const GT&);
-	friend GT operator/(const GT&,const GT&);
-	friend GT operator*(const GT&,const GT&);
+	friend GT operator/(const GT&, const GT&);
+	friend GT operator*(const GT&, const GT&);
 	friend ostream& operator<<(ostream& s, const GT&);
-	friend bool operator==(const GT& x,const GT& y)
+	friend bool operator==(const GT& x, const GT& y)
       { return gt_cmp(const_cast<GT&>(x).g, const_cast<GT&>(y).g) == CMP_EQ;}
-	friend bool operator!=(const GT& x,const GT& y)
+	friend bool operator!=(const GT& x, const GT& y)
       { return  gt_cmp(const_cast<GT&>(x).g, const_cast<GT&>(y).g) != CMP_EQ;}
 };
 
@@ -217,12 +217,12 @@ public:
 	G2 init(G2_type, int) const;
 	void init(G2&, int) const;
 	G2 random(G2_type) const;
-	G2 mul(G2, G2) const;
-	G2 div(G2, G2) const;
-	G2 exp(G2, ZR) const;
-	G2 exp(G2, int) const;
-	GT pair(G1, G2) const;
-	GT pair(G2, G1) const;
+	G2 mul(const G2 &, const G2 &) const;
+	G2 div(const G2 &, const G2 &) const;
+	G2 exp(const G2 &, const ZR &) const;
+	G2 exp(const G2 &, const int &) const;
+	GT pair(const G1 &, const G2 &) const;
+	GT pair(const G2 &, const G1 &) const;
 	ZR order() const; // returns the order of the group
 
 	// hash -- not done
@@ -230,35 +230,35 @@ public:
 	G1 hashListToG1(string) const;
 	G2 hashListToG2(string) const;
 
-	GT pair(G1, G1) const;
-	int mul(int, int) const;
-	ZR mul(ZR, ZR) const;
-	G1 mul(G1, G1)const ;
-	GT mul(GT, GT)const ;
-	int div(int, int)const ;
-	ZR div(int, ZR) const ;
-	ZR div(ZR, ZR)const ;
-	G1 div(G1, G1)const ;
-	GT div(GT, GT)const ;
+	GT pair(const G1 &, const G1 &) const;
+	int mul(const int &, const int &) const;
+	ZR mul(const ZR &,  const ZR &) const;
+	G1 mul(const G1 &, const G1 &)const ;
+	GT mul(const GT &, const GT &)const ;
+	int div(const int &, const int &)const ;
+	ZR div(const int &, const ZR &) const ;
+	ZR div(const ZR &, const ZR &)const ;
+	G1 div(const G1 &, const G1 &)const ;
+	GT div(const GT &, const GT &)const ;
 
-	ZR exp(ZR, int)const ;
-	ZR exp(ZR, ZR) const;
-	G1 exp(G1, ZR) const;
-	G1 exp(G1, int) const;
-	GT exp(GT, ZR) const;
-	GT exp(GT, int)const ;
+	ZR exp(const ZR &, const int &)const ;
+	ZR exp(const ZR &, const ZR &) const;
+	G1 exp(const G1 &, const ZR &) const;
+	G1 exp(const G1 &, const int &) const;
+	GT exp(const GT &, const ZR &) const;
+	GT exp(const GT &, const int &)const ;
 
-	ZR add(ZR, ZR) const;
-	int add(int, int) const;
+	ZR add(const ZR &, const ZR &) const;
+	int add(const int &, const  int &) const;
 
-	int sub(int, int)const ;
-	ZR sub(ZR, ZR) const;
-	ZR neg(ZR) const;
-	ZR inv(ZR) const;
-	G1 inv(G1) const;
-	G2 inv(G2)const;
-	GT inv(GT) const;
-	string aes_key(GT & g);
+	int sub(const int &, const int &)const ;
+	ZR sub(const ZR &, const ZR &) const;
+	ZR neg(const ZR &) const;
+	ZR inv(const ZR &) const;
+	G1 inv(const G1 &) const;
+	G2 inv(const G2 &)const;
+	GT inv(const GT &) const;
+	string aes_key(const GT & g);
 
 private:
 	int pairingType; // defined by above #defines SYMMETRIC or ASYMMETRIC (for now)
@@ -268,6 +268,6 @@ private:
 
 //template<> 
 //ZR PairingGroup::random12<ZR>(){return this->random(ZR_t);}
-std::bitset<256> intToBits(ZR id);
+std::bitset<256> intToBits(const ZR & id);
 
 #endif
