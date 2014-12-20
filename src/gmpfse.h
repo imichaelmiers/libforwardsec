@@ -142,8 +142,8 @@ public:
 	void encrypt(const BbhHIBEPublicKey & pk, const GT & M ,const ZR &s, const  std::vector<ZR>  & id, BbghCT & ct);
 	void encrypt(const BbhHIBEPublicKey & pk, const GT & M, const std::vector<ZR>  & id, BbghCT & ct);
 
-	void decrypt(const BbghPrivatekey & sk, BbghCT & ct, GT & m); // decrypt for PFSE
-	GT decrypt(const BbghPrivatekey & sk, BbghCT & ct); // actual decrypt
+	void decrypt(const BbghPrivatekey & sk, const BbghCT & ct, GT & m); // decrypt for PFSE
+	GT decrypt(const BbghPrivatekey & sk,const BbghCT & ct); // actual decrypt
 
 };
 typedef  bitset<256> AESKey;
@@ -214,14 +214,14 @@ public:
 	 * @param tags the tags for the message
 	 * @return the ciphertext
 	 */
-	PseCipherText encrypt(pfsepubkey & pk, AESKey aes_key,uint interval,vector<string> tags);
+	PseCipherText encrypt (const pfsepubkey & pk, const AESKey aes_key, const uint interval, const vector<string> tags);
 
 	/**Decrypt   a message using the private key stored in the object.
 	 *
 	 * @param ct the ciphertext
 	 * @return the decrypted message.
 	 */
-	AESKey decrypt(PseCipherText &ct);
+	AESKey decrypt( const PseCipherText &ct);
 	
 	/**Derives the keys needed to decrypt the next interval.
 	 *
@@ -251,14 +251,15 @@ private:
 	Gmppke ppke;
 	uint depth;
 	void bindKey(PfsePuncturedPrivateKey & k);
-	PseCipherText encryptFO(pfsepubkey & pk, AESKey & bitmsg,uint interval,vector<ZR>  & tags);
-	PseCipherText encryptFO(pfsepubkey & pk,  AESKey & bitmsg,GT & x, uint interval,vector<ZR>  & tags);
+	PseCipherText encryptFO( const pfsepubkey & pk, const AESKey & bitmsg,               const uint interval, const vector<ZR>  & tags);
+	PseCipherText encryptFO( const pfsepubkey & pk, const AESKey & bitmsg, const GT & x, const uint interval, const vector<ZR>  & tags);
 
-	PseCipherText encrypt(pfsepubkey & pk, GT & M, ZR & s,uint interval, vector<ZR>  & tags);
+	PseCipherText encrypt( const pfsepubkey & pk, const GT & M,              const uint interval, const vector<ZR>  & tags);
+	PseCipherText encrypt( const pfsepubkey & pk, const GT & M,const ZR & s, const uint interval, const vector<ZR>  & tags);
 
-	AESKey decryptFO(const PfsePuncturedPrivateKey &sk,PseCipherText &ct);
-	PseCipherText encrypt(pfsepubkey & pk, GT & M,uint interval, vector<ZR>  & tags);
-	GT decryptGT(const PfsePuncturedPrivateKey & sk,PseCipherText &ct);
+
+	AESKey decryptFO(const PfsePuncturedPrivateKey &sk, const PseCipherText &ct);
+	GT decryptGT(const PfsePuncturedPrivateKey & sk, const PseCipherText &ct);
 	uint nextParentInterval;
 };
 

@@ -209,7 +209,7 @@ void Pfse::puncture(uint interval, string tag){
 //privatekeys[interval] = sk;
 
 }
-PseCipherText Pfse::encrypt(pfsepubkey & pk, AESKey aes_key,uint interval,vector<string> tags){
+PseCipherText Pfse::encrypt(const pfsepubkey & pk, const AESKey aes_key, const uint interval,const vector<string> tags){
     vector<ZR> tagsZR;
 
     for(uint i=0;i<tags.size();i++){
@@ -219,12 +219,12 @@ PseCipherText Pfse::encrypt(pfsepubkey & pk, AESKey aes_key,uint interval,vector
     }
     return encryptFO(pk,aes_key,interval,tagsZR);
 }
-PseCipherText Pfse::encryptFO(pfsepubkey & pk,  AESKey  & aes_key ,uint interval, vector<ZR>  & tags ){
+PseCipherText Pfse::encryptFO(const pfsepubkey & pk,const AESKey  & aes_key , const uint interval, const vector<ZR>  & tags ){
     GT x = group.random(GT_t);
     return encryptFO(pk,aes_key,x,interval,tags);
 
 }
-PseCipherText Pfse::encryptFO(pfsepubkey & pk,  AESKey  & aes_key, GT & x, uint interval, vector<ZR>  & tags ){
+PseCipherText Pfse::encryptFO(const pfsepubkey & pk,  const AESKey  & aes_key,const  GT & x, const uint interval, const vector<ZR>  & tags ){
     std::stringstream ss;
     ss << x;
     ss << aes_key;
@@ -243,12 +243,12 @@ PseCipherText Pfse::encryptFO(pfsepubkey & pk,  AESKey  & aes_key, GT & x, uint 
     return ct;
 
 }
-PseCipherText Pfse::encrypt(pfsepubkey & pk, GT & M,uint interval, vector<ZR>  & tags){
+PseCipherText Pfse::encrypt(const pfsepubkey & pk,const  GT & M, const uint interval, const vector<ZR>  & tags){
         ZR s = group.random(ZR_t);
         return Pfse::encrypt(pk,M,s,interval,tags);
 }
 
-PseCipherText Pfse::encrypt(pfsepubkey & pk, GT & M, ZR & s,uint interval, vector<ZR>  & tags){
+PseCipherText Pfse::encrypt(const pfsepubkey & pk, const GT & M,  const ZR & s, const uint interval, const vector<ZR>  & tags){
     PseCipherText ct;
     
     ct.interval = interval;
@@ -261,13 +261,13 @@ PseCipherText Pfse::encrypt(pfsepubkey & pk, GT & M, ZR & s,uint interval, vecto
 
     return ct;
 }
-AESKey Pfse::decrypt(PseCipherText &ct){
+AESKey Pfse::decrypt(const PseCipherText &ct){
     const PfsePuncturedPrivateKey & sk = privatekeys.getKey(ct.interval);
 
     return decryptFO(sk,ct);
 }
 
-AESKey Pfse::decryptFO(const PfsePuncturedPrivateKey & sk,PseCipherText &ct){
+AESKey Pfse::decryptFO(const PfsePuncturedPrivateKey & sk,const PseCipherText &ct){
     GT x = decryptGT(sk,ct);
 
     // since we don't have a different hash function, we simply prefix it
@@ -288,7 +288,7 @@ AESKey Pfse::decryptFO(const PfsePuncturedPrivateKey & sk,PseCipherText &ct){
 
 
 
-GT Pfse::decryptGT(const PfsePuncturedPrivateKey & sk,PseCipherText &ct){
+GT Pfse::decryptGT(const PfsePuncturedPrivateKey & sk,const PseCipherText &ct){
     GT b1,b2;
     hibe.decrypt(sk.hibeSK,ct.hibeCT,b1);
     ZR neg = -1;
@@ -748,12 +748,12 @@ void Bbghibe::encrypt(const BbhHIBEPublicKey & pk,const GT & M, const ZR & s,con
     return;
 }
 
-void Bbghibe::decrypt(const BbghPrivatekey & sk, BbghCT & ct, GT & b){
+void Bbghibe::decrypt(const BbghPrivatekey & sk, const BbghCT & ct, GT & b){
 
     b = group.div(group.pair(ct.C, sk.a1), group.pair(ct.B, sk.a0));
     return;
 }
-GT Bbghibe::decrypt(const BbghPrivatekey & sk, BbghCT & ct)
+GT Bbghibe::decrypt(const BbghPrivatekey & sk, const BbghCT & ct)
 {
 
     return group.mul(ct.A, group.div(group.pair(ct.C, sk.a1), group.pair(ct.B, sk.a0)));
