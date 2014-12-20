@@ -68,6 +68,7 @@ public:
 
 	Gmppke(){};
 	~Gmppke() {};
+
 	PairingGroup group;
 	ZR LagrangeBasisCoefficients(uint j,const ZR &x , const vector<ZR> & polynomial_xcordinates) const;
 
@@ -82,7 +83,7 @@ public:
 	G2 vG2(const std::vector<G2> & gqofxG2, const ZR & x) const;
 
 	void keygen(const BbhHIBEPublicKey & pkhibe, ZR & gamma,GmppkePublicKey & pk, GmppkePrivateKey & sk) const;
-	void skgen(const GmppkePublicKey &pk,const ZR & alpha, GmppkePrivateKeyShare & skentry0) const;
+	GmppkePrivateKeyShare skgen(const GmppkePublicKey &pk,const ZR & alpha ) const;
 	void puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const ZR & tag) const;
 	void encrypt(const GmppkePublicKey & pk,const GT & M, const ZR & s,  const std::vector<ZR> & tags, GmmppkeCT & ct) const;
 	void decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct, GT & M) const;

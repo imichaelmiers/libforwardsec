@@ -10,8 +10,7 @@
 using namespace std;
 #define splitkey 0
 uint d = 1;
-int tag0=42;
-
+#define NULLTAG 42
 #ifdef DDDEBUG
 #define DBGG(x) x
 #else
@@ -158,19 +157,18 @@ void Pfse::prepareNextInterval(){
 void Pfse::bindKey(PfsePuncturedPrivateKey & k) {
     ZR gamma = group.random(ZR_t);
     GmppkePrivateKey puncturedKey;
-	GmppkePrivateKeyShare newActiveKeyPPKEKeyEntry;
 
 	k.hibeSK.a0 = group.mul(k.hibeSK.a0,group.exp(pk.hibe.g2G2,group.neg(gamma)));
 
-	ppke.skgen(pk.ppke,gamma,newActiveKeyPPKEKeyEntry);
+	GmppkePrivateKeyShare boundShare = ppke.skgen(pk.ppke,gamma);
 	GmppkePrivateKeyShare & skentryold = k.ppkeSK.shares[0];
-	newActiveKeyPPKEKeyEntry.sk1 = group.mul(newActiveKeyPPKEKeyEntry.sk1,skentryold.sk1);
-	newActiveKeyPPKEKeyEntry.sk2 = group.mul(newActiveKeyPPKEKeyEntry.sk2,skentryold.sk2);
-	newActiveKeyPPKEKeyEntry.sk3 = group.mul(newActiveKeyPPKEKeyEntry.sk3,skentryold.sk3);
+	boundShare.sk1 = group.mul(boundShare.sk1,skentryold.sk1);
+	boundShare.sk2 = group.mul(boundShare.sk2,skentryold.sk2);
+	boundShare.sk3 = group.mul(boundShare.sk3,skentryold.sk3);
 
 
 
-	puncturedKey.shares.push_back(newActiveKeyPPKEKeyEntry);
+	puncturedKey.shares.push_back(boundShare);
 
 	k.ppkeSK = puncturedKey;
 }
@@ -399,13 +397,6 @@ void Gmppke::keygen(const BbhHIBEPublicKey & pkhibe,ZR & gamma, GmppkePublicKey 
 {
     pk.d = d;
 
-    ZR r;
-    G2 vofx;
-    GmppkePrivateKeyShare skentry0;
-
-    ZR t0 = tag0; // The special zero tag;
-    ZR sk4 = t0;
-    ZR zero = 0;
 
     pk.gG1 = pkhibe.gG1;
     pk.gG2 = pkhibe.gG2;
@@ -420,58 +411,42 @@ void Gmppke::keygen(const BbhHIBEPublicKey & pkhibe,ZR & gamma, GmppkePublicKey 
     vector<ZR> polynomial_xcordinates;
 
     // the first point is (x=0,y=beta) so  x=0, g^beta.
-    polynomial_xcordinates.push_back(zero);
+    polynomial_xcordinates.push_back(ZR(0));
     pk.gqofxG1.push_back(pk.g2G1); // g^beta
     pk.gqofxG2.push_back(pk.g2G2); // g^beta
 
-    // the next d points y values  are random
-    // we use x= 1...d becuase the has the side effect
+    // the next d points' y values  are random
+    // we use x= 1...d because this has the side effect
     // of easily computing g^q(0).... g^q(d).
     for (uint i = 1; i <= d; i++)
     {
-        ZR x = i;
-        ZR ry = group.random(ZR_t); // 17
-        G1 qofrxG1 = group.exp(pk.gG1,ry);
-        G2 qofrxG2 = group.exp(pk.gG2,ry);
-        polynomial_xcordinates.push_back(x);
-        pk.gqofxG1.push_back(qofrxG1);
-        pk.gqofxG2.push_back(qofrxG2);
+        ZR ry = group.random(ZR_t);
+
+        polynomial_xcordinates.push_back(ZR(i));
+        pk.gqofxG1.push_back(group.exp(pk.gG1,ry));
+        pk.gqofxG2.push_back(group.exp(pk.gG2,ry));
 
     }
     assert(polynomial_xcordinates.size()==pk.gqofxG1.size());
 
-
-        // cout << "\n\n polynomial cordinates:" << polynomial_xcordinates.size() <<  endl;
-        // for (int i = 0; i <= d; i++){
-        //     cout << "{" << polynomial_xcordinates[i] << "," << polynomial_ycordinates[i] << "}"<< endl;
-
-        // }
-        // cout << "\n\n" << endl;
-//    cout << "random points picked"<< endl;
-    // Sanity check that Lagrant interpt works to get us g^beta on q(0).
-    G2 test2 = LagrangeInterpInExponent<G2>(0,polynomial_xcordinates,pk.gqofxG2,d);
+    // Sanity check that Lagrange interpolation works to get us g^beta on q(0).
     assert(pk.g2G1 == LagrangeInterpInExponent<G1>(0,polynomial_xcordinates,pk.gqofxG1,d));
-    assert(pk.g2G2 == test2); // FIXME i should be able to put the extression for test2 here, but that doesn't compile;
+    assert(pk.g2G2 == LagrangeInterpInExponent<G2>(0,polynomial_xcordinates,pk.gqofxG2,d));
 
 
+    sk.shares.push_back(skgen(pk,gamma));
 
-    skgen(pk,gamma,skentry0);
-
-    sk.shares.push_back(skentry0);
-    // if(splitkey ==1){
-
-    // sk.insert(1,skentry1);
-    // }
     return;
 }
-void Gmppke::skgen(const GmppkePublicKey &pk,const ZR & alpha, GmppkePrivateKeyShare & skentry0) const{
-    ZR t0 = tag0; // The special zero tag;
-    skentry0.sk4 = t0; 
+GmppkePrivateKeyShare Gmppke::skgen(const GmppkePublicKey &pk,const ZR & alpha  ) const{
+	GmppkePrivateKeyShare share;
+    share.sk4 = ZR(NULLTAG);
     ZR r = group.random(ZR_t);
-    skentry0.sk1 = group.exp(pk.g2G2, group.add(r,alpha));
-    G2 vofx = vG2(pk.gqofxG2,t0); // calculate v(t0).
-    skentry0.sk2 = group.exp(vofx, r);// v(t0)^r
-    skentry0.sk3 = group.exp(pk.gG2, r);
+    share.sk1 = group.exp(pk.g2G2, group.add(r,alpha));
+    G2 vofx = vG2(pk.gqofxG2,share.sk4); // calculate v(t0).
+    share.sk2 = group.exp(vofx, r);// v(t0)^r
+    share.sk3 = group.exp(pk.gG2, r);
+    return share;
 }
 
 void Gmppke::puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const ZR & tag) const{
@@ -483,7 +458,7 @@ void Gmppke::puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const Z
     ZR r1 = group.random(ZR_t);
     ZR lambda = group.random(ZR_t);
 
-    assert(skentry0.sk4 == ZR(tag0));
+    assert(skentry0.sk4 == ZR(NULLTAG));
 
     skentry0.sk1 = group.mul(skentry0.sk1,group.exp(pk.g2G2,group.sub(r0,lambda))); // sk1 * g2g2^{r0- lambda}
     G2 vofx = vG2(pk.gqofxG2,skentry0.sk4);
@@ -526,33 +501,22 @@ void Gmppke::decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, co
 
     vector<ZR> shareTags(ct.tags.size()+1);// allow one more tag for share the private key holds
     for(uint i =0; i < ct.tags.size();i++){
-            shareTags[i]=ct.tags[i];//(hashresult);
+            shareTags[i]=ct.tags[i];
     }
     assert(shareTags.size() == pk.d+1);
 
     // Compute w_i coefficients for recovery
     // FIXME check that points are unique.
 
-    uint numshares = sk.shares.size();
+    const uint numshares = sk.shares.size();
 
-    // G2 sk1prod = group.init(G2_t);
-    // G2 sk2prod = group.init(G2_t);
-    // G2 sk3prod = group.init(G2_t);
-
-    // G1 ct2prod = group.init(G1_t);
-    // G1 ct3prod = group.init(G1_t);
-    // G1 ct2prodexp = group.init(G1_t);
-
-    // GT nomprod= group.init(GT_t);
-    // GT dnomprod= group.init(GT_t);
-    // ZR sumwstar = 0;
     vector<GT> z(numshares);
 
     for (uint i = 0; i < numshares; i++)
     {
         const GmppkePrivateKeyShare & s0 = sk.shares[i];
 
-        // FIXME DO NOT COPY an entire fucking vector for if possible.
+        // FIXME DO NOT COPY an entire  vector  if possible.
 
         shareTags[shareTags.size()-1] = s0.sk4; 
 
@@ -574,16 +538,6 @@ void Gmppke::decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, co
        GT denom = group.mul(group.pair(ct3prod_j, s0.sk3), group.pair(group.exp(ct.ct2,wstar), s0.sk2));
        GT nom = group.pair(ct.ct2, s0.sk1);
        z[i]=group.div(nom, denom);
-
-        // sk1prod = group.mul(sk1prod,sk1);
-        // sk2prod = group.mul(sk2prod,sk2);
-        // sk3prod =group.mul(sk3prod,sk3);
-        // ct2prod = group.mul(ct2prod,ct2);
-        // ct2prodexp = group.mul(ct2prodexp,group.exp(ct2,wstar));
-        // ct3prod = group.mul(ct3prod,ct3prod_j);
-
-        // nomprod = group.mul(nomprod,nom);
-        // dnomprod = group.mul(dnomprod,denom);
     }
 
     GT zprod;
