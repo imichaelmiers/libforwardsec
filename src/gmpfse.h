@@ -6,7 +6,6 @@
 #include <string>
 #include <map>
 #include "relic_wrapper/relic_api.h"
-using namespace std;
 
 
 class BadCiphertext : public std::invalid_argument
