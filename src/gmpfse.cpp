@@ -552,6 +552,7 @@ GT Gmppke::recoverBlind(const GmppkePublicKey & pk, const GmppkePrivateKey & sk,
     return zprod;
 }
 
+
 void Bbghibe::setup(const unsigned int & l, BbhHIBEPublicKey & pk, G2 & msk) const
 {
     ZR alpha = group.random(ZR_t);
