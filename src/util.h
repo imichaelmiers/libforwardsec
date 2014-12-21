@@ -7,13 +7,13 @@ std::vector<ZR>  indexToPath(const unsigned int &index,const unsigned int & tree
 unsigned int pathToIndex(const std::vector<ZR> & path, const unsigned int & treeDepth);
 
 
-ZR LagrangeBasisCoefficients(const PairingGroup & group, const unsigned int & j,const ZR &x , const vector<ZR> & polynomial_xcordinates);
+ZR LagrangeBasisCoefficients(const PairingGroup & group, const unsigned int & j,const ZR &x , const std::vector<ZR> & polynomial_xcordinates);
 
-	ZR LagrangeInterp(const PairingGroup & group, const ZR &x , const vector<ZR> & polynomial_xcordinates,
-			const vector<ZR> & polynomial_ycordinates, const  unsigned int& degree);
+	ZR LagrangeInterp(const PairingGroup & group, const ZR &x , const std::vector<ZR> & polynomial_xcordinates,
+			const std::vector<ZR> & polynomial_ycordinates, const  unsigned int& degree);
 
-	template <class type> type LagrangeInterpInExponent( const PairingGroup & group,const ZR &x, const vector<ZR> & polynomial_xcordinates,
-			const vector<type> & exp_polynomial_ycordinates, const unsigned int & degree){
+	template <class type> type LagrangeInterpInExponent( const PairingGroup & group,const ZR &x, const std::vector<ZR> & polynomial_xcordinates,
+			const std::vector<type> & exp_polynomial_ycordinates, const unsigned int & degree){
 	    uint k = degree + 1;
 	    assert(exp_polynomial_ycordinates.size()==k);
 	    assert(polynomial_xcordinates.size()==k);

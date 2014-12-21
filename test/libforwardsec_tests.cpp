@@ -7,7 +7,7 @@
 #include <cmath>
 #include "gmpfse.h"
 #include "gtest/gtest.h"
-
+using namespace std;
 class Gmmppketest : public ::testing::Test {
 protected:
 	 virtual void SetUp(){

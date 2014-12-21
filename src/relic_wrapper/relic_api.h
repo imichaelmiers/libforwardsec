@@ -33,13 +33,12 @@ extern "C" {
 	   #include "common.h"
 }
 
-using namespace std;
 
 #define convert_str(a)  a /* nothing */
 void ro_error(void);
 
 
-typedef  bitset<256> bitset256;
+typedef  std::bitset<256> bitset256;
 
 
 class RelicDividByZero : public std::logic_error
@@ -75,19 +74,19 @@ public:
 		template <class Archive>
 		void save( Archive & ar, const unsigned int version ) const
 		{
-			std:vector<uint8_t>data(BN_BYTES);
-			cout <<"BN BYTES" << BN_BYTES << endl;
+			std::vector<uint8_t>data(BN_BYTES);
+			std::cout <<"BN BYTES" << BN_BYTES << std::endl;
 			bn_write_bin(&data[0], BN_BYTES, z);
 			ar(data);
 		}
 		template <class Archive>
 		void load( Archive & ar, const unsigned int version )
 		{
-			std:vector<uint8_t>data(BN_BYTES);
+			std::vector<uint8_t>data(BN_BYTES);
 			ar(data);
 			bn_read_bin(z,&data[0],BN_BYTES);
 		}
-	friend ZR hashToZR(string);
+	friend ZR hashToZR(std::string);
 	friend ZR power(const ZR&, int);
 	friend ZR power(const ZR&, const ZR&);
 	friend ZR operator-(const ZR&);
@@ -101,7 +100,7 @@ public:
    friend ZR operator<<(const ZR&, int);
    friend ZR operator>>(const ZR&, int);
 
-   friend ostream& operator<<(ostream&, const ZR&);
+   friend std::ostream& operator<<(std::ostream&, const ZR&);
 	friend bool operator==(const ZR& x, const ZR& y)
       {if(bn_cmp(x.z, y.z) == CMP_EQ) return true; else return false; }
 	friend bool operator!=(const ZR& x, const ZR& y)
@@ -132,26 +131,26 @@ public:
     void save(Archive & ar, const unsigned int version) const
     {
     	unsigned int l  = g1_size_bin(g,POINT_COMPRESS);
-    	cout << "G1 " << l << endl;
-    	std:vector<uint8_t>data(l);
+    	std::cout << "G1 " << l << std::endl;
+    	std::vector<uint8_t>data(l);
 		g1_write_bin(&data[0], data.size(), g,POINT_COMPRESS);
 		ar(data);
     }
     template<class Archive>
     void load(Archive & ar, const unsigned int version){
-    	std:vector<uint8_t>data;
+    	std::vector<uint8_t>data;
 		ar(data);
     	g1_read_bin(g,&data[0],data.size());
     }
     friend class cereal::access;
 
 
-	friend G1 hashToG1(string);
+	friend G1 hashToG1(std::string);
 	friend G1 power(const G1&, const ZR&);
 	friend G1 operator-(const G1&);
 	friend G1 operator-(const G1&, const G1&);
 	friend G1 operator+(const G1&, const G1&);
-   friend ostream& operator<<(ostream&, const G1&);
+   friend std::ostream& operator<<(std::ostream&, const G1&);
 	friend bool operator==(const G1& x, const G1& y)
       {return g1_cmp(x.g, y.g) == CMP_EQ; }
 	friend bool operator!=(const G1& x, const G1& y)
@@ -181,26 +180,26 @@ public:
 
 		G2 gg(*this);
     	unsigned int l  = g2_size_bin(gg.g,POINT_COMPRESS);
-    	cout << "G2 " << l << endl;
+    	std::cout << "G2 " << l << std::endl;
 
-    	std:vector<uint8_t>data(l);
+    	std::vector<uint8_t>data(l);
 		g2_write_bin(&data[0], l,gg.g,POINT_COMPRESS);
 		ar(data,l);
     }
     template<class Archive>
     void load(Archive & ar, const unsigned int version){
-    	std:vector<uint8_t>data;
+    	std::vector<uint8_t>data;
 		ar(data);
     	g2_read_bin(g,&data[0],data.size());
     }
     friend class cereal::access;
 
-	friend G2 hashToG2(string);
+	friend G2 hashToG2(std::string);
 	friend G2 power(const G2&, const ZR&);
 	friend G2 operator-(const G2&);
 	friend G2 operator-(const G2&, const G2&);
 	friend G2 operator+(const G2&, const G2&);
-	friend ostream& operator<<(ostream& s, const G2&);
+	friend std::ostream& operator<<(std::ostream& s, const G2&);
 	friend bool operator==(const G2& x, const G2& y)
       {return g2_cmp( const_cast<G2&>(x).g,  const_cast<G2&>(y).g) == CMP_EQ;}
 	friend bool operator!=(const G2& x, const G2& y)
@@ -228,15 +227,15 @@ public:
     {
 		GT gg(*this);
     	unsigned int l  = gt_size_bin(gg.g,POINT_COMPRESS);
-    	cout << "GT " << l << endl;
+    	std::cout << "GT " << l << std::endl;
 
-    	std:vector<uint8_t>data(l);
+    	std::vector<uint8_t>data(l);
 		gt_write_bin(&data[0], l, gg.g,POINT_COMPRESS);
 		ar(data);
     }
     template<class Archive>
     void load(Archive & ar, const unsigned int version){
-    	std:vector<uint8_t>data;
+    	std::vector<uint8_t>data;
 		ar(data);
     	gt_read_bin(g,&data[0],data.size());
     }
@@ -248,7 +247,7 @@ public:
 	friend GT operator-(const GT&);
 	friend GT operator/(const GT&, const GT&);
 	friend GT operator*(const GT&, const GT&);
-	friend ostream& operator<<(ostream& s, const GT&);
+	friend std::ostream& operator<<(std::ostream& s, const GT&);
 	friend bool operator==(const GT& x, const GT& y)
       { return gt_cmp(const_cast<GT&>(x).g, const_cast<GT&>(y).g) == CMP_EQ;}
 	friend bool operator!=(const GT& x, const GT& y)
@@ -313,9 +312,9 @@ public:
 	ZR order() const; // returns the order of the group
 
 	// hash -- not done
-	ZR hashListToZR(string) const;
-	G1 hashListToG1(string) const;
-	G2 hashListToG2(string) const;
+	ZR hashListToZR(std::string) const;
+	G1 hashListToG1(std::string) const;
+	G2 hashListToG2(std::string) const;
 
 	GT pair(const G1 &, const G1 &) const;
 	int mul(const int &, const int &) const;
@@ -345,7 +344,7 @@ public:
 	G1 inv(const G1 &) const;
 	G2 inv(const G2 &)const;
 	GT inv(const GT &) const;
-	string aes_key(const GT & g);
+	std::string aes_key(const GT & g);
 
 private:
 	int pairingType; // defined by above #defines SYMMETRIC or ASYMMETRIC (for now)

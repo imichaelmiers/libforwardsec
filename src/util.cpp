@@ -1,6 +1,6 @@
 #include<assert.h>
 #include"util.h"
-
+using namespace std;
 unsigned int treeSize(unsigned int k){
     return (2 <<(k)) -1;
 }

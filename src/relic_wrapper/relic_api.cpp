@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <stdexcept>
 #include "relic_api.h"
-
+using namespace std;
 void ro_error(void)
 {
 	throw  std::invalid_argument("writing to read only object");

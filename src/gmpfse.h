@@ -188,8 +188,8 @@ public:
 
 class PfseKeyStore{
 public:
-	map<unsigned int,PfsePuncturedPrivateKey> puncturedKeys;
-	map<unsigned int,BbghPrivatekey> unpucturedHIBEKeys;
+	std::map<unsigned int,PfsePuncturedPrivateKey> puncturedKeys;
+	std::map<unsigned int,BbghPrivatekey> unpucturedHIBEKeys;
 	GmppkePrivateKey unpucturedPPKEKey;
 	PfsePuncturedPrivateKey getKey(unsigned int i) const;
 	void updateKey(unsigned int i, const PfsePuncturedPrivateKey & p);
@@ -220,7 +220,7 @@ public:
 	 * @param tags the tags for the message
 	 * @return the ciphertext
 	 */
-	PseCipherText encrypt(const pfsepubkey & pk, const bitset256 msg, const unsigned int interval, const vector<string> tags) const;
+	PseCipherText encrypt(const pfsepubkey & pk, const bitset256 msg, const unsigned int interval, const std::vector<std::string> tags) const;
 
 	/**Decrypt a message using the private key stored in the object.
 	 *
@@ -243,12 +243,12 @@ public:
      * @param interval the time period
      * @param str the tag to puncture on
      */
-	void puncture(unsigned int interval, string str);
+	void puncture(unsigned int interval, std::string str);
 	/**Punctures the key for the current interval.
 	 *
 	 * @param str the tag to puncture on.
 	 */
-	void puncture( string str);
+	void puncture( std::string str);
 
 
 private:
@@ -258,12 +258,12 @@ private:
 	unsigned int depth;
 	void bindKey(PfsePuncturedPrivateKey & k);
 	PseCipherText encryptFO( const pfsepubkey & pk, const bitset256 & bitmsg,
-			              const unsigned int interval, const vector<ZR>  & tags) const;
+			              const unsigned int interval, const std::vector<ZR>  & tags) const;
 	PseCipherText encryptFO( const pfsepubkey & pk, const bitset256 & bitmsg,
-			const GT & x, const unsigned int interval, const vector<ZR>  & tags) const;
+			const GT & x, const unsigned int interval, const std::vector<ZR>  & tags) const;
 
-	PseCipherText encrypt( const pfsepubkey & pk, const GT & M,              const unsigned int interval, const vector<ZR>  & tags) const;
-	PseCipherText encrypt( const pfsepubkey & pk, const GT & M,const ZR & s, const unsigned int interval, const vector<ZR>  & tags) const;
+	PseCipherText encrypt( const pfsepubkey & pk, const GT & M,              const unsigned int interval, const std::vector<ZR>  & tags) const;
+	PseCipherText encrypt( const pfsepubkey & pk, const GT & M,const ZR & s, const unsigned int interval, const std::vector<ZR>  & tags) const;
 
 
 	bitset256 decryptFO(const PfsePuncturedPrivateKey &sk, const PseCipherText &ct) const;

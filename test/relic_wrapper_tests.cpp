@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "relic_wrapper/relic_api.h"
 #include <cereal/archives/binary.hpp>
-
+using namespace std;
 void rand(ZR &a, PairingGroup &g){
 	a= g.random(ZR_t);
 }
