@@ -81,7 +81,7 @@ Pfse::Pfse(uint d):hibe(),ppke(),depth(d){
 
 void Pfse::keygen(){
     G2 msk;
-    hibe.setup(depth,this->pk.hibe,msk);
+    hibe.setup(depth,this->pk,msk);
 
 
     std::vector<ZR> left, right;
@@ -90,17 +90,17 @@ void Pfse::keygen(){
     left.push_back(ZR(0));
     right.push_back(ZR(1));
 
-    hibe.keygen(this->pk.hibe,msk,left,sklefthibe);
-    hibe.keygen(this->pk.hibe,msk,right,skrighthibe);
+    hibe.keygen(this->pk,msk,left,sklefthibe);
+    hibe.keygen(this->pk,msk,right,skrighthibe);
     int l = pathToIndex(left,depth);
     int r = pathToIndex(right,depth);
     ZR gamma = group.random(ZR_t);
     ZR gamma1 = group.random(ZR_t); // XXX FIXME . this should break. we are randomizing the left key w/ the wrong alpha
     assert(!(gamma1 == gamma));
-    sklefthibe.a0 = group.mul(sklefthibe.a0,group.exp(this->pk.hibe.g2G2,group.neg(gamma)));
-    skrighthibe.a0 = group.mul(skrighthibe.a0,group.exp(this->pk.hibe.g2G2,group.neg(gamma1)));
+    sklefthibe.a0 = group.mul(sklefthibe.a0,group.exp(this->pk.g2G2,group.neg(gamma)));
+    skrighthibe.a0 = group.mul(skrighthibe.a0,group.exp(this->pk.g2G2,group.neg(gamma1)));
 
-    ppke.keygen(pk.hibe,gamma,pk.ppke,ppkeSK);
+    ppke.keygen(pk,gamma,pk,ppkeSK);
 
 
     this->privatekeys.unpucturedPPKEKey = ppkeSK;
@@ -125,12 +125,12 @@ void Pfse::prepareNextInterval(){
         // compute left key
         path.push_back(ZR(0));
         int leftChildIndex = pathToIndex(path,depth);
-        hibe.keygen(pk.hibe,k.hibeSK,path,sklefthibe);
+        hibe.keygen(pk,k.hibeSK,path,sklefthibe);
 
         // compute right key;
         path[pathlength]=ZR(1);
         int rightChildIndex = pathToIndex(path,depth);
-        hibe.keygen(pk.hibe,k.hibeSK,path,skrighthibe);
+        hibe.keygen(pk,k.hibeSK,path,skrighthibe);
 
         //store keys
         privatekeys.addkey(leftChildIndex,sklefthibe);
@@ -143,9 +143,9 @@ void Pfse::bindKey(PfsePuncturedPrivateKey & k) {
     const ZR gamma = group.random(ZR_t);
     GmppkePrivateKey puncturedKey;
 
-	k.hibeSK.a0 = group.mul(k.hibeSK.a0,group.exp(pk.hibe.g2G2,group.neg(gamma)));
+	k.hibeSK.a0 = group.mul(k.hibeSK.a0,group.exp(pk.g2G2,group.neg(gamma)));
 
-	GmppkePrivateKeyShare boundShare = ppke.skgen(pk.ppke,gamma);
+	GmppkePrivateKeyShare boundShare = ppke.skgen(pk,gamma);
 	const GmppkePrivateKeyShare & oldShare = k.ppkeSK.shares[0];
 	boundShare.sk1 = group.mul(boundShare.sk1,oldShare.sk1);
 	boundShare.sk2 = group.mul(boundShare.sk2,oldShare.sk2);
@@ -184,7 +184,7 @@ void Pfse::puncture(uint interval, string tag){
     	DBGG(cout << interval << "not already punctured" << endl;)
 		bindKey(k);
     }
-    ppke.puncture(pk.ppke,k.ppkeSK,group.hashListToZR(tag));
+    ppke.puncture(pk,k.ppkeSK,group.hashListToZR(tag));
 	privatekeys.updateKey(interval,k);
 
 //privatekeys[interval] = sk;
@@ -238,9 +238,9 @@ PseCipherText Pfse::encrypt(const pfsepubkey & pk, const GT & M,  const ZR & s, 
 
     std::vector<ZR> id= indexToPath(interval,depth);
 
-    ct.hibeCT = hibe.encrypt(pk.hibe,M,s,id);
-    ct.ppkeCT =  ppke.encrypt(pk.ppke,M,s,tags);
-    ct.ct0 =  group.mul(group.exp(group.pair(pk.hibe.g2G1, pk.hibe.g1), s), M);
+    ct.hibeCT = hibe.encrypt(pk,M,s,id);
+    ct.ppkeCT =  ppke.encrypt(pk,M,s,tags);
+    ct.ct0 =  group.mul(group.exp(group.pair(pk.g2G1, pk.hibeg1), s), M);
 
     return ct;
 }
@@ -274,7 +274,7 @@ AESKey Pfse::decryptFO(const PfsePuncturedPrivateKey & sk,const PseCipherText &c
 GT Pfse::decryptGT(const PfsePuncturedPrivateKey & sk,const PseCipherText &ct) const {
     GT b1 = hibe.decrypt(sk.hibeSK,ct.hibeCT);
    // assert(b1== group.exp(group.exp(group.pair(g2G1,gG2),group.mul(ss,group.sub(aa,gam1))),neg));
-    GT b2 = ppke.decrypt(pk.ppke,sk.ppkeSK,ct.ppkeCT);
+    GT b2 = ppke.decrypt(pk,sk.ppkeSK,ct.ppkeCT);
    // assert(b2 ==group.exp(group.pair(g2G1,gG2),group.mul(ss,gam1)));
     return group.div(group.mul(ct.ct0,b1),b2);
 }
@@ -381,7 +381,7 @@ void Gmppke::keygen(const BbhHIBEPublicKey & pkhibe,ZR & gamma, GmppkePublicKey 
 
     pk.gG1 = pkhibe.gG1;
     pk.gG2 = pkhibe.gG2;
-    pk.g1 =  group.exp(pk.gG2,gamma);
+    pk.ppkeg1 =  group.exp(pk.gG2,gamma);
     pk.g2G1 = pkhibe.g2G1;
     pk.g2G2 = pkhibe.g2G2;
 
@@ -458,7 +458,7 @@ GmmppkeCT Gmppke::encrypt(const GmppkePublicKey & pk, const GT & M, const ZR & s
 {
     assert(tags.size()==d);
     GmmppkeCT  ct;
-    ct.ct1 = group.mul(group.exp(group.pair(pk.g2G1, pk.g1), s), M);
+    ct.ct1 = group.mul(group.exp(group.pair(pk.g2G1, pk.ppkeg1), s), M);
     ct.ct2 = group.exp(pk.gG1, s);
 
     for (uint i = 0; i < pk.d; i++)
@@ -577,7 +577,7 @@ void Bbghibe::setup(const unsigned int & l, BbhHIBEPublicKey & pk, G2 & msk) con
     ZR alpha = group.random(ZR_t);
     pk.gG1 = group.random(G1_t);
     pk.gG2 = group.random(G2_t);
-    pk.g1 = group.exp(pk.gG2, alpha);
+    pk.hibeg1 = group.exp(pk.gG2, alpha);
     pk.l = l;
     const ZR r = group.random(ZR_t);
     pk.g2G1 = group.exp(pk.gG1, r);
@@ -657,7 +657,7 @@ BbghCT Bbghibe::encrypt(const BbhHIBEPublicKey & pk,const GT & M, const ZR & s,c
     const unsigned int k = id.size();
     assert(k<=pk.l);
 
-    ct.A = group.mul(group.exp(group.pair(pk.g2G1, pk.g1), s), M);
+    ct.A = group.mul(group.exp(group.pair(pk.g2G1, pk.hibeg1), s), M);
     ct.B = group.exp(pk.gG1, s);
 
     G1 dotProd2;

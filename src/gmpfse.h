@@ -21,14 +21,17 @@ public:
 
 typedef unsigned int uint;
 
-class GmppkePublicKey{
+class baseKey{
 public:
 	PairingGroup group;
 	G1 gG1;
 	G2 gG2;
-	G2 g1;
 	G1 g2G1;
 	G2 g2G2;
+};
+class GmppkePublicKey: public  virtual  baseKey{
+public:
+	G2 ppkeg1;
 	unsigned int d;
 	std::vector<G1> gqofxG1;
 	std::vector<G2> gqofxG2;
@@ -101,15 +104,11 @@ public:
 	std::vector<G2> bG2;
 };
 
-class BbhHIBEPublicKey{
+class BbhHIBEPublicKey:  public virtual  baseKey{
 public:
 unsigned int l;
 PairingGroup group;
-G1 gG1;
-G2 gG2;
-G2 g1;
-G1 g2G1;
-G2 g2G2;
+G2 hibeg1;
 G1 g3G1;
 G2 g3G2;
 std::vector<G1> hG1;
@@ -166,10 +165,7 @@ friend bool operator==(const PseCipherText& l,const PseCipherText& r){
 
 typedef BbghPrivatekey HIBEkey;
 typedef GmppkePrivateKey  PPKEKey;
-class pfsepubkey{
-public:
-	BbhHIBEPublicKey hibe;
-	GmppkePublicKey ppke;
+class pfsepubkey: public BbhHIBEPublicKey,  public GmppkePublicKey{
 };
 
 class PfsePuncturedPrivateKey{
