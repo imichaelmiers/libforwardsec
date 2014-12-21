@@ -115,16 +115,24 @@ std::vector<G1> hG1;
 std::vector<G2> hG2;
 };
 
-class BbghCT{
+class PartialBbghCT{
 public:
 	PairingGroup group;
-	GT A;
 	G1 B;
 	G1 C;
-friend bool operator==(const BbghCT& x,const BbghCT& y){
-	return x.A == y.A && x.B == y.B && x.C == y.C;
+friend bool operator==(const PartialBbghCT& x,const PartialBbghCT& y){
+	return x.B == y.B && x.C == y.C;
 }
 };
+class BbghCT: public PartialBbghCT{
+public:
+	BbghCT(const  PartialBbghCT & c) : PartialBbghCT(c){}
+	GT A;
+friend bool operator==(const BbghCT& x,const BbghCT& y){
+	return x.A == y.A && x.B == y.B && x.C == y.C; //FIXME call bass operator
+}
+};
+
 std::vector<ZR>  indexToPath(uint index,uint l);
 uint pathToIndex(std::vector<ZR> & path, uint l);
 class Bbghibe
@@ -139,11 +147,11 @@ public:
 	void keygen(const BbhHIBEPublicKey & pk,const G2 & msk,const  std::vector<ZR> & id, BbghPrivatekey & sk) const;
     void keygen(const BbhHIBEPublicKey & pk,const  BbghPrivatekey & sk, const std::vector<ZR> & id,BbghPrivatekey & skout) const;
 
-    BbghCT encrypt(const BbhHIBEPublicKey & pk, const GT & M ,const ZR &s, const  std::vector<ZR>  & id) const;
+    PartialBbghCT blind(const BbhHIBEPublicKey & pk, const GT & M ,const ZR &s, const  std::vector<ZR>  & id) const;
     BbghCT encrypt(const BbhHIBEPublicKey & pk, const GT & M, const std::vector<ZR>  & id ) const;
 
-	GT decrypt(const BbghPrivatekey & sk, const BbghCT & ct) const; // decrypt for PFSE
-	GT decrypt_(const BbghPrivatekey & sk,const BbghCT & ct) const; // actual decrypt
+	GT unblind(const BbghPrivatekey & sk, const PartialBbghCT & ct) const; // decrypt for PFSE
+	GT decrypt(const BbghPrivatekey & sk,const BbghCT & ct) const; // actual decrypt
 
 };
 typedef  bitset<256> AESKey;
@@ -152,7 +160,7 @@ class PseCipherText{
 public:
 	PairingGroup group;
 	GT ct0;
-	BbghCT hibeCT;
+	PartialBbghCT hibeCT;
 	GmmppkeCT ppkeCT;
 	unsigned int interval;
 	AESKey xorct;
@@ -163,8 +171,7 @@ friend bool operator==(const PseCipherText& l,const PseCipherText& r){
 };
 
 
-typedef BbghPrivatekey HIBEkey;
-typedef GmppkePrivateKey  PPKEKey;
+typedef GmppkePrivateKey  PPKEKey; //fixme get rid of
 class pfsepubkey: public BbhHIBEPublicKey,  public GmppkePublicKey{
 };
 

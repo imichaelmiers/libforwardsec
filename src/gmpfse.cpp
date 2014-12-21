@@ -120,7 +120,7 @@ void Pfse::prepareNextInterval(){
     }
 
     if (pathlength  < depth){ // Not a leaf node, so derive new hibe keys.
-        HIBEkey sklefthibe, skrighthibe;
+    	BbghPrivatekey sklefthibe, skrighthibe;
 
         // compute left key
         path.push_back(ZR(0));
@@ -238,7 +238,7 @@ PseCipherText Pfse::encrypt(const pfsepubkey & pk, const GT & M,  const ZR & s, 
 
     std::vector<ZR> id= indexToPath(interval,depth);
 
-    ct.hibeCT = hibe.encrypt(pk,M,s,id);
+    ct.hibeCT = hibe.blind(pk,M,s,id);
     ct.ppkeCT =  ppke.encrypt(pk,M,s,tags);
     ct.ct0 =  group.mul(group.exp(group.pair(pk.g2G1, pk.hibeg1), s), M);
 
@@ -272,7 +272,7 @@ AESKey Pfse::decryptFO(const PfsePuncturedPrivateKey & sk,const PseCipherText &c
 
 
 GT Pfse::decryptGT(const PfsePuncturedPrivateKey & sk,const PseCipherText &ct) const {
-    GT b1 = hibe.decrypt(sk.hibeSK,ct.hibeCT);
+    GT b1 = hibe.unblind(sk.hibeSK,ct.hibeCT);
    // assert(b1== group.exp(group.exp(group.pair(g2G1,gG2),group.mul(ss,group.sub(aa,gam1))),neg));
     GT b2 = ppke.decrypt(pk,sk.ppkeSK,ct.ppkeCT);
    // assert(b2 ==group.exp(group.pair(g2G1,gG2),group.mul(ss,gam1)));
@@ -647,17 +647,19 @@ void Bbghibe::keygen(const BbhHIBEPublicKey & pk,const  BbghPrivatekey & sk, con
 }
 
 BbghCT Bbghibe::encrypt(const BbhHIBEPublicKey & pk, const GT & M, const std::vector<ZR> & id) const{
-    ZR r = group.random(ZR_t);
-    return encrypt(pk,M,r,id);
+    ZR s = group.random(ZR_t);
+
+     BbghCT ct =blind(pk,M,s,id);
+     ct.A = group.mul(group.exp(group.pair(pk.g2G1, pk.hibeg1), s), M);
+     return ct;
 }
 
-BbghCT Bbghibe::encrypt(const BbhHIBEPublicKey & pk,const GT & M, const ZR & s,const std::vector<ZR> & id) const
+PartialBbghCT Bbghibe::blind(const BbhHIBEPublicKey & pk,const GT & M, const ZR & s,const std::vector<ZR> & id) const
 {
-	BbghCT ct;
+	PartialBbghCT ct;
     const unsigned int k = id.size();
     assert(k<=pk.l);
 
-    ct.A = group.mul(group.exp(group.pair(pk.g2G1, pk.hibeg1), s), M);
     ct.B = group.exp(pk.gG1, s);
 
     G1 dotProd2;
@@ -669,12 +671,12 @@ BbghCT Bbghibe::encrypt(const BbhHIBEPublicKey & pk,const GT & M, const ZR & s,c
     return ct;
 }
 
-GT Bbghibe::decrypt(const BbghPrivatekey & sk, const BbghCT & ct) const{
+GT Bbghibe::unblind(const BbghPrivatekey & sk, const PartialBbghCT & ct) const{
     return group.div(group.pair(ct.C, sk.a1), group.pair(ct.B, sk.a0));
 }
 
-GT Bbghibe::decrypt_(const BbghPrivatekey & sk, const BbghCT & ct) const
+GT Bbghibe::decrypt(const BbghPrivatekey & sk, const BbghCT & ct) const
 {
 
-    return group.mul(ct.A, group.div(group.pair(ct.C, sk.a1), group.pair(ct.B, sk.a0)));
+    return group.mul(ct.A, unblind(sk,ct));
 }

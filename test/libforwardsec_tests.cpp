@@ -187,19 +187,17 @@ TEST_F(PFSETests,PunctureWrongInterval){
 TEST_F(BbghhibeTests,basic){
     GT m = group.random(GT_t);
 
-    ZR r = group.random(ZR_t);
-    BbghCT ct = test.encrypt(pk,m,r,id1);
-    EXPECT_EQ(m,test.decrypt_(sk1, ct));
+    BbghCT ct = test.encrypt(pk,m,id1);
+    EXPECT_EQ(m,test.decrypt(sk1, ct));
 
 }
 TEST_F(BbghhibeTests,basicFail){
     GT m = group.random(GT_t);
 
-    ZR r = group.random(ZR_t);
-    BbghCT ct = test.encrypt(pk,m,r,id1);
+    BbghCT ct = test.encrypt(pk,m,id1);
 
-    EXPECT_NE(m,test.decrypt_(sk0,ct));
-    EXPECT_NE(m,test.decrypt_(sk11,ct));
+    EXPECT_NE(m,test.decrypt(sk0,ct));
+    EXPECT_NE(m,test.decrypt(sk11,ct));
 
 
 }
@@ -207,20 +205,18 @@ TEST_F(BbghhibeTests,derived){
     GT m = group.random(GT_t);
 
 
-    ZR r = group.random(ZR_t);
-    BbghCT ct = test.encrypt(pk,m,r,id11);
-    EXPECT_EQ(m,test.decrypt_(sk11,ct));
-    EXPECT_NE(m,test.decrypt_(sk00,ct));
-    EXPECT_NE(m,test.decrypt_(sk10,ct));
-    EXPECT_NE(m,test.decrypt_(sk01,ct));
+    BbghCT ct = test.encrypt(pk,m,id11);
+    EXPECT_EQ(m,test.decrypt(sk11,ct));
+    EXPECT_NE(m,test.decrypt(sk00,ct));
+    EXPECT_NE(m,test.decrypt(sk10,ct));
+    EXPECT_NE(m,test.decrypt(sk01,ct));
 
 }
 TEST_F(BbghhibeTests,derivedFurther){
     GT m = group.random(GT_t);
 
-    ZR r = group.random(ZR_t);
-    BbghCT ct = test.encrypt(pk,m,r,id111);
-    EXPECT_EQ(m,test.decrypt_(sk111,ct));
+    BbghCT ct = test.encrypt(pk,m,id111);
+    EXPECT_EQ(m,test.decrypt(sk111,ct));
     EXPECT_NE(m,test.decrypt(sk00,ct));
     EXPECT_NE(m,test.decrypt(sk10,ct));
     EXPECT_NE(m,test.decrypt(sk01,ct));
