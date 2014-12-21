@@ -6,6 +6,8 @@
 #include <assert.h>
 #include <stdexcept>
 #include <bitset>
+#include <set>
+
 #include "gmpfse.h"
 using namespace std;
 #define splitkey 0
@@ -239,7 +241,7 @@ PseCipherText Pfse::encrypt(const pfsepubkey & pk, const GT & M,  const ZR & s, 
     std::vector<ZR> id= indexToPath(interval,depth);
 
     ct.hibeCT = hibe.blind(pk,M,s,id);
-    ct.ppkeCT =  ppke.encrypt(pk,M,s,tags);
+    ct.ppkeCT =  ppke.blind(pk,M,s,tags);
     ct.ct0 =  group.mul(group.exp(group.pair(pk.g2G1, pk.hibeg1), s), M);
 
     return ct;
@@ -274,7 +276,7 @@ AESKey Pfse::decryptFO(const PfsePuncturedPrivateKey & sk,const PseCipherText &c
 GT Pfse::decryptGT(const PfsePuncturedPrivateKey & sk,const PseCipherText &ct) const {
     GT b1 = hibe.unblind(sk.hibeSK,ct.hibeCT);
    // assert(b1== group.exp(group.exp(group.pair(g2G1,gG2),group.mul(ss,group.sub(aa,gam1))),neg));
-    GT b2 = ppke.decrypt(pk,sk.ppkeSK,ct.ppkeCT);
+    GT b2 = ppke.unblind(pk,sk.ppkeSK,ct.ppkeCT);
    // assert(b2 ==group.exp(group.pair(g2G1,gG2),group.mul(ss,gam1)));
     return group.div(group.mul(ct.ct0,b1),b2);
 }
@@ -290,15 +292,13 @@ ZR Gmppke::LagrangeBasisCoefficients(uint j,const ZR &x , const vector<ZR> & pol
     ZR prod = 1;
     for(uint  m=0;m<k;m++){
         if(j != m){
-        // cout << "<<<<<<<<<<<<<<<<<<<<<<<" << endl;
-        // cout  << "j:" << j << " m:" << m << endl;
-        // cout << "(" << x << "-" <<  polynomial_xcordinates[m] << ")/" << endl;
-        // cout << "(" << polynomial_xcordinates[j] << "-" << polynomial_xcordinates[m] << ")" << endl;
-        ZR interim = group.div(group.sub(x,polynomial_xcordinates[m]),group.sub(polynomial_xcordinates[j],polynomial_xcordinates[m]));
-     //   cout << "interim " << interim << endl;
-        prod = group.mul(prod,interim);
-        // cout << "prod = " << prod << endl;
-        // cout << ">>>>>>>>>>>>>>>>>>>>>>>\n\n" << endl;
+			try{
+			ZR interim = group.div(group.sub(x,polynomial_xcordinates[m]),group.sub(polynomial_xcordinates[j],polynomial_xcordinates[m]));
+			prod = group.mul(prod,interim);
+			}catch(const RelicDividByZero & t){
+				throw logic_error("LagrangeBasisCoefficient calculation failed. RelicDividByZero"
+						" Almost certainly a duplicate x-coordinate: ");// FIXME give cordinate
+			}
         }
     }
     return prod;
@@ -374,16 +374,28 @@ G2 Gmppke::vG2(const std::vector<G2> & gqofxG2,const ZR & x) const{
     return LagrangeInterpInExponent(x,xcords,gqofxG2,d);
 
 }
-void Gmppke::keygen(const BbhHIBEPublicKey & pkhibe,ZR & gamma, GmppkePublicKey & pk, GmppkePrivateKey & sk) const
+void Gmppke::keygen(GmppkePublicKey & pk, GmppkePrivateKey & sk) const
+{
+   baseKey bpk;
+   const ZR alpha = group.random(ZR_t);
+   bpk.gG1 = group.random(G1_t);
+   bpk.gG2 = group.random(G2_t);
+   const ZR beta = group.random(ZR_t);
+   bpk.g2G1 = group.exp(bpk.gG1, beta);
+   bpk.g2G2 = group.exp(bpk.gG2, beta);
+   pk.gG1 = bpk.gG1;
+   pk.gG2 = bpk.gG2;
+   pk.g2G1 = bpk.g2G1;
+   pk.g2G2 = bpk.g2G2;
+   keygen(bpk,alpha,pk,sk);
+}
+void Gmppke::keygen(const baseKey & pkhibe,const ZR & gamma, GmppkePublicKey & pk, GmppkePrivateKey & sk) const
 {
     pk.d = d;
 
-
-    pk.gG1 = pkhibe.gG1;
-    pk.gG2 = pkhibe.gG2;
     pk.ppkeg1 =  group.exp(pk.gG2,gamma);
-    pk.g2G1 = pkhibe.g2G1;
-    pk.g2G2 = pkhibe.g2G2;
+
+
 
     // Select a random polynomial of degree d subject to q(0)= beta. We do this
     // by selecting d+1 points. Because we don't actually  care about the 
@@ -454,11 +466,34 @@ void Gmppke::puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const Z
 
     sk.shares.push_back(skentryn);
 }
-GmmppkeCT Gmppke::encrypt(const GmppkePublicKey & pk, const GT & M, const ZR & s, const std::vector<ZR> & tags ) const
+
+GmmppkeCT Gmppke::encrypt(const GmppkePublicKey & pk,const GT & M,const std::vector<ZR> & tags) const{
+	const ZR s = group.random(ZR_t);
+//	const ZR alpha(42);
+//	const ZR beta = ZR(747);//group.random(ZR_t);
+
+	GmmppkeCT ct = blind(pk,M,s,tags);
+//    assert(pk.ppkeg1 ==  group.exp(pk.gG2,alpha));
+//    assert(pk.g2G1 == group.exp(pk.gG1, beta));
+//    GT p = group.pair(pk.g2G1, pk.ppkeg1);
+//
+//    GT t = group.exp(group.pair(pk.gG1,pk.gG2),group.mul(alpha,beta));
+//    assert(p== t);
+
+	ct.ct1 = group.mul(group.exp(group.pair(pk.g2G1, pk.ppkeg1), s), M);
+//	assert(ct.ct2==group.exp(pk.gG1, s));
+//	GT b = group.pair(ct.ct2, group.exp(pk.gG2,alpha)  );
+//	//GT bb  = group.exp(p,group.mul(alpha,group.mul(beta,s)));
+//	GT bb = group.exp(t,s);
+//	//assert(b==group.exp(group.pair(pk.g2G1, pk.ppkeg1), s));
+//	assert(M==group.div(ct.ct1,bb));
+	return ct;
+
+}
+PartialGmmppkeCT Gmppke::blind(const GmppkePublicKey & pk, const GT & M, const ZR & s, const std::vector<ZR> & tags ) const
 {
     assert(tags.size()==d);
-    GmmppkeCT  ct;
-    ct.ct1 = group.mul(group.exp(group.pair(pk.g2G1, pk.ppkeg1), s), M);
+    PartialGmmppkeCT  ct;
     ct.ct2 = group.exp(pk.gG1, s);
 
     for (uint i = 0; i < pk.d; i++)
@@ -470,21 +505,56 @@ GmmppkeCT Gmppke::encrypt(const GmppkePublicKey & pk, const GT & M, const ZR & s
     return ct;
 }
 
-GT Gmppke::decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct) const
+bool canDecrypt(const GmppkePrivateKey & sk,const PartialGmmppkeCT & ct){ // FIXME
+
+	if(sk.shares.size()< ct.tags.size()){
+		std::set<ZR> tags;
+		for(auto t : sk.shares){
+			tags.insert(t.sk4);
+		}
+		for(auto t: ct.tags){
+			if(tags.count(t)>0){
+				return false;
+			}
+		}
+	}else{
+		std::set<ZR> tags(ct.tags.begin(),ct.tags.end());
+		for(auto t : sk.shares){
+			if(tags.count(t.sk4)>0){
+		    	 return false;
+			}
+		}
+    }
+    return true;
+}
+
+GT Gmppke::decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct ) const{
+    if(!canDecrypt(sk,ct)){
+    	throw PuncturedCiphertext("cannot decrypt. Duplicate tags");
+    }
+    return decrypt_unchecked(pk,sk,ct);
+}
+GT Gmppke::decrypt_unchecked(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct ) const{
+	return group.div(ct.ct1,unblind(pk,sk,ct));
+}
+
+GT Gmppke::unblind(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const PartialGmmppkeCT & ct) const
 {
     assert(ct.tags.size()==d);
     assert(d==pk.d);
 
-    vector<ZR> shareTags(ct.tags.size()+1);// allow one more tag for share the private key holds
-    for(uint i =0; i < ct.tags.size();i++){
-            shareTags[i]=ct.tags[i];
-    }
+
+
+    vector<ZR> shareTags(ct.tags);
+    const unsigned int numshares = sk.shares.size();
+
+    shareTags.resize( ct.tags.size()+1);// allow one more tag for share the private key holds
+
     assert(shareTags.size() == pk.d+1);
 
     // Compute w_i coefficients for recovery
     // FIXME check that points are unique.
 
-    const uint numshares = sk.shares.size();
 
     vector<GT> z(numshares);
 

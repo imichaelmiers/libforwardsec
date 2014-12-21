@@ -19,6 +19,14 @@ public:
     {}
 };
 
+class PuncturedCiphertext : public BadCiphertext
+{
+public:
+	PuncturedCiphertext(std::string const& error)
+        : BadCiphertext(error)
+    {}
+};
+
 typedef unsigned int uint;
 
 class baseKey{
@@ -52,19 +60,24 @@ public:
 //	}
  };
 
-class GmmppkeCT{
+class PartialGmmppkeCT{
 public:
 	PairingGroup group;
-	GT ct1;
 	G1 ct2;
 	std::vector<G1> ct3;
 	std::vector<ZR> tags;
+friend bool operator==(const PartialGmmppkeCT& x,const PartialGmmppkeCT& y){
+	return x.ct2 == y.ct2 && x.ct3 == y.ct3 && x.tags == y.tags;
+}
+};
+class GmmppkeCT: public PartialGmmppkeCT{
+public:
+	GmmppkeCT(const  PartialGmmppkeCT & c) : PartialGmmppkeCT(c){}
+	GT ct1;
 friend bool operator==(const GmmppkeCT& x,const GmmppkeCT& y){
 	return x.ct1 == y.ct1 && x.ct2 == y.ct2 && x.ct3 == y.ct3 && x.tags == y.tags;
 }
-
 };
-class BbhHIBEPublicKey;
 class Gmppke
 {
 public:
@@ -85,11 +98,18 @@ public:
 	G1 vG1(const std::vector<G1> & gqofxG1, const ZR & x) const;
 	G2 vG2(const std::vector<G2> & gqofxG2, const ZR & x) const;
 
-	void keygen(const BbhHIBEPublicKey & pkhibe, ZR & gamma,GmppkePublicKey & pk, GmppkePrivateKey & sk) const;
+	void keygen(GmppkePublicKey & pk, GmppkePrivateKey & sk) const;
+	void keygen(const baseKey & pkhibe,const ZR & gamma,GmppkePublicKey & pk, GmppkePrivateKey & sk) const;
 	GmppkePrivateKeyShare skgen(const GmppkePublicKey &pk,const ZR & alpha ) const;
 	void puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const ZR & tag) const;
-	GmmppkeCT encrypt(const GmppkePublicKey & pk,const GT & M, const ZR & s,  const std::vector<ZR> & tags) const;
+	GmmppkeCT encrypt(const GmppkePublicKey & pk,const GT & M,const std::vector<ZR> & tags) const;
+	PartialGmmppkeCT blind(const GmppkePublicKey & pk,const GT & M, const ZR & s,  const std::vector<ZR> & tags) const;
+
+	GT unblind(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const PartialGmmppkeCT & ct ) const;
 	GT decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct ) const;
+	//For testing purposes only
+	GT decrypt_unchecked(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct ) const;
+
 };
 
 
@@ -161,7 +181,7 @@ public:
 	PairingGroup group;
 	GT ct0;
 	PartialBbghCT hibeCT;
-	GmmppkeCT ppkeCT;
+	PartialGmmppkeCT ppkeCT;
 	unsigned int interval;
 	AESKey xorct;
 friend bool operator==(const PseCipherText& l,const PseCipherText& r){

@@ -8,6 +8,17 @@
 #include "gmpfse.h"
 #include "gtest/gtest.h"
 
+class Gmmppketest : public ::testing::Test {
+protected:
+	 virtual void SetUp(){
+	 	test.keygen(pk,sk);
+	 }
+     PairingGroup group;
+	 Gmppke test;
+	 GmppkePublicKey pk ;
+	 GmppkePrivateKey sk;
+};
+
 class PFSETests : public ::testing::Test {
 protected: 
 	 virtual void SetUp(){
@@ -98,7 +109,7 @@ TEST_F(PFSETests,FailWhenPunctured){
     test.puncture("9");
     //test.puncture(1,eight);
    // test.decrypt(ct1);
-   EXPECT_THROW(test.decrypt(ct1),invalid_argument); //FIXME
+   EXPECT_THROW(test.decrypt(ct1),logic_error); //FIXME
 }
 
 TEST_F(PFSETests,DecryptOnPuncture){
@@ -223,6 +234,42 @@ TEST_F(BbghhibeTests,derivedFurther){
 
 }
 
+TEST_F(Gmmppketest,basic){
+    GT m = group.random(GT_t);
+    vector<ZR> tags;
+    tags.push_back(ZR(2));
+
+    GmmppkeCT ct = test.encrypt(pk,m,tags);
+    EXPECT_EQ(m,test.decrypt(pk,sk,ct));
+
+}
+TEST_F(Gmmppketest,puncture){
+    GT m = group.random(GT_t);
+    vector<ZR> tags;
+    tags.push_back(ZR(2));
+
+    GmmppkeCT ct = test.encrypt(pk,m,tags);
+    test.puncture(pk,sk,ZR(3));
+    EXPECT_EQ(m,test.decrypt(pk,sk,ct));
+    test.puncture(pk,sk,ZR(5));
+    test.puncture(pk,sk,ZR(6));
+    EXPECT_EQ(m,test.decrypt(pk,sk,ct));
+}
+TEST_F(Gmmppketest,punctureFail){
+    GT m = group.random(GT_t);
+    vector<ZR> tags;
+    tags.push_back(ZR(2));
+
+    GmmppkeCT ct = test.encrypt(pk,m,tags);
+    test.puncture(pk,sk,ZR(2));
+    EXPECT_THROW(test.decrypt_unchecked(pk,sk,ct),std::logic_error);
+    EXPECT_THROW(test.decrypt(pk,sk,ct),PuncturedCiphertext);
+
+    test.puncture(pk,sk,ZR(5));
+    test.puncture(pk,sk,ZR(6));
+    EXPECT_THROW(test.decrypt_unchecked(pk,sk,ct),std::logic_error);
+    EXPECT_THROW(test.decrypt(pk,sk,ct),PuncturedCiphertext);
+}
 
 
 // TEST_F(PFSETests,Basic){

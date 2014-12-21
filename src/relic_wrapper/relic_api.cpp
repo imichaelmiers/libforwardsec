@@ -103,7 +103,7 @@ int bn_is_one(bn_t a)
 ZR operator/(const ZR& x, const ZR& y)
 {
 	if(bn_is_zero(y.z)) {
-		throw std::invalid_argument("divide by zero");
+		throw RelicDividByZero("divide by zero");
 	}
 	ZR i;
 	invertZR(i,y,i.order);

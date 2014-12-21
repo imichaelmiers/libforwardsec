@@ -42,6 +42,13 @@ void ro_error(void);
 class CharmList;
 class CharmListZR;
 
+class RelicDividByZero : public std::logic_error
+{
+public:
+	RelicDividByZero(std::string const& error)
+        : std::logic_error(error)
+    {}
+};
 class ZR
 {
 public:
@@ -81,6 +88,10 @@ public:
       {if(bn_cmp(x.z, y.z) == CMP_EQ) return true; else return false; }
 	friend bool operator!=(const ZR& x, const ZR& y)
       {if (bn_cmp(x.z, y.z) != CMP_EQ) return true; else return false; }
+	friend bool operator>(const ZR& x, const ZR& y)
+      {if (bn_cmp(x.z, y.z) == CMP_GT) return true; else return false; }
+	friend bool operator<(const ZR& x, const ZR& y)
+      {if (bn_cmp(x.z, y.z) == CMP_LT) return true; else return false; }
 };
 
 class G1
