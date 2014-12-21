@@ -15,9 +15,9 @@ using namespace std;
 unsigned int d = 1;
 #define NULLTAG 42
 #ifdef DDDEBUG
-#define DBGG(x) x
+#define libforwardsec_DBG(x) x
 #else
-#define DBGG(x)
+#define libforwardsec_DBG(x)
 #endif
 
 /** Checks if you can decrypt a pfse ciphertext
@@ -55,15 +55,15 @@ PfsePuncturedPrivateKey PfseKeyStore::getKey(unsigned int i)  const{
 		auto y = unpucturedHIBEKeys.find(i);
 
 		if(y == unpucturedHIBEKeys.end() ){
-			DBGG(cout << "did not find   keys for interval " << i << endl;)
+			libforwardsec_DBG(cout << "did not find   keys for interval " << i << endl;)
 
   			  throw invalid_argument("No key for this interval: " + std::to_string(i));
 		}
-		DBGG(cout << "found key in unpunctured keys for interval " << i << endl;)
+		libforwardsec_DBG(cout << "found key in unpunctured keys for interval " << i << endl;)
 		p.hibeSK = y->second;
 		p.ppkeSK = unpucturedPPKEKey;
 	}else{
-		DBGG(cout << "found key in punctured keys for interval " << i << endl;)
+		libforwardsec_DBG(cout << "found key in punctured keys for interval " << i << endl;)
 		p = x->second;
 	}
 	return p;
@@ -77,7 +77,7 @@ void PfseKeyStore::updateKey(unsigned int i, const PfsePuncturedPrivateKey & p){
 	unpucturedHIBEKeys.erase(i);
 }
 void PfseKeyStore::erase(unsigned int i){
-	DBGG(cout << "Erasing key for inteval " << i << endl;)
+	libforwardsec_DBG(cout << "Erasing key for inteval " << i << endl;)
 
 	puncturedKeys.erase(i); //FIXME secure erase.
 	unpucturedHIBEKeys.erase(i);
@@ -88,7 +88,7 @@ bool PfseKeyStore::hasKey(const unsigned int i) const{
 
 
 void PfseKeyStore::addkey(unsigned int i, const BbghPrivatekey & h){
-	DBGG(cout << "added key for interval " << i << endl;);
+	libforwardsec_DBG(cout << "added key for interval " << i << endl;);
 	unpucturedHIBEKeys[i] = h;
 }
 
@@ -213,7 +213,7 @@ void Pfse::puncture(unsigned int interval, string tag){
 
     //if the key is unpunctured, we need to bind in a new punctured key
     if(!k.punctured()){
-    	DBGG(cout << interval << "not already punctured" << endl;)
+    	libforwardsec_DBG(cout << interval << "not already punctured" << endl;)
 		bindKey(k);
     }
     ppke.puncture(pk,k.ppkeSK,group.hashListToZR(tag));
