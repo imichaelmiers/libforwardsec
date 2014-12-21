@@ -12,7 +12,7 @@
 #include "util.h"
 using namespace std;
 #define splitkey 0
-uint d = 1;
+unsigned int d = 1;
 #define NULLTAG 42
 #ifdef DDDEBUG
 #define DBGG(x) x
@@ -104,7 +104,7 @@ bool PfseKeyStore::needsChildKeys(const unsigned int i, const unsigned int d) co
 	return !(hasKey(pathToIndex(lpath,d)) && hasKey(pathToIndex(rpath,d)));
 }
 
-Pfse::Pfse(uint d):hibe(),ppke(),depth(d){
+Pfse::Pfse(unsigned int d):hibe(),ppke(),depth(d){
 	this->nextParentInterval = 1 ;
     // group.setCurve(BN256);
     // cout << "depth" << depth << endl;
@@ -145,7 +145,7 @@ void Pfse::keygen(){
 void Pfse::prepareNextInterval(){
 
     std::vector<ZR> path = indexToPath(nextParentInterval,depth);
-    uint pathlength = path.size();
+    unsigned int pathlength = path.size();
     const PfsePuncturedPrivateKey & k = privatekeys.getKey(nextParentInterval); //FIXME refrence could be deleted
     if(k.punctured()){
          throw logic_error("The parent tag is already punctured. You must call prepareNextInterval before starting");
@@ -203,7 +203,7 @@ void Pfse::puncture(string tag){
     puncture(nextParentInterval-1,tag);
 }
 
-void Pfse::puncture(uint interval, string tag){
+void Pfse::puncture(unsigned int interval, string tag){
 	if(privatekeys.needsChildKeys(interval,depth)){
 		throw invalid_argument("Cannot puncture key for  interval "+std::to_string(interval)+
 				" , haven't derived keys yet. Last interval with keys is " +std::to_string(nextParentInterval-1));
@@ -222,10 +222,10 @@ void Pfse::puncture(uint interval, string tag){
 //privatekeys[interval] = sk;
 
 }
-PseCipherText Pfse::encrypt(const pfsepubkey & pk, const AESKey aes_key, const uint interval,const vector<string> tags) const {
+PseCipherText Pfse::encrypt(const pfsepubkey & pk, const AESKey aes_key, const unsigned int interval,const vector<string> tags) const {
     vector<ZR> tagsZR;
 
-    for(uint i=0;i<tags.size();i++){
+    for(unsigned int i=0;i<tags.size();i++){
 
         ZR tag =  group.hashListToZR(tags[i]);
         tagsZR.push_back(tag);
@@ -233,13 +233,13 @@ PseCipherText Pfse::encrypt(const pfsepubkey & pk, const AESKey aes_key, const u
     return encryptFO(pk,aes_key,interval,tagsZR);
 }
 PseCipherText Pfse::encryptFO(const pfsepubkey & pk,const AESKey  & aes_key
-		, const uint interval, const vector<ZR>  & tags ) const {
+		, const unsigned int interval, const vector<ZR>  & tags ) const {
     GT x = group.random(GT_t);
     return encryptFO(pk,aes_key,x,interval,tags);
 
 }
 PseCipherText Pfse::encryptFO(const pfsepubkey & pk,  const AESKey  & aes_key,const  GT & x,
-		const uint interval, const vector<ZR>  & tags ) const {
+		const unsigned int interval, const vector<ZR>  & tags ) const {
     std::stringstream ss; //FIXME the << operator returns "BROKEN"
     ss << x;
     ss << aes_key;
@@ -258,12 +258,12 @@ PseCipherText Pfse::encryptFO(const pfsepubkey & pk,  const AESKey  & aes_key,co
     return ct;
 
 }
-PseCipherText Pfse::encrypt(const pfsepubkey & pk,const  GT & M, const uint interval, const vector<ZR>  & tags) const{
+PseCipherText Pfse::encrypt(const pfsepubkey & pk,const  GT & M, const unsigned int interval, const vector<ZR>  & tags) const{
         ZR s = group.random(ZR_t);
         return Pfse::encrypt(pk,M,s,interval,tags);
 }
 
-PseCipherText Pfse::encrypt(const pfsepubkey & pk, const GT & M,  const ZR & s, const uint interval, const vector<ZR>  & tags) const{
+PseCipherText Pfse::encrypt(const pfsepubkey & pk, const GT & M,  const ZR & s, const unsigned int interval, const vector<ZR>  & tags) const{
     PseCipherText ct;
     
     ct.interval = interval;
@@ -392,7 +392,7 @@ void Gmppke::keygen(const baseKey & pkhibe,const ZR & gamma, GmppkePublicKey & p
     // the next d points' y values  are random
     // we use x= 1...d because this has the side effect
     // of easily computing g^q(0).... g^q(d).
-    for (uint i = 1; i <= d; i++)
+    for (unsigned int i = 1; i <= d; i++)
     {
         const ZR ry = group.random(ZR_t);
 
@@ -477,7 +477,7 @@ PartialGmmppkeCT Gmppke::blind(const GmppkePublicKey & pk, const GT & M, const Z
     PartialGmmppkeCT  ct;
     ct.ct2 = group.exp(pk.gG1, s);
 
-    for (uint i = 0; i < pk.d; i++)
+    for (unsigned int i = 0; i < pk.d; i++)
     {
         G1 vofx = vG1(pk.gqofxG1,tags[i]);
         ct.ct3.push_back(group.exp(vofx, s));
@@ -518,7 +518,7 @@ GT Gmppke::recoverBlind(const GmppkePublicKey & pk, const GmppkePrivateKey & sk,
 
     vector<GT> z(numshares);
 
-    for (uint i = 0; i < numshares; i++)
+    for (unsigned int i = 0; i < numshares; i++)
     {
         const GmppkePrivateKeyShare & s0 = sk.shares[i];
 
@@ -528,13 +528,13 @@ GT Gmppke::recoverBlind(const GmppkePublicKey & pk, const GmppkePrivateKey & sk,
 
         vector<ZR> w;
 
-        for(uint j=0;j < shareTags.size(); j++){
+        for(unsigned int j=0;j < shareTags.size(); j++){
             w.push_back(LagrangeBasisCoefficients(group,j,0,shareTags));
         }
         const ZR wstar = w[w.size() - 1];
 
         G1 ct3prod_j;
-        for (uint j = 0; j < d; j++)
+        for (unsigned int j = 0; j < d; j++)
         {
             ct3prod_j = group.mul(ct3prod_j, group.exp(ct.ct3[j],w[j])); // w[0] = wstar
 
@@ -545,7 +545,7 @@ GT Gmppke::recoverBlind(const GmppkePublicKey & pk, const GmppkePrivateKey & sk,
     }
 
     GT zprod;
-    for (uint i = 0; i < numshares; i++)
+    for (unsigned int i = 0; i < numshares; i++)
     {
         zprod = group.mul(zprod, z[i]);
     }
