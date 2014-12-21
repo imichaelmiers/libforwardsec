@@ -308,7 +308,7 @@ GT Pfse::decryptGT(const PfsePuncturedPrivateKey & sk,const PseCipherText &ct) c
    // assert(b1== group.exp(group.exp(group.pair(g2G1,gG2),group.mul(ss,group.sub(aa,gam1))),neg));
     GT b2 = ppke.recoverBlind(pk,sk.ppkeSK,ct.ppkeCT);
    // assert(b2 ==group.exp(group.pair(g2G1,gG2),group.mul(ss,gam1)));
-    return group.div(group.mul(ct.ct0,b1),b2);
+    return group.div(ct.ct0,group.mul(b1,b2));
 }
 
 uint treeSize(uint k){
@@ -751,11 +751,12 @@ PartialBbghCT Bbghibe::blind(const BbhHIBEPublicKey & pk,const GT & M, const ZR 
 }
 
 GT Bbghibe::recoverBlind(const BbghPrivatekey & sk, const PartialBbghCT & ct) const{
-    return group.div(group.pair(ct.C, sk.a1), group.pair(ct.B, sk.a0));
+	// This is inverted so that decrypt is ct/result. I.e. it aligns with the ppke scheme.
+    return group.div(group.pair(ct.B, sk.a0),group.pair(ct.C, sk.a1));
 }
 
 GT Bbghibe::decrypt(const BbghPrivatekey & sk, const BbghCT & ct) const
 {
 
-    return group.mul(ct.A, recoverBlind(sk,ct));
+    return group.div(ct.A, recoverBlind(sk,ct));
 }
