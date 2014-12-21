@@ -109,7 +109,7 @@ TEST_F(PFSETests,FailWhenPunctured){
     test.puncture("9");
     //test.puncture(1,eight);
    // test.decrypt(ct1);
-   EXPECT_THROW(test.decrypt(ct1),logic_error); //FIXME
+   EXPECT_THROW(test.decrypt(ct1),PuncturedCiphertext); //FIXME
 }
 
 TEST_F(PFSETests,DecryptOnPuncture){

@@ -18,6 +18,34 @@ uint d = 1;
 #else
 #define DBGG(x)
 #endif
+/** Checks if you can decrypt a pfse ciphertext
+ *
+ * @param sk
+ * @param ct
+ * @return
+ */
+bool canDecrypt(const GmppkePrivateKey & sk,const PartialGmmppkeCT & ct){ // FIXME
+
+	if(sk.shares.size()< ct.tags.size()){
+		std::set<ZR> tags;
+		for(auto t : sk.shares){
+			tags.insert(t.sk4);
+		}
+		for(auto t: ct.tags){
+			if(tags.count(t)>0){
+				return false;
+			}
+		}
+	}else{
+		std::set<ZR> tags(ct.tags.begin(),ct.tags.end());
+		for(auto t : sk.shares){
+			if(tags.count(t.sk4)>0){
+		    	 return false;
+			}
+		}
+    }
+    return true;
+}
 PfsePuncturedPrivateKey PfseKeyStore::getKey(unsigned int i)  const{
 	PfsePuncturedPrivateKey p;
 	auto x = puncturedKeys.find(i);
@@ -248,7 +276,9 @@ PseCipherText Pfse::encrypt(const pfsepubkey & pk, const GT & M,  const ZR & s, 
 }
 AESKey Pfse::decrypt(const PseCipherText &ct) const{
     const PfsePuncturedPrivateKey & sk = privatekeys.getKey(ct.interval);
-
+    if(!canDecrypt(sk.ppkeSK,ct.ppkeCT)){
+    	throw PuncturedCiphertext("cannot decrypt. Duplicate tags");
+    }
     return decryptFO(sk,ct);
 }
 
@@ -505,28 +535,7 @@ PartialGmmppkeCT Gmppke::blind(const GmppkePublicKey & pk, const GT & M, const Z
     return ct;
 }
 
-bool canDecrypt(const GmppkePrivateKey & sk,const PartialGmmppkeCT & ct){ // FIXME
 
-	if(sk.shares.size()< ct.tags.size()){
-		std::set<ZR> tags;
-		for(auto t : sk.shares){
-			tags.insert(t.sk4);
-		}
-		for(auto t: ct.tags){
-			if(tags.count(t)>0){
-				return false;
-			}
-		}
-	}else{
-		std::set<ZR> tags(ct.tags.begin(),ct.tags.end());
-		for(auto t : sk.shares){
-			if(tags.count(t.sk4)>0){
-		    	 return false;
-			}
-		}
-    }
-    return true;
-}
 
 GT Gmppke::decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct ) const{
     if(!canDecrypt(sk,ct)){
