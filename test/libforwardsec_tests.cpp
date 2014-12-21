@@ -31,7 +31,7 @@ protected:
 	 Pfse test;
 	 pfsepubkey pk ;
      string teststring = "1111111110101010000011110001001100100111101101110000010001101010100000010110100010111010000100011100011111010100101011011001001110110000110100110011101001110010110001100100111100000111100001101110101000010000001011010110000100100001001001111010001000111001";
-	 AESKey testkey;
+	 bitset256 testkey;
 	// static PairingGroup _group;
 };
 
@@ -98,7 +98,7 @@ TEST_F(PFSETests,Decrypt){
 
     //test.puncture(1,eight);
 
-    AESKey result = test.decrypt(ct1);
+    bitset256 result = test.decrypt(ct1);
     ASSERT_EQ(testkey,result);
 }
 
@@ -120,7 +120,7 @@ TEST_F(PFSETests,DecryptOnPuncture){
 
     test.puncture(1,"8");
 
-    AESKey result = test.decrypt(ct);
+    bitset256 result = test.decrypt(ct);
 
     EXPECT_EQ(testkey,result);
 
@@ -134,7 +134,7 @@ TEST_F(PFSETests,DecryptOnPuncture){
 
     PseCipherText ct2 = test.encrypt(pk,testkey,2,tags);
 
-    AESKey result1 = test.decrypt(ct2);
+    bitset256 result1 = test.decrypt(ct2);
 
     EXPECT_EQ(testkey,result1) ;
 }
@@ -152,7 +152,7 @@ TEST_F(PFSETests,PassOnPunctureNextInterval){
 	test.prepareNextInterval();
     PseCipherText ct1 = test.encrypt(pk,testkey,3,tags);
 
-    AESKey result = test.decrypt(ct1);
+    bitset256 result = test.decrypt(ct1);
     EXPECT_EQ(testkey,result);
 
 }
@@ -168,7 +168,7 @@ TEST_F(PFSETests,PunctureAndDeriveAll){
 	    test.puncture("11");
 	    test.puncture("12");
 	    PseCipherText ct1 = test.encrypt(pk,testkey,i,tags);
-	    AESKey result = test.decrypt(ct1);
+	    bitset256 result = test.decrypt(ct1);
 	    EXPECT_EQ(testkey,result);
 		test.prepareNextInterval();
 	}
@@ -184,7 +184,7 @@ TEST_F(PFSETests,Delete){
 
     PseCipherText ct = test.encrypt(pk,testkey,1,tags);
 
-    AESKey result = test.decrypt(ct);
+    bitset256 result = test.decrypt(ct);
     EXPECT_EQ(testkey,result);
     test.eraseKey(1);
     EXPECT_THROW(test.decrypt(ct),invalid_argument); // no key

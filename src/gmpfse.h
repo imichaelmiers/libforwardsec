@@ -5,12 +5,10 @@
 #include <sstream>
 #include <string>
 #include <map>
-#include <bitset>
 #include "relic_wrapper/relic_api.h"
 using namespace std;
-#ifndef AES_SECURITY
-#define AES_SECURITY 256
-#endif
+
+
 class BadCiphertext : public std::invalid_argument
 {
 public:
@@ -117,7 +115,6 @@ public:
 class BbhHIBEPublicKey:  public virtual  baseKey{
 public:
 unsigned int l;
-PairingGroup group;
 G2 hibeg1;
 G1 g3G1;
 G2 g3G2;
@@ -162,7 +159,6 @@ public:
 	GT decrypt(const BbghPrivatekey & sk,const BbghCT & ct) const; // actual decrypt
 
 };
-typedef  bitset<256> AESKey;
 
 class PseCipherText{
 public:
@@ -171,7 +167,7 @@ public:
 	PartialBbghCT hibeCT;
 	PartialGmmppkeCT ppkeCT;
 	unsigned int interval;
-	AESKey xorct;
+	bitset256 xorct;
 friend bool operator==(const PseCipherText& l,const PseCipherText& r){
 		return l.ct0 == r.ct0 && l.hibeCT == r.hibeCT && l.ppkeCT == r.ppkeCT
 				&& l.interval == r.interval && l.xorct == r.xorct;
@@ -220,25 +216,25 @@ public:
 	/** Encrypts a message. Messages are limited to 256 bits. (e.g. an AES key).
 	 *
 	 * @param pk the public key of the recipient
-	 * @param aes_key the message
+	 * @param msg the message
 	 * @param interval the time interval the message is in
 	 * @param tags the tags for the message
 	 * @return the ciphertext
 	 */
-	PseCipherText encrypt (const pfsepubkey & pk, const AESKey aes_key, const unsigned int interval, const vector<string> tags) const;
+	PseCipherText encrypt(const pfsepubkey & pk, const bitset256 msg, const unsigned int interval, const vector<string> tags) const;
 
 	/**Decrypt a message using the private key stored in the object.
 	 *
 	 * @param ct the ciphertext
 	 * @return the decrypted message.
 	 */
-	AESKey decrypt( const PseCipherText &ct) const;
+	bitset256 decrypt( const PseCipherText &ct) const;
 	
 	/**Derives the keys needed to decrypt the next interval.
 	 *
 	 */
 	void prepareNextInterval();
-	/** Erases the key for a given interval
+	/** Erases the key for a given interval.
 	 *
 	 * @param interval the interval to erase.
 	 */
@@ -262,16 +258,16 @@ private:
 	Gmppke ppke;
 	unsigned int depth;
 	void bindKey(PfsePuncturedPrivateKey & k);
-	PseCipherText encryptFO( const pfsepubkey & pk, const AESKey & bitmsg,
+	PseCipherText encryptFO( const pfsepubkey & pk, const bitset256 & bitmsg,
 			              const unsigned int interval, const vector<ZR>  & tags) const;
-	PseCipherText encryptFO( const pfsepubkey & pk, const AESKey & bitmsg,
+	PseCipherText encryptFO( const pfsepubkey & pk, const bitset256 & bitmsg,
 			const GT & x, const unsigned int interval, const vector<ZR>  & tags) const;
 
 	PseCipherText encrypt( const pfsepubkey & pk, const GT & M,              const unsigned int interval, const vector<ZR>  & tags) const;
 	PseCipherText encrypt( const pfsepubkey & pk, const GT & M,const ZR & s, const unsigned int interval, const vector<ZR>  & tags) const;
 
 
-	AESKey decryptFO(const PfsePuncturedPrivateKey &sk, const PseCipherText &ct) const;
+	bitset256 decryptFO(const PfsePuncturedPrivateKey &sk, const PseCipherText &ct) const;
 	GT decryptGT(const PfsePuncturedPrivateKey & sk, const PseCipherText &ct) const;
 	unsigned int nextParentInterval;
 };

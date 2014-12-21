@@ -222,7 +222,7 @@ void Pfse::puncture(unsigned int interval, string tag){
 //privatekeys[interval] = sk;
 
 }
-PseCipherText Pfse::encrypt(const pfsepubkey & pk, const AESKey aes_key, const unsigned int interval,const vector<string> tags) const {
+PseCipherText Pfse::encrypt(const pfsepubkey & pk, const bitset256 msg, const unsigned int interval,const vector<string> tags) const {
     vector<ZR> tagsZR;
 
     for(unsigned int i=0;i<tags.size();i++){
@@ -230,19 +230,19 @@ PseCipherText Pfse::encrypt(const pfsepubkey & pk, const AESKey aes_key, const u
         ZR tag =  group.hashListToZR(tags[i]);
         tagsZR.push_back(tag);
     }
-    return encryptFO(pk,aes_key,interval,tagsZR);
+    return encryptFO(pk,msg,interval,tagsZR);
 }
-PseCipherText Pfse::encryptFO(const pfsepubkey & pk,const AESKey  & aes_key
+PseCipherText Pfse::encryptFO(const pfsepubkey & pk,const bitset256  & msg
 		, const unsigned int interval, const vector<ZR>  & tags ) const {
     GT x = group.random(GT_t);
-    return encryptFO(pk,aes_key,x,interval,tags);
+    return encryptFO(pk,msg,x,interval,tags);
 
 }
-PseCipherText Pfse::encryptFO(const pfsepubkey & pk,  const AESKey  & aes_key,const  GT & x,
+PseCipherText Pfse::encryptFO(const pfsepubkey & pk,  const bitset256  & msg,const  GT & x,
 		const unsigned int interval, const vector<ZR>  & tags ) const {
     std::stringstream ss; //FIXME the << operator returns "BROKEN"
     ss << x;
-    ss << aes_key;
+    ss << msg;
     ZR s = group.hashListToZR(ss.str());
    
     PseCipherText ct = encrypt(pk,x,s,interval,tags);
@@ -252,9 +252,9 @@ PseCipherText Pfse::encryptFO(const pfsepubkey & pk,  const AESKey  & aes_key,co
     sss << "0xDEADBEEF";
     sss << x;
     ZR xorash = group.hashListToZR(sss.str().c_str());
-    AESKey bits = intToBits(xorash);
+    bitset256 bits = intToBits(xorash);
 
-    ct.xorct = aes_key ^ bits;
+    ct.xorct = msg ^ bits;
     return ct;
 
 }
@@ -276,7 +276,7 @@ PseCipherText Pfse::encrypt(const pfsepubkey & pk, const GT & M,  const ZR & s, 
 
     return ct;
 }
-AESKey Pfse::decrypt(const PseCipherText &ct) const{
+bitset256 Pfse::decrypt(const PseCipherText &ct) const{
     const PfsePuncturedPrivateKey & sk = privatekeys.getKey(ct.interval);
     if(!canDecrypt(sk.ppkeSK,ct.ppkeCT)){
     	throw PuncturedCiphertext("cannot decrypt. Duplicate tags");
@@ -284,7 +284,7 @@ AESKey Pfse::decrypt(const PseCipherText &ct) const{
     return decryptFO(sk,ct);
 }
 
-AESKey Pfse::decryptFO(const PfsePuncturedPrivateKey & sk,const PseCipherText &ct) const{
+bitset256 Pfse::decryptFO(const PfsePuncturedPrivateKey & sk,const PseCipherText &ct) const{
     GT x = decryptGT(sk,ct);
 
     // since we don't have a different hash function, we simply prefix it
@@ -293,8 +293,8 @@ AESKey Pfse::decryptFO(const PfsePuncturedPrivateKey & sk,const PseCipherText &c
     sss << x;
     ZR xorash = group.hashListToZR(sss.str());
 
-    AESKey bits = intToBits(xorash);
-    AESKey aes_key = ct.xorct ^ bits;
+    bitset256 bits = intToBits(xorash);
+    bitset256 aes_key = ct.xorct ^ bits;
     PseCipherText cttest = encryptFO(pk,aes_key,x,ct.interval,ct.ppkeCT.tags);
     if(ct == cttest ){
         return aes_key;

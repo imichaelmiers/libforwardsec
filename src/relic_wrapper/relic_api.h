@@ -39,8 +39,9 @@ using namespace std;
 #define convert_str(a)  a /* nothing */
 void ro_error(void);
 
-class CharmList;
-class CharmListZR;
+
+typedef  bitset<256> bitset256;
+
 
 class RelicDividByZero : public std::logic_error
 {
@@ -279,6 +280,6 @@ private:
 
 //template<> 
 //ZR PairingGroup::random12<ZR>(){return this->random(ZR_t);}
-std::bitset<256> intToBits(const ZR & id);
+bitset256 intToBits(const ZR & id);
 
 #endif
