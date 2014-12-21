@@ -274,9 +274,9 @@ AESKey Pfse::decryptFO(const PfsePuncturedPrivateKey & sk,const PseCipherText &c
 
 
 GT Pfse::decryptGT(const PfsePuncturedPrivateKey & sk,const PseCipherText &ct) const {
-    GT b1 = hibe.unblind(sk.hibeSK,ct.hibeCT);
+    GT b1 = hibe.recoverBlind(sk.hibeSK,ct.hibeCT);
    // assert(b1== group.exp(group.exp(group.pair(g2G1,gG2),group.mul(ss,group.sub(aa,gam1))),neg));
-    GT b2 = ppke.unblind(pk,sk.ppkeSK,ct.ppkeCT);
+    GT b2 = ppke.recoverBlind(pk,sk.ppkeSK,ct.ppkeCT);
    // assert(b2 ==group.exp(group.pair(g2G1,gG2),group.mul(ss,gam1)));
     return group.div(group.mul(ct.ct0,b1),b2);
 }
@@ -535,10 +535,10 @@ GT Gmppke::decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, cons
     return decrypt_unchecked(pk,sk,ct);
 }
 GT Gmppke::decrypt_unchecked(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct ) const{
-	return group.div(ct.ct1,unblind(pk,sk,ct));
+	return group.div(ct.ct1,recoverBlind(pk,sk,ct));
 }
 
-GT Gmppke::unblind(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const PartialGmmppkeCT & ct) const
+GT Gmppke::recoverBlind(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const PartialGmmppkeCT & ct) const
 {
     assert(ct.tags.size()==d);
     assert(d==pk.d);
@@ -741,12 +741,12 @@ PartialBbghCT Bbghibe::blind(const BbhHIBEPublicKey & pk,const GT & M, const ZR 
     return ct;
 }
 
-GT Bbghibe::unblind(const BbghPrivatekey & sk, const PartialBbghCT & ct) const{
+GT Bbghibe::recoverBlind(const BbghPrivatekey & sk, const PartialBbghCT & ct) const{
     return group.div(group.pair(ct.C, sk.a1), group.pair(ct.B, sk.a0));
 }
 
 GT Bbghibe::decrypt(const BbghPrivatekey & sk, const BbghCT & ct) const
 {
 
-    return group.mul(ct.A, unblind(sk,ct));
+    return group.mul(ct.A, recoverBlind(sk,ct));
 }
