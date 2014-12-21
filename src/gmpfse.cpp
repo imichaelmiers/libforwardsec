@@ -9,7 +9,7 @@
 #include <set>
 
 #include "gmpfse.h"
-
+#include "util.h"
 using namespace std;
 #define splitkey 0
 uint d = 1;
@@ -19,54 +19,6 @@ uint d = 1;
 #else
 #define DBGG(x)
 #endif
-
-
-ZR LagrangeBasisCoefficients(const PairingGroup & group, const unsigned int & j,const ZR &x , const vector<ZR> & polynomial_xcordinates){
-    uint k = polynomial_xcordinates.size();
-    ZR prod = 1;
-    for(uint  m=0;m<k;m++){
-        if(j != m){
-			try{
-			ZR interim = group.div(group.sub(x,polynomial_xcordinates[m]),group.sub(polynomial_xcordinates[j],polynomial_xcordinates[m]));
-			prod = group.mul(prod,interim);
-			}catch(const RelicDividByZero & t){
-				throw logic_error("LagrangeBasisCoefficient calculation failed. RelicDividByZero"
-						" Almost certainly a duplicate x-coordinate: ");// FIXME give cordinate
-			}
-        }
-    }
-    return prod;
-}
-ZR LagrangeInterp(const PairingGroup & group, const ZR &x , const vector<ZR> & polynomial_xcordinates,
-		const vector<ZR> & polynomial_ycordinates, const  unsigned int& degree){
-    uint k = degree + 1;
-    assert(polynomial_ycordinates.size()==k);
-    assert(polynomial_xcordinates.size()==k);
-    ZR prod = 0;
-    for(uint j = 0; j < k;j++){
-            ZR lagrangeBasisPolyatX = LagrangeBasisCoefficients(group,j,x,polynomial_xcordinates);
-         //   cout << "y_ " << j << "= "<<polynomial_ycordinates[j] << " coef = " << lagrangeBasisPolyatX << " prod = " << prod<< endl;
-            prod =  group.add(prod,group.mul(lagrangeBasisPolyatX,polynomial_ycordinates[j]));
-
-    }
-
-    // cout << "final prod =" << prod << endl;
-    return prod;
-}
-
-
-template <class type> type LagrangeInterpInExponent( const PairingGroup & group,const ZR &x, const vector<ZR> & polynomial_xcordinates,
-		const vector<type> & exp_polynomial_ycordinates, const unsigned int & degree){
-    uint k = degree + 1;
-    assert(exp_polynomial_ycordinates.size()==k);
-    assert(polynomial_xcordinates.size()==k);
-    type prod;
-    for(uint j = 0; j < k;j++){
-            ZR lagrangeBasisPolyatX = LagrangeBasisCoefficients(group,j,x,polynomial_xcordinates);
-            prod =  group.mul(prod,group.exp(exp_polynomial_ycordinates[j],lagrangeBasisPolyatX));
-    }
-    return prod;
-}
 
 /** Checks if you can decrypt a pfse ciphertext
  *
@@ -361,9 +313,6 @@ GT Pfse::decryptGT(const PfsePuncturedPrivateKey & sk,const PseCipherText &ct) c
     return group.div(ct.ct0,group.mul(b1,b2));
 }
 
-uint treeSize(uint k){
-    return (2 <<(k)) -1;
-}
 
 
 
@@ -602,56 +551,6 @@ GT Gmppke::recoverBlind(const GmppkePublicKey & pk, const GmppkePrivateKey & sk,
     }
     return zprod;
 }
-
-
-
-std::vector<ZR>  indexToPath(uint index,uint l){
-    std::vector<ZR> path;
-    uint nodesSoFar = 0;
-    ZR zero = 0;
-    for(uint level =0 ; level < l ; level++){
-        uint subtree_height = treeSize(l-level-1);
-        if (nodesSoFar == index){
-            return path;
-        }else if(index <= (subtree_height + nodesSoFar)){
-            path.push_back(ZR(0));
-            nodesSoFar++;
-        }else{
-            path.push_back(ZR(1));
-            nodesSoFar += (subtree_height +1);
-        }
-    
-    }
-    if(nodesSoFar < index){
-        throw invalid_argument ("index out of bounds of tree");
-    }
-    return path;
-}
-
-uint pathToIndex(std::vector<ZR> & path, uint l){
-    uint index = 0;
-    uint pathsize = path.size();
-    if(pathsize > l){
-        throw invalid_argument("path too long for tree depth");
-    }
-    for(uint level =0 ; level < pathsize ; level++){
-        if (path[level] == 0){
-            index ++;
-        }else if(path[level] == 1){
-
-          uint left_subtree_level = level + 1;
-          uint left_subtree_height = l - left_subtree_level;
-          uint left_subtree_size = treeSize(left_subtree_height);
-
-          index += left_subtree_size;
-
-          index++;
-        }
-    }
-    return index;
-}
-
-
 
 void Bbghibe::setup(const unsigned int & l, BbhHIBEPublicKey & pk, G2 & msk) const
 {

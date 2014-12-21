@@ -66,17 +66,17 @@ public:
 	G1 ct2;
 	std::vector<G1> ct3;
 	std::vector<ZR> tags;
-friend bool operator==(const PartialGmmppkeCT& x,const PartialGmmppkeCT& y){
-	return x.ct2 == y.ct2 && x.ct3 == y.ct3 && x.tags == y.tags;
-}
+	friend bool operator==(const PartialGmmppkeCT& x,const PartialGmmppkeCT& y){
+		return x.ct2 == y.ct2 && x.ct3 == y.ct3 && x.tags == y.tags;
+	}
 };
 class GmmppkeCT: public PartialGmmppkeCT{
 public:
 	GmmppkeCT(const  PartialGmmppkeCT & c) : PartialGmmppkeCT(c){}
 	GT ct1;
-friend bool operator==(const GmmppkeCT& x,const GmmppkeCT& y){
-	return x.ct1 == y.ct1 && x.ct2 == y.ct2 && x.ct3 == y.ct3 && x.tags == y.tags;
-}
+	friend bool operator==(const GmmppkeCT& x,const GmmppkeCT& y){
+		return x.ct1 == y.ct1 && x.ct2 == y.ct2 && x.ct3 == y.ct3 && x.tags == y.tags;
+	}
 };
 class Gmppke
 {
@@ -131,21 +131,19 @@ public:
 	PairingGroup group;
 	G1 B;
 	G1 C;
-friend bool operator==(const PartialBbghCT& x,const PartialBbghCT& y){
-	return x.B == y.B && x.C == y.C;
-}
+	friend bool operator==(const PartialBbghCT& x,const PartialBbghCT& y){
+		return x.B == y.B && x.C == y.C;
+	}
 };
 class BbghCT: public PartialBbghCT{
 public:
 	BbghCT(const  PartialBbghCT & c) : PartialBbghCT(c){}
 	GT A;
-friend bool operator==(const BbghCT& x,const BbghCT& y){
-	return x.A == y.A && x.B == y.B && x.C == y.C; //FIXME call bass operator
-}
+	friend bool operator==(const BbghCT& x,const BbghCT& y){
+		return x.A == y.A && x.B == y.B && x.C == y.C; //FIXME call bass operator
+	}
 };
 
-std::vector<ZR>  indexToPath(uint index,uint l);
-uint pathToIndex(std::vector<ZR> & path, uint l);
 class Bbghibe
 {
 public:
@@ -279,8 +277,5 @@ private:
 	GT decryptGT(const PfsePuncturedPrivateKey & sk, const PseCipherText &ct) const;
 	uint nextParentInterval;
 };
-
-
-
 #endif
 
