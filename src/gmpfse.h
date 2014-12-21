@@ -86,15 +86,6 @@ public:
 	~Gmppke() {};
 
 	PairingGroup group;
-	ZR LagrangeBasisCoefficients(uint j,const ZR &x , const vector<ZR> & polynomial_xcordinates) const;
-
-
-	template <class type> type LagrangeInterpInExponent( const ZR &x, const vector<ZR> & polynomial_xcordinates,
-			const vector<type> & exp_polynomial_ycordinates, const uint degree) const;
-	ZR LagrangeInterp(const ZR &x , const vector<ZR> & polynomial_xcordinates,
-			const vector<ZR> & polynomial_ycordinates, uint degree) const;
-
-
 	G1 vG1(const std::vector<G1> & gqofxG1, const ZR & x) const;
 	G2 vG2(const std::vector<G2> & gqofxG2, const ZR & x) const;
 

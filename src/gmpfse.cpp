@@ -9,6 +9,7 @@
 #include <set>
 
 #include "gmpfse.h"
+
 using namespace std;
 #define splitkey 0
 uint d = 1;
@@ -18,6 +19,55 @@ uint d = 1;
 #else
 #define DBGG(x)
 #endif
+
+
+ZR LagrangeBasisCoefficients(const PairingGroup & group, const unsigned int & j,const ZR &x , const vector<ZR> & polynomial_xcordinates){
+    uint k = polynomial_xcordinates.size();
+    ZR prod = 1;
+    for(uint  m=0;m<k;m++){
+        if(j != m){
+			try{
+			ZR interim = group.div(group.sub(x,polynomial_xcordinates[m]),group.sub(polynomial_xcordinates[j],polynomial_xcordinates[m]));
+			prod = group.mul(prod,interim);
+			}catch(const RelicDividByZero & t){
+				throw logic_error("LagrangeBasisCoefficient calculation failed. RelicDividByZero"
+						" Almost certainly a duplicate x-coordinate: ");// FIXME give cordinate
+			}
+        }
+    }
+    return prod;
+}
+ZR LagrangeInterp(const PairingGroup & group, const ZR &x , const vector<ZR> & polynomial_xcordinates,
+		const vector<ZR> & polynomial_ycordinates, const  unsigned int& degree){
+    uint k = degree + 1;
+    assert(polynomial_ycordinates.size()==k);
+    assert(polynomial_xcordinates.size()==k);
+    ZR prod = 0;
+    for(uint j = 0; j < k;j++){
+            ZR lagrangeBasisPolyatX = LagrangeBasisCoefficients(group,j,x,polynomial_xcordinates);
+         //   cout << "y_ " << j << "= "<<polynomial_ycordinates[j] << " coef = " << lagrangeBasisPolyatX << " prod = " << prod<< endl;
+            prod =  group.add(prod,group.mul(lagrangeBasisPolyatX,polynomial_ycordinates[j]));
+
+    }
+
+    // cout << "final prod =" << prod << endl;
+    return prod;
+}
+
+
+template <class type> type LagrangeInterpInExponent( const PairingGroup & group,const ZR &x, const vector<ZR> & polynomial_xcordinates,
+		const vector<type> & exp_polynomial_ycordinates, const unsigned int & degree){
+    uint k = degree + 1;
+    assert(exp_polynomial_ycordinates.size()==k);
+    assert(polynomial_xcordinates.size()==k);
+    type prod;
+    for(uint j = 0; j < k;j++){
+            ZR lagrangeBasisPolyatX = LagrangeBasisCoefficients(group,j,x,polynomial_xcordinates);
+            prod =  group.mul(prod,group.exp(exp_polynomial_ycordinates[j],lagrangeBasisPolyatX));
+    }
+    return prod;
+}
+
 /** Checks if you can decrypt a pfse ciphertext
  *
  * @param sk
@@ -316,54 +366,6 @@ uint treeSize(uint k){
 }
 
 
-ZR Gmppke::LagrangeBasisCoefficients(uint j,const ZR &x , const vector<ZR> & polynomial_xcordinates) const{
-    uint k = polynomial_xcordinates.size();
-    assert(k==d+1);
-    ZR prod = 1;
-    for(uint  m=0;m<k;m++){
-        if(j != m){
-			try{
-			ZR interim = group.div(group.sub(x,polynomial_xcordinates[m]),group.sub(polynomial_xcordinates[j],polynomial_xcordinates[m]));
-			prod = group.mul(prod,interim);
-			}catch(const RelicDividByZero & t){
-				throw logic_error("LagrangeBasisCoefficient calculation failed. RelicDividByZero"
-						" Almost certainly a duplicate x-coordinate: ");// FIXME give cordinate
-			}
-        }
-    }
-    return prod;
-}
-ZR Gmppke::LagrangeInterp(const ZR &x , const vector<ZR> & polynomial_xcordinates,
-    const vector<ZR> & polynomial_ycordinates, uint degree) const{
-    uint k = degree + 1;
-    assert(k == d+1);
-    assert(polynomial_ycordinates.size()==k);
-    assert(polynomial_xcordinates.size()==k);
-    ZR prod = 0;
-    for(uint j = 0; j < k;j++){
-            ZR lagrangeBasisPolyatX = LagrangeBasisCoefficients(j,x,polynomial_xcordinates);
-         //   cout << "y_ " << j << "= "<<polynomial_ycordinates[j] << " coef = " << lagrangeBasisPolyatX << " prod = " << prod<< endl;
-            prod =  group.add(prod,group.mul(lagrangeBasisPolyatX,polynomial_ycordinates[j]));
-
-    }
-
-    // cout << "final prod =" << prod << endl;
-    return prod;
-}
-
-template <class type> type Gmppke::LagrangeInterpInExponent(const ZR &x , const vector<ZR> & polynomial_xcordinates,
-    const vector<type> & exp_polynomial_ycordinates,const  uint degree) const{
-    uint k = degree + 1;
-    assert(k == d+1);
-    assert(exp_polynomial_ycordinates.size()==k);
-    assert(polynomial_xcordinates.size()==k);
-    type prod;
-    for(uint j = 0; j < k;j++){
-            ZR lagrangeBasisPolyatX = LagrangeBasisCoefficients(j,x,polynomial_xcordinates);
-            prod =  group.mul(prod,group.exp(exp_polynomial_ycordinates[j],lagrangeBasisPolyatX));
-    }
-    return prod;
-}
 
 G1  Gmppke::vG1(const std::vector<G1> & gqofxG1, const ZR & x) const{
     vector<ZR> xcords;
@@ -380,7 +382,7 @@ G1  Gmppke::vG1(const std::vector<G1> & gqofxG1, const ZR & x) const{
     // cout << "length of gqofxv in VG1 " << gqofxv.size() << endl;
     //     cout << "XXXX\n\n" << endl;
 
-    return LagrangeInterpInExponent(x,xcords,gqofxG1,d);
+    return LagrangeInterpInExponent(group,x,xcords,gqofxG1,d);
 
 }
 G2 Gmppke::vG2(const std::vector<G2> & gqofxG2,const ZR & x) const{
@@ -401,7 +403,7 @@ G2 Gmppke::vG2(const std::vector<G2> & gqofxG2,const ZR & x) const{
     // cout << "length of gqofxv in VG2 " << gqofxv.size() << endl;
     // cout << "XXXX\n\n" << endl;
 
-    return LagrangeInterpInExponent(x,xcords,gqofxG2,d);
+    return LagrangeInterpInExponent(group,x,xcords,gqofxG2,d);
 
 }
 void Gmppke::keygen(GmppkePublicKey & pk, GmppkePrivateKey & sk) const
@@ -453,8 +455,8 @@ void Gmppke::keygen(const baseKey & pkhibe,const ZR & gamma, GmppkePublicKey & p
     assert(polynomial_xcordinates.size()==pk.gqofxG1.size());
 
     // Sanity check that Lagrange interpolation works to get us g^beta on q(0).
-    assert(pk.g2G1 == LagrangeInterpInExponent<G1>(0,polynomial_xcordinates,pk.gqofxG1,d));
-    assert(pk.g2G2 == LagrangeInterpInExponent<G2>(0,polynomial_xcordinates,pk.gqofxG2,d));
+    assert(pk.g2G1 == LagrangeInterpInExponent<G1>(group,0,polynomial_xcordinates,pk.gqofxG1,d));
+    assert(pk.g2G2 == LagrangeInterpInExponent<G2>(group,0,polynomial_xcordinates,pk.gqofxG2,d));
 
 
     sk.shares.push_back(skgen(pk,gamma));
@@ -578,7 +580,7 @@ GT Gmppke::recoverBlind(const GmppkePublicKey & pk, const GmppkePrivateKey & sk,
         vector<ZR> w;
 
         for(uint j=0;j < shareTags.size(); j++){
-            w.push_back(LagrangeBasisCoefficients(j,0,shareTags));
+            w.push_back(LagrangeBasisCoefficients(group,j,0,shareTags));
         }
         const ZR wstar = w[w.size() - 1];
 
