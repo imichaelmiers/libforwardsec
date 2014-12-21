@@ -186,7 +186,6 @@ TEST_F(PFSETests,Delete){
 
     AESKey result = test.decrypt(ct);
     EXPECT_EQ(testkey,result);
-    cout << "trying to erase 1" << endl << endl;
     test.eraseKey(1);
     EXPECT_THROW(test.decrypt(ct),invalid_argument); // no key
     EXPECT_THROW(test.eraseKey(2),invalid_argument); // no child keys so count delete

@@ -179,7 +179,6 @@ friend bool operator==(const PseCipherText& l,const PseCipherText& r){
 };
 
 
-typedef GmppkePrivateKey  PPKEKey; //fixme get rid of
 class pfsepubkey: public BbhHIBEPublicKey,  public GmppkePublicKey{
 };
 
