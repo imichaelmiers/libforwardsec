@@ -4,8 +4,20 @@
 #include <stdexcept>
 #include <bitset>
 #include <assert.h>
+#include <cmath>
 #include "gmpfse.h"
 #include "gtest/gtest.h"
+
+class Gmmppketest : public ::testing::Test {
+protected:
+	 virtual void SetUp(){
+	 	test.keygen(pk,sk);
+	 }
+     PairingGroup group;
+	 Gmppke test;
+	 GmppkePublicKey pk ;
+	 GmppkePrivateKey sk;
+};
 
 class PFSETests : public ::testing::Test {
 protected: 
@@ -13,12 +25,13 @@ protected:
 	 	test.keygen();
 	 	pk = test.pk;
 	 } 
-	 PFSETests():test(3),testkey(teststring){}
+	 unsigned int d=3;
+	 PFSETests():test(d),testkey(teststring){}
  	 //PairingGroup group;
 	 Pfse test;
 	 pfsepubkey pk ;
      string teststring = "1111111110101010000011110001001100100111101101110000010001101010100000010110100010111010000100011100011111010100101011011001001110110000110100110011101001110010110001100100111100000111100001101110101000010000001011010110000100100001001001111010001000111001";
-	 AESKey testkey;
+	 bitset256 testkey;
 	// static PairingGroup _group;
 };
 
@@ -76,6 +89,8 @@ protected:
     // static PairingGroup _group;
 };
 
+
+
 TEST_F(PFSETests,Decrypt){
     vector<string> tags;
     tags.push_back("9");
@@ -83,43 +98,45 @@ TEST_F(PFSETests,Decrypt){
 
     //test.puncture(1,eight);
 
-    AESKey result = test.decrypt(ct1);
+    bitset256 result = test.decrypt(ct1);
     ASSERT_EQ(testkey,result);
 }
 
 TEST_F(PFSETests,FailWhenPunctured){
-    test.prepareNextInterval();
-
     vector<string> tags;
     tags.push_back("9");
-    PseCipherText ct1 = test.encrypt(pk,testkey,2,tags);
-    test.puncture(2,"9");
+    PseCipherText ct1 = test.encrypt(pk,testkey,1,tags);
+    test.puncture("9");
     //test.puncture(1,eight);
    // test.decrypt(ct1);
-   EXPECT_THROW(test.decrypt(ct1),invalid_argument); //FIXME
+   EXPECT_THROW(test.decrypt(ct1),PuncturedCiphertext); //FIXME
 }
 
 TEST_F(PFSETests,DecryptOnPuncture){
-	test.prepareNextInterval();
     vector<string> tags;
     tags.push_back("9");
-    PseCipherText ct = test.encrypt(pk,testkey,2,tags);
-    test.puncture(2,"8");
 
-    AESKey result = test.decrypt(ct);
-    EXPECT_EQ(testkey,result); 
+    PseCipherText ct = test.encrypt(pk,testkey,1,tags);
+
+    test.puncture(1,"8");
+
+    bitset256 result = test.decrypt(ct);
+
+    EXPECT_EQ(testkey,result);
+
     // test multiple punctures;
-    test.puncture(2,"1");
-    test.puncture(2,"2");
-    test.puncture(2,"3");
+    test.puncture(1,"1");
+    test.puncture(1,"2");
+    test.puncture(1,"3");
+
     EXPECT_EQ(testkey,test.decrypt(ct));
 	test.prepareNextInterval();
 
-    PseCipherText ct1 = test.encrypt(pk,testkey,3,tags);
+    PseCipherText ct2 = test.encrypt(pk,testkey,2,tags);
 
-    AESKey result1 = test.decrypt(ct1);
-    EXPECT_EQ(testkey,result1);
+    bitset256 result1 = test.decrypt(ct2);
 
+    EXPECT_EQ(testkey,result1) ;
 }
 
 //
@@ -135,27 +152,59 @@ TEST_F(PFSETests,PassOnPunctureNextInterval){
 	test.prepareNextInterval();
     PseCipherText ct1 = test.encrypt(pk,testkey,3,tags);
 
-    AESKey result = test.decrypt(ct1);
+    bitset256 result = test.decrypt(ct1);
     EXPECT_EQ(testkey,result);
 
 }
+TEST_F(PFSETests,PunctureAndDeriveAll){
+	// there are 2^d =1 nodes in a tree of depth d.
+	// we don't have the root, so we subtrct one more.
+	unsigned int intervals = std::pow(2,d)-2;
+	for(unsigned int i =1;i< intervals; i++){
+	    vector<string> tags;
+	    tags.push_back("9");
+	    test.puncture(i,"8");
+	    test.puncture(i,"10");
+	    test.puncture("11");
+	    test.puncture("12");
+	    PseCipherText ct1 = test.encrypt(pk,testkey,i,tags);
+	    bitset256 result = test.decrypt(ct1);
+	    EXPECT_EQ(testkey,result);
+		test.prepareNextInterval();
+	}
+}
+
+TEST_F(PFSETests,Delete){
+
+    vector<string> tags;
+    tags.push_back("9");
+
+    test.puncture(1,"8");
+    test.puncture(1,"10");
+
+    PseCipherText ct = test.encrypt(pk,testkey,1,tags);
+
+    bitset256 result = test.decrypt(ct);
+    EXPECT_EQ(testkey,result);
+    test.eraseKey(1);
+    EXPECT_THROW(test.decrypt(ct),invalid_argument); // no key
+    EXPECT_THROW(test.eraseKey(2),invalid_argument); // no child keys so count delete
+}
+TEST_F(PFSETests,PunctureWrongInterval){
+    EXPECT_THROW( test.puncture(2,"8");,invalid_argument); // can't puncture key we don't have children for.
+}
+
 TEST_F(BbghhibeTests,basic){
     GT m = group.random(GT_t);
 
-    BbghCT ct;
-    ZR r = group.random(ZR_t);
-    test.encrypt(pk,m,r,id1,ct);
-    GT newM;
-    newM = test.decrypt(sk1,ct);
-    EXPECT_EQ(m,newM);
+    BbghCT ct = test.encrypt(pk,m,id1);
+    EXPECT_EQ(m,test.decrypt(sk1, ct));
 
 }
 TEST_F(BbghhibeTests,basicFail){
     GT m = group.random(GT_t);
 
-    BbghCT ct;
-    ZR r = group.random(ZR_t);
-    test.encrypt(pk,m,r,id1,ct);
+    BbghCT ct = test.encrypt(pk,m,id1);
 
     EXPECT_NE(m,test.decrypt(sk0,ct));
     EXPECT_NE(m,test.decrypt(sk11,ct));
@@ -165,11 +214,9 @@ TEST_F(BbghhibeTests,basicFail){
 TEST_F(BbghhibeTests,derived){
     GT m = group.random(GT_t);
 
-    BbghCT ct;
-    ZR r = group.random(ZR_t);
-    test.encrypt(pk,m,r,id11,ct);
-    GT newM = test.decrypt(sk11,ct);
-    EXPECT_EQ(m,newM);
+
+    BbghCT ct = test.encrypt(pk,m,id11);
+    EXPECT_EQ(m,test.decrypt(sk11,ct));
     EXPECT_NE(m,test.decrypt(sk00,ct));
     EXPECT_NE(m,test.decrypt(sk10,ct));
     EXPECT_NE(m,test.decrypt(sk01,ct));
@@ -178,17 +225,50 @@ TEST_F(BbghhibeTests,derived){
 TEST_F(BbghhibeTests,derivedFurther){
     GT m = group.random(GT_t);
 
-    BbghCT ct;
-    ZR r = group.random(ZR_t);
-    test.encrypt(pk,m,r,id111,ct);
-    GT newM = test.decrypt(sk111,ct);
-    EXPECT_EQ(m,newM);
+    BbghCT ct = test.encrypt(pk,m,id111);
+    EXPECT_EQ(m,test.decrypt(sk111,ct));
     EXPECT_NE(m,test.decrypt(sk00,ct));
     EXPECT_NE(m,test.decrypt(sk10,ct));
     EXPECT_NE(m,test.decrypt(sk01,ct));
 
 }
 
+TEST_F(Gmmppketest,basic){
+    GT m = group.random(GT_t);
+    vector<ZR> tags;
+    tags.push_back(ZR(2));
+
+    GmmppkeCT ct = test.encrypt(pk,m,tags);
+    EXPECT_EQ(m,test.decrypt(pk,sk,ct));
+
+}
+TEST_F(Gmmppketest,puncture){
+    GT m = group.random(GT_t);
+    vector<ZR> tags;
+    tags.push_back(ZR(2));
+
+    GmmppkeCT ct = test.encrypt(pk,m,tags);
+    test.puncture(pk,sk,ZR(3));
+    EXPECT_EQ(m,test.decrypt(pk,sk,ct));
+    test.puncture(pk,sk,ZR(5));
+    test.puncture(pk,sk,ZR(6));
+    EXPECT_EQ(m,test.decrypt(pk,sk,ct));
+}
+TEST_F(Gmmppketest,punctureFail){
+    GT m = group.random(GT_t);
+    vector<ZR> tags;
+    tags.push_back(ZR(2));
+
+    GmmppkeCT ct = test.encrypt(pk,m,tags);
+    test.puncture(pk,sk,ZR(2));
+    EXPECT_THROW(test.decrypt_unchecked(pk,sk,ct),std::logic_error);
+    EXPECT_THROW(test.decrypt(pk,sk,ct),PuncturedCiphertext);
+
+    test.puncture(pk,sk,ZR(5));
+    test.puncture(pk,sk,ZR(6));
+    EXPECT_THROW(test.decrypt_unchecked(pk,sk,ct),std::logic_error);
+    EXPECT_THROW(test.decrypt(pk,sk,ct),PuncturedCiphertext);
+}
 
 
 // TEST_F(PFSETests,Basic){

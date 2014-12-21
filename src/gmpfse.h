@@ -5,12 +5,9 @@
 #include <sstream>
 #include <string>
 #include <map>
-#include <bitset>
 #include "relic_wrapper/relic_api.h"
-using namespace std;
-#ifndef AES_SECURITY
-#define AES_SECURITY 256
-#endif
+
+
 class BadCiphertext : public std::invalid_argument
 {
 public:
@@ -19,16 +16,26 @@ public:
     {}
 };
 
-typedef unsigned int uint;
+class PuncturedCiphertext : public BadCiphertext
+{
+public:
+	PuncturedCiphertext(std::string const& error)
+        : BadCiphertext(error)
+    {}
+};
 
-class GmppkePublicKey{
+
+class baseKey{
 public:
 	PairingGroup group;
 	G1 gG1;
 	G2 gG2;
-	G2 g1;
 	G1 g2G1;
 	G2 g2G2;
+};
+class GmppkePublicKey: public  virtual  baseKey{
+public:
+	G2 ppkeg1;
 	unsigned int d;
 	std::vector<G1> gqofxG1;
 	std::vector<G2> gqofxG2;
@@ -44,45 +51,52 @@ public:
  class GmppkePrivateKey{
 public:
 	std::vector<GmppkePrivateKeyShare> shares;
-};
+//	friend bool operator==(const GmppkePrivateKey & l, const GmppkePrivateKey &r){
+//		return l.shares == r.shares;
+//	}
+ };
 
-class GmmppkeCT{
+class PartialGmmppkeCT{
 public:
 	PairingGroup group;
-	GT ct1;
 	G1 ct2;
 	std::vector<G1> ct3;
 	std::vector<ZR> tags;
-friend bool operator==(const GmmppkeCT& x,const GmmppkeCT& y){
-	return x.ct1 == y.ct1 && x.ct2 == y.ct2 && x.ct3 == y.ct3 && x.tags == y.tags;
-}
-
+	friend bool operator==(const PartialGmmppkeCT& x,const PartialGmmppkeCT& y){
+		return x.ct2 == y.ct2 && x.ct3 == y.ct3 && x.tags == y.tags;
+	}
 };
-class BbhHIBEPublicKey;
+class GmmppkeCT: public PartialGmmppkeCT{
+public:
+	GmmppkeCT(const  PartialGmmppkeCT & c) : PartialGmmppkeCT(c){}
+	GT ct1;
+	friend bool operator==(const GmmppkeCT& x,const GmmppkeCT& y){
+		return x.ct1 == y.ct1 && x.ct2 == y.ct2 && x.ct3 == y.ct3 && x.tags == y.tags;
+	}
+};
 class Gmppke
 {
 public:
 
 	Gmppke(){};
 	~Gmppke() {};
+
 	PairingGroup group;
-	ZR LagrangeBasisCoefficients(uint j,const ZR &x , const vector<ZR> & polynomial_xcordinates);
+	G1 vG1(const std::vector<G1> & gqofxG1, const ZR & x) const;
+	G2 vG2(const std::vector<G2> & gqofxG2, const ZR & x) const;
 
+	void keygen(GmppkePublicKey & pk, GmppkePrivateKey & sk) const;
+	void keygen(const baseKey & pkhibe,const ZR & gamma,GmppkePublicKey & pk, GmppkePrivateKey & sk) const;
+	GmppkePrivateKeyShare skgen(const GmppkePublicKey &pk,const ZR & alpha ) const;
+	void puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const ZR & tag) const;
+	GmmppkeCT encrypt(const GmppkePublicKey & pk,const GT & M,const std::vector<ZR> & tags) const;
+	PartialGmmppkeCT blind(const GmppkePublicKey & pk,const GT & M, const ZR & s,  const std::vector<ZR> & tags) const;
 
-	template <class type> type LagrangeInterpInExponent( const ZR &x, const vector<ZR> & polynomial_xcordinates,
-    const vector<type> & exp_polynomial_ycordinates, const uint degree);
-	ZR LagrangeInterp(const ZR &x , const vector<ZR> & polynomial_xcordinates,
-    const vector<ZR> & polynomial_ycordinates, uint degree);
+	GT recoverBlind(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const PartialGmmppkeCT & ct ) const;
+	GT decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct ) const;
+	//For testing purposes only
+	GT decrypt_unchecked(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct ) const;
 
-
-	G1 vG1(const std::vector<G1> & gqofxG1, const ZR & x);
-	G2 vG2(const std::vector<G2> & gqofxG2, const ZR & x);
-
-	void keygen(const BbhHIBEPublicKey & pkhibe, ZR & gamma,GmppkePublicKey & pk, GmppkePrivateKey & sk);
-	void skgen(const GmppkePublicKey &pk,const ZR & alpha, GmppkePrivateKeyShare & skentry0);
-	void puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const ZR & tag);
-	void encrypt(const GmppkePublicKey & pk,const GT & M, const ZR & s,  const std::vector<ZR> & tags, GmmppkeCT & ct);
-	void decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct, GT & M);
 };
 
 
@@ -97,110 +111,164 @@ public:
 	std::vector<G2> bG2;
 };
 
-class BbhHIBEPublicKey{
+class BbhHIBEPublicKey:  public virtual  baseKey{
 public:
-int l;
-PairingGroup group;
-G1 gG1;
-G2 gG2;
-G2 g1;
-G1 g2G1;
-G2 g2G2;
+unsigned int l;
+G2 hibeg1;
 G1 g3G1;
 G2 g3G2;
 std::vector<G1> hG1;
 std::vector<G2> hG2;
 };
 
-class BbghCT{
+class PartialBbghCT{
 public:
 	PairingGroup group;
-	GT A;
 	G1 B;
 	G1 C;
-friend bool operator==(const BbghCT& x,const BbghCT& y){
-	return x.A == y.A && x.B == y.B && x.C == y.C;
-}
+	friend bool operator==(const PartialBbghCT& x,const PartialBbghCT& y){
+		return x.B == y.B && x.C == y.C;
+	}
 };
+class BbghCT: public PartialBbghCT{
+public:
+	BbghCT(const  PartialBbghCT & c) : PartialBbghCT(c){}
+	GT A;
+	friend bool operator==(const BbghCT& x,const BbghCT& y){
+		return x.A == y.A && x.B == y.B && x.C == y.C; //FIXME call bass operator
+	}
+};
+
 class Bbghibe
 {
 public:
 	PairingGroup group;
 	Bbghibe(){};
 	~Bbghibe() {};
-	std::vector<ZR>  indexToPath(uint index,uint l);
-	uint pathToIndex(std::vector<ZR> & path, uint l);
-	void setup(int l, BbhHIBEPublicKey & pk, G2 & msk);
 
-	void keygen( BbhHIBEPublicKey & pk, G2 & msk, std::vector<ZR> & id, BbghPrivatekey & sk);
-    void keygen( BbhHIBEPublicKey & pk, BbghPrivatekey & sk,std::vector<ZR> & id,BbghPrivatekey & skout);
+	void setup(const unsigned int & l, BbhHIBEPublicKey & pk, G2 & msk) const;
 
-	void encrypt(const BbhHIBEPublicKey & pk, GT & M, ZR &s, std::vector<ZR>  & id, BbghCT & ct);
-	void encrypt(const BbhHIBEPublicKey & pk, GT & M, std::vector<ZR>  & id, BbghCT & ct);
+	void keygen(const BbhHIBEPublicKey & pk,const G2 & msk,const  std::vector<ZR> & id, BbghPrivatekey & sk) const;
+    void keygen(const BbhHIBEPublicKey & pk,const  BbghPrivatekey & sk, const std::vector<ZR> & id,BbghPrivatekey & skout) const;
 
-	void decrypt(BbghPrivatekey & sk, BbghCT & ct, GT & m); // decrypt for PFSE
-	GT decrypt(BbghPrivatekey & sk, BbghCT & ct); // actual decrypt
+    PartialBbghCT blind(const BbhHIBEPublicKey & pk, const GT & M ,const ZR &s, const  std::vector<ZR>  & id) const;
+    BbghCT encrypt(const BbhHIBEPublicKey & pk, const GT & M, const std::vector<ZR>  & id ) const;
+
+	GT recoverBlind(const BbghPrivatekey & sk, const PartialBbghCT & ct) const; // decrypt for PFSE
+	GT decrypt(const BbghPrivatekey & sk,const BbghCT & ct) const; // actual decrypt
 
 };
-typedef  bitset<256> AESKey;
 
 class PseCipherText{
 public:
 	PairingGroup group;
 	GT ct0;
-	BbghCT hibeCT;
-	GmmppkeCT ppkeCT;
+	PartialBbghCT hibeCT;
+	PartialGmmppkeCT ppkeCT;
 	unsigned int interval;
-	AESKey xorct;
+	bitset256 xorct;
+friend bool operator==(const PseCipherText& l,const PseCipherText& r){
+		return l.ct0 == r.ct0 && l.hibeCT == r.hibeCT && l.ppkeCT == r.ppkeCT
+				&& l.interval == r.interval && l.xorct == r.xorct;
+	}
 };
 
 
-typedef BbghPrivatekey HIBEkey;
-typedef GmppkePrivateKey  PPKEKey;
-class pfsepubkey{
+class pfsepubkey: public BbhHIBEPublicKey,  public GmppkePublicKey{
+};
+
+class PfsePuncturedPrivateKey{
 public:
-	BbhHIBEPublicKey hibe;
-	GmppkePublicKey ppke;
+	BbghPrivatekey hibeSK;
+	GmppkePrivateKey ppkeSK;
+	 bool punctured() const{
+		return ppkeSK.shares.size() > 1;
+	}
+};
+
+class PfseKeyStore{
+public:
+	map<unsigned int,PfsePuncturedPrivateKey> puncturedKeys;
+	map<unsigned int,BbghPrivatekey> unpucturedHIBEKeys;
+	GmppkePrivateKey unpucturedPPKEKey;
+	PfsePuncturedPrivateKey getKey(unsigned int i) const;
+	void updateKey(unsigned int i, const PfsePuncturedPrivateKey & p);
+	void addkey(unsigned int i, const BbghPrivatekey & h);
+	void erase(unsigned int i);
+	bool hasKey(const unsigned int i) const;
+	bool needsChildKeys(const unsigned int i,const unsigned int d) const;
 };
 
 class Pfse
 {
 public:
-	PairingGroup group;
 	pfsepubkey pk;
-	map<int,BbghPrivatekey> Hibeprivatekeys;
-	PPKEKey unpucturedKey;
-	PPKEKey activeKey;
+	PfseKeyStore privatekeys;
 
-	Pfse(uint d);
+
+	Pfse(unsigned int d);
+	/**Generates the public and private key. These are stored in  the object.
+	 *
+	 */
 	void keygen();
-	PseCipherText encrypt(pfsepubkey & pk, AESKey aes_key,uint interval,vector<string> tags);
-	AESKey decrypt(PseCipherText &ct);
-	
-	void prepareNextInterval();
-	//void deleteInterval(uint interval);
 
-	void puncture(uint interval, string str);
+	/** Encrypts a message. Messages are limited to 256 bits. (e.g. an AES key).
+	 *
+	 * @param pk the public key of the recipient
+	 * @param msg the message
+	 * @param interval the time interval the message is in
+	 * @param tags the tags for the message
+	 * @return the ciphertext
+	 */
+	PseCipherText encrypt(const pfsepubkey & pk, const bitset256 msg, const unsigned int interval, const vector<string> tags) const;
+
+	/**Decrypt a message using the private key stored in the object.
+	 *
+	 * @param ct the ciphertext
+	 * @return the decrypted message.
+	 */
+	bitset256 decrypt( const PseCipherText &ct) const;
+	
+	/**Derives the keys needed to decrypt the next interval.
+	 *
+	 */
+	void prepareNextInterval();
+	/** Erases the key for a given interval.
+	 *
+	 * @param interval the interval to erase.
+	 */
+	void eraseKey(unsigned int interval);
+    /** Punctures the key for the given time period.
+     *
+     * @param interval the time period
+     * @param str the tag to puncture on
+     */
+	void puncture(unsigned int interval, string str);
+	/**Punctures the key for the current interval.
+	 *
+	 * @param str the tag to puncture on.
+	 */
 	void puncture( string str);
 
-	PseCipherText encrypt(pfsepubkey & pk, GT & M,uint interval, vector<ZR>  & tags);
-	GT decryptGT(PseCipherText &ct);	
+
 private:
+	PairingGroup group;
 	Bbghibe hibe;
 	Gmppke ppke;
-	uint depth;
-	void updateppkesk(GmppkePrivateKeyShare & skentry,GmppkePrivateKeyShare & skentryold);
-	PseCipherText encryptFO(pfsepubkey & pk, AESKey & bitmsg,uint interval,vector<ZR>  & tags);
-	PseCipherText encryptFO(pfsepubkey & pk,  AESKey & bitmsg,GT & x, uint interval,vector<ZR>  & tags);
+	unsigned int depth;
+	void bindKey(PfsePuncturedPrivateKey & k);
+	PseCipherText encryptFO( const pfsepubkey & pk, const bitset256 & bitmsg,
+			              const unsigned int interval, const vector<ZR>  & tags) const;
+	PseCipherText encryptFO( const pfsepubkey & pk, const bitset256 & bitmsg,
+			const GT & x, const unsigned int interval, const vector<ZR>  & tags) const;
 
-	PseCipherText encrypt(pfsepubkey & pk, GT & M, ZR & s,uint interval, vector<ZR>  & tags);
+	PseCipherText encrypt( const pfsepubkey & pk, const GT & M,              const unsigned int interval, const vector<ZR>  & tags) const;
+	PseCipherText encrypt( const pfsepubkey & pk, const GT & M,const ZR & s, const unsigned int interval, const vector<ZR>  & tags) const;
 
-	AESKey decryptFO(PseCipherText &ct);
 
-	uint latestInterval;
+	bitset256 decryptFO(const PfsePuncturedPrivateKey &sk, const PseCipherText &ct) const;
+	GT decryptGT(const PfsePuncturedPrivateKey & sk, const PseCipherText &ct) const;
+	unsigned int nextParentInterval;
 };
-
-
-
 #endif
 

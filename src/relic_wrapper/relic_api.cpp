@@ -7,7 +7,7 @@ void ro_error(void)
 	throw  std::invalid_argument("writing to read only object");
 }
 
-void invertZR(ZR & c, const ZR & a,const bn_t order)
+void invertZR(ZR & c, const ZR & a, const bn_t order)
 {
 	ZR a1 =a;
 	bn_t s;
@@ -43,7 +43,7 @@ ZR::ZR(char *str)
 	bn_read_str(z, (const char *) str, strlen(str), DECIMAL);
 	// bn_mod(z, z, order);
 }
-const ZR ZR::inverse(){
+const ZR ZR::inverse() const{
 	ZR i;
 	invertZR(i,z,i.order);
 	return i;
@@ -103,7 +103,7 @@ int bn_is_one(bn_t a)
 ZR operator/(const ZR& x, const ZR& y)
 {
 	if(bn_is_zero(y.z)) {
-		throw std::invalid_argument("divide by zero");
+		throw RelicDividByZero("divide by zero");
 	}
 	ZR i;
 	invertZR(i,y,i.order);
@@ -139,7 +139,7 @@ ZR hashToZR(string str)
 	return zr;
 }
 
-bool ZR::ismember(void)
+bool ZR::ismember(void) const
 {
 	bool result;
 	if((bn_cmp(z, order) < CMP_EQ) && (bn_sign(z) == BN_POS))
@@ -227,7 +227,7 @@ ZR operator&(const ZR& a, const ZR& b)
 
 // Begin G1-specific classes
 
-G1 operator+(const G1& x,const G1& y)
+G1 operator+(const G1& x, const G1& y)
 {
 	G1 z;
 	g1_add(z.g, x.g, y.g);
@@ -236,7 +236,7 @@ G1 operator+(const G1& x,const G1& y)
 	return z;
 }
 
-G1 operator-(const G1& x,const G1& y)
+G1 operator-(const G1& x, const G1& y)
 {
 	G1 z ;
 	g1_sub(z.g,x.g, y.g);
@@ -272,7 +272,7 @@ G1 hashToG1(string str)
 	return g1;
 }
 
-bool G1::ismember(bn_t order)
+bool G1::ismember(const bn_t order) const
 {
 	bool result;
 	g1_t r;
@@ -311,7 +311,7 @@ ostream& operator<<(ostream& s, const G1& g1)
 
 // Begin G2-specific classes
 
-G2 operator+(const G2& x,const G2& y)
+G2 operator+(const G2& x, const G2& y)
 {
 	G2 z, x1=x,y1=y ;
 	g2_add(z.g, x1.g, y1.g);
@@ -319,7 +319,7 @@ G2 operator+(const G2& x,const G2& y)
 	return z;
 }
 
-G2 operator-(const G2& x,const G2& y)
+G2 operator-(const G2& x, const G2& y)
 {
 	G2 z,x1=x,y1=y;
 	g2_sub(z.g,x1.g, y1.g);
@@ -360,7 +360,6 @@ bool G2::ismember(bn_t order)
 	bool result;
 	g2_t r;
 	g2_inits(r);
-
 	g2_mul(r, g, order);
 	if(g2_is_infty(r) == 1)
 		result = true;
@@ -396,14 +395,14 @@ ostream& operator<<(ostream& s, const G2& g2)
 
 // Begin GT-specific classes
 
-GT operator*(const GT& x,const GT& y)
+GT operator*(const GT& x, const GT& y)
 {
 	GT z, x1 = x, y1 = y;
 	gt_mul(z.g, x1.g, y1.g);
 	return z;
 }
 
-GT operator/(const GT& x,const GT& y)
+GT operator/(const GT& x, const GT& y)
 {
 	GT z, x1=x, y1 = y;
 	// z = x * y^-1
@@ -460,8 +459,7 @@ bool GT::ismember(bn_t order)
 	bool result;
 	gt_t r;
 	gt_inits(r);
-
-	gt_exp(r, g, order);
+	gt_exp(r,g, order);
 	if(gt_is_unity(r) == 1)
 		result = true;
 	else
@@ -532,50 +530,50 @@ PairingGroup::~PairingGroup()
 	}
 }
 
-void PairingGroup::init(ZR & r, char *value)
+void PairingGroup::init(ZR & r, char *value) const
 {
 	r = ZR(value);
 }
 
-ZR PairingGroup::init(ZR_type t, int value)
+ZR PairingGroup::init(ZR_type t, int value) const
 {
 	ZR zr(value);
 	return zr;
 }
 
-void PairingGroup::init(ZR & r, int value)
+void PairingGroup::init(ZR & r, int value) const
 {
 	r = ZR(value); //should copy this
 	return;
 }
 
-ZR PairingGroup::init(ZR_type t)
+ZR PairingGroup::init(ZR_type t) const
 {
 	ZR zr;
 	return zr;
 }
 
-G1 PairingGroup::init(G1_type t)
+G1 PairingGroup::init(G1_type t) const
 {
 	G1 g1;
 	return g1;
 }
 
-void PairingGroup::init(G1 & t, int value)
+void PairingGroup::init(G1 & t, int value) const
 {
 	G1 g1;
 	if(value == 1) t = g1; // set to the identity element
 	return;
 }
 
-G1 PairingGroup::init(G1_type t, int value)
+G1 PairingGroup::init(G1_type t, int value) const
 {
 	G1 g1; // = new G1();
 	return g1;
 }
 
 //#ifdef ASYMMETRIC
-G2 PairingGroup::init(G2_type t)
+G2 PairingGroup::init(G2_type t) const
 {
 	G2 g2; // = new G2();
 	return g2;
@@ -595,13 +593,13 @@ G2 PairingGroup::init(G2_type t)
 // }
 //#endif
 
-GT PairingGroup::init(GT_type t)
+GT PairingGroup::init(GT_type t) const
 {
 	GT g;
 	return g;
 }
 
-GT PairingGroup::init(GT_type t, int value)
+GT PairingGroup::init(GT_type t, int value) const
 {
 	GT g;
 	return g;
@@ -614,7 +612,7 @@ GT PairingGroup::init(GT_type t, int value)
 // 	return;
 // }
 
-ZR PairingGroup::random(ZR_type t)
+ZR PairingGroup::random(ZR_type t) const
 {
 	ZR zr,tt;
 	bn_rand(tt.z, BN_POS, bn_bits(grp_order));
@@ -622,46 +620,46 @@ ZR PairingGroup::random(ZR_type t)
 	return zr;
 }
 
-G1 PairingGroup::random(G1_type t)
+G1 PairingGroup::random(G1_type t) const
 {
 	G1  g1;
 	g1_rand(g1.g);
 	return g1;
 }
 
-G2 PairingGroup::random(G2_type t)
+G2 PairingGroup::random(G2_type t) const
 {
 	G2  g2;
 	g2_rand(g2.g);
 	return g2;
 }
 
-GT PairingGroup::random(GT_type t)
+GT PairingGroup::random(GT_type t) const
 {
 	GT gts;
 	gt_rand(gts.g);
     return gts;
 }
 
-ZR PairingGroup::neg(ZR r)
+ZR PairingGroup::neg(const ZR & r) const
 {
 
     return -r;
 }
 
-ZR PairingGroup::inv(ZR r)
+ZR PairingGroup::inv(const ZR &  r) const
 {
      return r.inverse();
 }
-G1 PairingGroup::inv(G1 g)
+G1 PairingGroup::inv(const G1 & g) const
 {
 	return -g;
 }
-G2 PairingGroup::inv(G2 g)
+G2 PairingGroup::inv(const G2 & g) const
 {
 	return -g;
 }
-GT PairingGroup::inv(GT g)
+GT PairingGroup::inv(const GT & g) const
 {
 	return -g;
 }
@@ -682,34 +680,34 @@ bool PairingGroup::ismember(G2 & g)
 }
 
 
-G2 PairingGroup::mul(G2 g, G2 h)
+G2 PairingGroup::mul(const G2 & g, const G2 & h) const
 {
 	return g + h;
 }
 
-G2 PairingGroup::div(G2 g, G2 h)
+G2 PairingGroup::div(const G2 & g, const G2 & h) const
 {
 	return g + -h;
 }
 
-G2 PairingGroup::exp(G2 g, ZR r)
+G2 PairingGroup::exp(const G2 & g, const ZR & r) const
 {
 	// g ^ r == g * r OR scalar multiplication
 	return power(g, r);
 }
 
-G2 PairingGroup::exp(G2 g, int r)
+G2 PairingGroup::exp(const G2 & g, const int & r) const
 {
 	// g ^ r == g * r OR scalar multiplication
 	return power(g, ZR(r));
 }
 
-GT PairingGroup::pair(G1 g, G2 h)
+GT PairingGroup::pair(const G1 & g, const G2 & h) const
 {
 	return pairing(g, h);
 }
 
-GT PairingGroup::pair(G2 h, G1 g)
+GT PairingGroup::pair(const G2 & h, const G1 & g) const
 {
 	return pairing(g, h);
 }
@@ -725,133 +723,133 @@ bool PairingGroup::ismember(GT & g)
 	return g.ismember(grp_order); // add code to check
 }
 
-ZR PairingGroup::order()
+ZR PairingGroup::order() const
 {
 	return ZR(grp_order);
 }
 
-int PairingGroup::add(int g, int h)
+int PairingGroup::add(const int&  g, const int & h) const
 {
 	return g + h;
 }
 
-ZR PairingGroup::add(ZR g, ZR h)
+ZR PairingGroup::add(const ZR & g, const ZR & h) const
 {
 	return g + h;
 }
 
-int PairingGroup::sub(int g, int h)
+int PairingGroup::sub(const int& g, const int & h) const
 {
 	return g - h;
 }
 
-ZR PairingGroup::sub(ZR g, ZR h)
+ZR PairingGroup::sub(const ZR & g, const ZR & h) const
 {
 	return g - h;
 }
 
-int PairingGroup::mul(int g, int h)
+int PairingGroup::mul(const int & g, const int & h) const
 {
 	return g * h;
 }
 
 
-ZR PairingGroup::mul(ZR g, ZR h)
+ZR PairingGroup::mul(const ZR & g, const ZR & h) const
 {
 	return g * h;
 }
 
 // mul for G1 & GT
-G1 PairingGroup::mul(G1 g, G1 h)
+G1 PairingGroup::mul(const G1 & g, const G1 & h) const
 {
 	return g + h;
 }
 
-GT PairingGroup::mul(GT g, GT h)
+GT PairingGroup::mul(const GT & g, const GT & h) const
 {
 	return g * h;
 }
 
-ZR PairingGroup::div(int g, ZR h)
+ZR PairingGroup::div(const int & g, const ZR & h) const
 {
 	return ZR(g) / h;
 }
 
-ZR PairingGroup::div(ZR g, ZR h)
+ZR PairingGroup::div(const ZR & g, const ZR& h) const
 {
 	return g / h;
 }
 
 // div for G1 & GT
-G1 PairingGroup::div(G1 g, G1 h)
+G1 PairingGroup::div(const G1 & g, const G1&  h) const
 {
 	return g + -h;
 }
 
-GT PairingGroup::div(GT g, GT h)
+GT PairingGroup::div(const GT & g, const GT&  h) const
 {
 	return g / h;
 }
 
-int PairingGroup::div(int g, int h)
+int PairingGroup::div(const int & g, const int & h) const
 {
 	return g / h;
 }
 
-ZR PairingGroup::exp(ZR x, int y)
+ZR PairingGroup::exp(const ZR & x, const int & y) const
 {
 	return power(x, y);
 }
 
-ZR PairingGroup::exp(ZR x, ZR y)
+ZR PairingGroup::exp(const ZR & x, const ZR & y) const
 {
 	return power(x, y);
 }
 
 //// exp for G1 & GT
-G1 PairingGroup::exp(G1 g, ZR r)
+G1 PairingGroup::exp(const G1 & g, const ZR & r) const
 {
 	// g ^ r == g * r OR scalar multiplication
  	return power(g, r);
 }
 
-G1 PairingGroup::exp(G1 g, int r)
+G1 PairingGroup::exp(const G1 & g , const int & r) const
 {
 	// g ^ r == g * r OR scalar multiplication
  	return power(g, ZR(r));
 }
 
-GT PairingGroup::exp(GT g, ZR r)
+GT PairingGroup::exp(const GT & g, const ZR & r) const
 {
 	// g ^ r == g * r OR scalar multiplication
 	return power(g, r);
 }
 
-GT PairingGroup::exp(GT g, int r)
+GT PairingGroup::exp(const GT & g, const int & r) const
 {
 	// g ^ r == g * r OR scalar multiplication
 	return power(g, ZR(r));
 }
 
-ZR PairingGroup::hashListToZR(string str)
+ZR PairingGroup::hashListToZR(string str) const
 {
 	ZR r = hashToZR(str);
 	return r;
 }
 
-G1 PairingGroup::hashListToG1(string str)
+G1 PairingGroup::hashListToG1(string str) const
 {
 	G1 l = hashToG1(str);
 	return l;
 }
 
-G2 PairingGroup::hashListToG2(string str)
+G2 PairingGroup::hashListToG2(string str) const
 {
 	G2 l = hashToG2(str);
 	return l;
 }
 
-std::bitset<256> intToBits(ZR id){
+bitset256 intToBits(const ZR &id){
 	std::bitset<256> zrlist;
 	int l=256;
     int intval;
