@@ -75,7 +75,6 @@ public:
 		void save( Archive & ar) const
 		{
 			std::vector<uint8_t>data(BN_BYTES);
-			std::cout <<"BN BYTES" << BN_BYTES << std::endl;
 			bn_write_bin(&data[0], BN_BYTES, z);
 			ar(data);
 		}
@@ -131,7 +130,6 @@ public:
     void save(Archive & ar) const
     {
     	unsigned int l  = g1_size_bin(g,POINT_COMPRESS);
-    	std::cout << "G1 " << l << std::endl;
     	std::vector<uint8_t>data(l);
 		g1_write_bin(&data[0], data.size(), g,POINT_COMPRESS);
 		ar(data);
@@ -180,11 +178,10 @@ public:
 
 		G2 gg(*this);
     	unsigned int l  = g2_size_bin(gg.g,POINT_COMPRESS);
-    	std::cout << "G2 " << l << std::endl;
 
     	std::vector<uint8_t>data(l);
 		g2_write_bin(&data[0], l,gg.g,POINT_COMPRESS);
-		ar(data,l);
+		ar(data);
     }
     template<class Archive>
     void load(Archive & ar){
@@ -227,7 +224,6 @@ public:
     {
 		GT gg(*this);
     	unsigned int l  = gt_size_bin(gg.g,POINT_COMPRESS);
-    	std::cout << "GT " << l << std::endl;
 
     	std::vector<uint8_t>data(l);
 		gt_write_bin(&data[0], l, gg.g,POINT_COMPRESS);

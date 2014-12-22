@@ -5,9 +5,11 @@
 #include <bitset>
 #include <assert.h>
 #include <cmath>
+#include <cereal/archives/binary.hpp>
 
 #include "gtest/gtest.h"
 
+#include "forwardsec.h"
 #include "gmpfse.h"
 #include "GMPpke.h"
 #include "BBGHibe.h"
@@ -94,7 +96,23 @@ protected:
     // static PairingGroup _group;
 };
 
-
+TEST_F(BbghhibeTests,serializeBbhHIBEPublicKey){
+	BbhHIBEPublicKey pknew;
+	std::stringstream ss;
+	EXPECT_NE(pk,pknew);
+	{
+		cereal::BinaryOutputArchive oarchive(ss);
+		oarchive(pk);
+	}
+	int size = ss.tellp();
+	cout << "BbhHIBEPublicKey size " << size << endl;
+	ss.seekg(0);
+	{
+	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
+	    iarchive(pknew);
+	}
+	EXPECT_EQ(pk,pknew);
+}
 
 TEST_F(PFSETests,Decrypt){
     vector<string> tags;
@@ -206,6 +224,8 @@ TEST_F(BbghhibeTests,basic){
     EXPECT_EQ(m,test.decrypt(sk1, ct));
 
 }
+
+
 TEST_F(BbghhibeTests,basicFail){
     GT m = group.random(GT_t);
 

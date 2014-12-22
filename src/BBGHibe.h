@@ -7,6 +7,11 @@
 
 #ifndef SRC_BBGHIBE_H_
 #define SRC_BBGHIBE_H_
+#include <cereal/types/base_class.hpp>
+#include <cereal/access.hpp>
+
+#include "relic_wrapper/relic_api.h"
+
 #include "forwardsec.h"
 
 class BbghPrivatekey{
@@ -18,16 +23,38 @@ public:
 	std::vector<G2> bG2;
 };
 
+
 class BbhHIBEPublicKey:  public virtual  baseKey{
 public:
-unsigned int l;
-G2 hibeg1;
-G1 g3G1;
-G2 g3G2;
-std::vector<G1> hG1;
-std::vector<G2> hG2;
+	unsigned int l;
+	G2 hibeg1;
+	G1 g3G1;
+	G2 g3G2;
+	std::vector<G1> hG1;
+	std::vector<G2> hG2;
+	friend bool operator==(const BbhHIBEPublicKey& x, const BbhHIBEPublicKey& y){
+		return  ((baseKey)x == (baseKey)y &&
+				x.l == y.l && x.hibeg1 == y.hibeg1 && x.g3G1 == y.g3G1 &&
+				x.g3G2 == y.g3G2 && x.hG1 == y.hG1 && x.hG2 == y.hG2);
+	}
+	friend bool operator!=(const BbhHIBEPublicKey& x, const BbhHIBEPublicKey& y){
+		return !(x==y);
+	}
+	template <class Archive>
+	  void serialize( Archive & ar )
+	{
+		ar(cereal::virtual_base_class<baseKey>(this),
+				l,hibeg1,g3G1,g3G2,hG1,hG2);
+	}
+	friend class cereal::access;
 };
-
+//
+namespace cereal
+{
+ template <class Archive>
+ struct specialize<Archive, BbhHIBEPublicKey, cereal::specialization::member_serialize> {};
+ // cereal no longer has any ambiguity when serializing MyDerived
+}
 class PartialBbghCT{
 public:
 	PairingGroup group;
