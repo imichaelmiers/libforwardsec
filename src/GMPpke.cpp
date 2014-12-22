@@ -4,8 +4,7 @@
 #include "GMPpke.h"
 #include "util.h"
 using namespace std;
-unsigned int d = 1;
-#define NULLTAG 42
+static const unsigned int NULLTAG = 42; // the reserved tag
 
 using namespace std;
 
@@ -40,7 +39,7 @@ G1  Gmppke::vG1(const std::vector<G1> & gqofxG1, const ZR & x) const{
         ZR xcord = i;
         xcords.push_back(xcord);
     }
-    return LagrangeInterpInExponent(group,x,xcords,gqofxG1,d);
+    return LagrangeInterpInExponent(group,x,xcords,gqofxG1);
 
 }
 G2 Gmppke::vG2(const std::vector<G2> & gqofxG2,const ZR & x) const{
@@ -51,11 +50,11 @@ G2 Gmppke::vG2(const std::vector<G2> & gqofxG2,const ZR & x) const{
         ZR xcord = i;
         xcords.push_back(xcord);
     }
-    return LagrangeInterpInExponent(group,x,xcords,gqofxG2,d);
+    return LagrangeInterpInExponent(group,x,xcords,gqofxG2);
 }
-void Gmppke::keygen(GmppkePublicKey & pk, GmppkePrivateKey & sk) const
+void Gmppke::keygen(GmppkePublicKey & pk, GmppkePrivateKey & sk,const unsigned int & d) const
 {
-   baseKey bpk;
+   GmppkePublicKey bpk;
    const ZR alpha = group.random(ZR_t);
    bpk.gG1 = group.random(G1_t);
    bpk.gG2 = group.random(G2_t);
@@ -66,12 +65,12 @@ void Gmppke::keygen(GmppkePublicKey & pk, GmppkePrivateKey & sk) const
    pk.gG2 = bpk.gG2;
    pk.g2G1 = bpk.g2G1;
    pk.g2G2 = bpk.g2G2;
-   keygen(bpk,alpha,pk,sk);
+   keygenPartial(alpha,pk,sk);
 }
-void Gmppke::keygen(const baseKey & pkhibe,const ZR & gamma, GmppkePublicKey & pk, GmppkePrivateKey & sk) const
+void Gmppke::keygenPartial(const ZR & alpha, GmppkePublicKey & pk, GmppkePrivateKey & sk, const unsigned int & d) const
 {
     pk.d = d;
-    pk.ppkeg1 =  group.exp(pk.gG2,gamma);
+    pk.ppkeg1 =  group.exp(pk.gG2,alpha);
 
     // Select a random polynomial of degree d subject to q(0)= beta. We do this
     // by selecting d+1 points. Because we don't actually  care about the
@@ -99,11 +98,11 @@ void Gmppke::keygen(const baseKey & pkhibe,const ZR & gamma, GmppkePublicKey & p
     assert(polynomial_xcordinates.size()==pk.gqofxG1.size());
 
     // Sanity check that Lagrange interpolation works to get us g^beta on q(0).
-    assert(pk.g2G1 == LagrangeInterpInExponent<G1>(group,0,polynomial_xcordinates,pk.gqofxG1,d));
-    assert(pk.g2G2 == LagrangeInterpInExponent<G2>(group,0,polynomial_xcordinates,pk.gqofxG2,d));
+    assert(pk.g2G1 == LagrangeInterpInExponent<G1>(group,0,polynomial_xcordinates,pk.gqofxG1));
+    assert(pk.g2G2 == LagrangeInterpInExponent<G2>(group,0,polynomial_xcordinates,pk.gqofxG2));
 
 
-    sk.shares.push_back(skgen(pk,gamma));
+    sk.shares.push_back(skgen(pk,alpha));
 
     return;
 }
@@ -168,7 +167,7 @@ GmmppkeCT Gmppke::encrypt(const GmppkePublicKey & pk,const GT & M,const std::vec
 }
 PartialGmmppkeCT Gmppke::blind(const GmppkePublicKey & pk, const ZR & s, const std::vector<ZR> & tags ) const
 {
-    assert(tags.size()==d);
+    assert(tags.size()==pk.d);
     PartialGmmppkeCT  ct;
     ct.ct2 = group.exp(pk.gG1, s);
 
@@ -195,11 +194,7 @@ GT Gmppke::decrypt_unchecked(const GmppkePublicKey & pk, const GmppkePrivateKey 
 
 GT Gmppke::recoverBlind(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const PartialGmmppkeCT & ct) const
 {
-    assert(ct.tags.size()==d);
-    assert(d==pk.d);
-
-
-
+    assert(ct.tags.size()==pk.d);
     vector<ZR> shareTags(ct.tags);
     const unsigned int numshares = sk.shares.size();
 
@@ -226,7 +221,7 @@ GT Gmppke::recoverBlind(const GmppkePublicKey & pk, const GmppkePrivateKey & sk,
         const ZR wstar = w[w.size() - 1];
 
         G1 ct3prod_j;
-        for (unsigned int j = 0; j < d; j++)
+        for (unsigned int j = 0; j < pk.d; j++)
         {
             ct3prod_j = group.mul(ct3prod_j, group.exp(ct.ct3[j],w[j])); // w[0] = wstar
 

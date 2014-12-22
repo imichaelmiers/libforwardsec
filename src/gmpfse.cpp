@@ -103,7 +103,7 @@ void Pfse::keygen(){
     sklefthibe.a0 = group.mul(sklefthibe.a0,group.exp(this->pk.g2G2,group.neg(gamma)));
     skrighthibe.a0 = group.mul(skrighthibe.a0,group.exp(this->pk.g2G2,group.neg(gamma1)));
 
-    ppke.keygen(pk,gamma,pk,ppkeSK);
+    ppke.keygenPartial(gamma,pk,ppkeSK);
 
 
     this->privatekeys.unpucturedPPKEKey = ppkeSK;

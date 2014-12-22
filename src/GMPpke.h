@@ -62,8 +62,8 @@ public:
 	G1 vG1(const std::vector<G1> & gqofxG1, const ZR & x) const;
 	G2 vG2(const std::vector<G2> & gqofxG2, const ZR & x) const;
 
-	void keygen(GmppkePublicKey & pk, GmppkePrivateKey & sk) const;
-	void keygen(const baseKey & pkhibe,const ZR & gamma,GmppkePublicKey & pk, GmppkePrivateKey & sk) const;
+	void keygen(GmppkePublicKey & pk, GmppkePrivateKey & sk,const unsigned int & d = 1) const;
+	void keygenPartial(const ZR & gamma,GmppkePublicKey & pk, GmppkePrivateKey & sk,const unsigned int & d=1) const;
 	GmppkePrivateKeyShare skgen(const GmppkePublicKey &pk,const ZR & alpha ) const;
 	void puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const ZR & tag) const;
 	GmmppkeCT encrypt(const GmppkePublicKey & pk,const GT & M,const std::vector<ZR> & tags) const;

@@ -7,7 +7,7 @@
 
 #ifndef SRC_FORWARDSEC_H_
 #define SRC_FORWARDSEC_H_
-
+#include <cereal/types/vector.hpp>
 #include "relic_wrapper/relic_api.h"
 
 

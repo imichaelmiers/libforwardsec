@@ -69,10 +69,9 @@ ZR LagrangeBasisCoefficients(const PairingGroup & group, const unsigned int & j,
 }
 
 ZR LagrangeInterp(const PairingGroup & group, const ZR &x , const vector<ZR> & polynomial_xcordinates,
-		const vector<ZR> & polynomial_ycordinates, const  unsigned int& degree){
-    unsigned int k = degree + 1;
-    assert(polynomial_ycordinates.size()==k);
-    assert(polynomial_xcordinates.size()==k);
+		const vector<ZR> & polynomial_ycordinates){
+    unsigned int k =polynomial_ycordinates.size();
+    assert(polynomial_xcordinates.size()==polynomial_ycordinates.size());
     ZR prod = 0;
     for(unsigned int j = 0; j < k;j++){
             ZR lagrangeBasisPolyatX = LagrangeBasisCoefficients(group,j,x,polynomial_xcordinates);
