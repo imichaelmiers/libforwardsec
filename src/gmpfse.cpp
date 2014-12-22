@@ -247,8 +247,8 @@ PseCipherText Pfse::encrypt(const pfsepubkey & pk, const GT & M,  const ZR & s, 
 
     std::vector<ZR> id= indexToPath(interval,depth);
 
-    ct.hibeCT = hibe.blind(pk,M,s,id);
-    ct.ppkeCT =  ppke.blind(pk,M,s,tags);
+    ct.hibeCT = hibe.blind(pk,s,id);
+    ct.ppkeCT =  ppke.blind(pk,s,tags);
     ct.ct0 =  group.mul(group.exp(group.pair(pk.g2G1, pk.hibeg1), s), M);
 
     return ct;

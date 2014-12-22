@@ -151,7 +151,7 @@ GmmppkeCT Gmppke::encrypt(const GmppkePublicKey & pk,const GT & M,const std::vec
 //	const ZR alpha(42);
 //	const ZR beta = ZR(747);//group.random(ZR_t);
 
-	GmmppkeCT ct = blind(pk,M,s,tags);
+	GmmppkeCT ct = blind(pk,s,tags);
 //    assert(pk.ppkeg1 ==  group.exp(pk.gG2,alpha));
 //    assert(pk.g2G1 == group.exp(pk.gG1, beta));
 //    GT p = group.pair(pk.g2G1, pk.ppkeg1);
@@ -169,7 +169,7 @@ GmmppkeCT Gmppke::encrypt(const GmppkePublicKey & pk,const GT & M,const std::vec
 	return ct;
 
 }
-PartialGmmppkeCT Gmppke::blind(const GmppkePublicKey & pk, const GT & M, const ZR & s, const std::vector<ZR> & tags ) const
+PartialGmmppkeCT Gmppke::blind(const GmppkePublicKey & pk, const ZR & s, const std::vector<ZR> & tags ) const
 {
     assert(tags.size()==d);
     PartialGmmppkeCT  ct;

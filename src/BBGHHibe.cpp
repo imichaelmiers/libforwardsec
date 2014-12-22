@@ -85,12 +85,12 @@ void Bbghibe::keygen(const BbhHIBEPublicKey & pk,const  BbghPrivatekey & sk, con
 BbghCT Bbghibe::encrypt(const BbhHIBEPublicKey & pk, const GT & M, const std::vector<ZR> & id) const{
     ZR s = group.random(ZR_t);
 
-     BbghCT ct =blind(pk,M,s,id);
+     BbghCT ct =blind(pk,s,id);
      ct.A = group.mul(group.exp(group.pair(pk.g2G1, pk.hibeg1), s), M);
      return ct;
 }
 
-PartialBbghCT Bbghibe::blind(const BbhHIBEPublicKey & pk,const GT & M, const ZR & s,const std::vector<ZR> & id) const
+PartialBbghCT Bbghibe::blind(const BbhHIBEPublicKey & pk, const ZR & s,const std::vector<ZR> & id) const
 {
 	PartialBbghCT ct;
     const unsigned int k = id.size();

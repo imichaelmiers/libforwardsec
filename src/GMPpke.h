@@ -67,7 +67,7 @@ public:
 	GmppkePrivateKeyShare skgen(const GmppkePublicKey &pk,const ZR & alpha ) const;
 	void puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const ZR & tag) const;
 	GmmppkeCT encrypt(const GmppkePublicKey & pk,const GT & M,const std::vector<ZR> & tags) const;
-	PartialGmmppkeCT blind(const GmppkePublicKey & pk,const GT & M, const ZR & s,  const std::vector<ZR> & tags) const;
+	PartialGmmppkeCT blind(const GmppkePublicKey & pk, const ZR & s,  const std::vector<ZR> & tags) const;
 
 	GT recoverBlind(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const PartialGmmppkeCT & ct ) const;
 	GT decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct ) const;
