@@ -287,6 +287,7 @@ TEST_F(PFSETests,testSeperateDecryptandSerialize){
 	  //  iarchive(a);
 	    iarchive(ctnew);
 	}
+	EXPECT_EQ(ct,ctnew);
     EXPECT_EQ(testkey,test.decrypt(ctnew));
 
 }

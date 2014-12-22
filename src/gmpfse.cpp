@@ -224,7 +224,7 @@ PseCipherText Pfse::encryptFO(const pfsepubkey & pk,  const bitset256  & msg,con
     std::stringstream sss;
     sss << "0xDEADBEEF";
     sss << x;
-    ZR xorash = group.hashListToZR(sss.str().c_str());
+    ZR xorash = group.hashListToZR(sss.str());
     bitset256 bits = intToBits(xorash);
 
     ct.xorct = xorarray(msg, bits);

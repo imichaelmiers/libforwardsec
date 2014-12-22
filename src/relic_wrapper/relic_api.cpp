@@ -465,15 +465,15 @@ bool GT::ismember(bn_t order)
 
 ostream& operator<<(ostream& s, const GT& gt)
 {
-//	lfrowdsec_GTunconst(gt,gg);
-//	unsigned int l  = gt_size_bin(gg.g,POINT_COMPRESS);
-//	std::vector<uint8_t>data(l);
-//	gt_write_bin(&data[0], data.size(), gg.g,POINT_COMPRESS);
-//	s << "0x";
-//	for(auto i : data){
-//	s << std::hex << data[i];
-//	}
-//	s << std::endl;
+	lfrowdsec_GTunconst(gt,gg);
+	unsigned int l  = gt_size_bin(gg.g,POINT_COMPRESS);
+	std::vector<uint8_t>data(l);
+	gt_write_bin(&data[0], data.size(), gg.g,POINT_COMPRESS);
+	s << "0x";
+	for(auto i : data){
+	s << std::hex << data[i];
+	}
+	s << std::endl;
 	return s;
 }
 
