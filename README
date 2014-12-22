@@ -1,6 +1,8 @@
 Libforwardsec. A library for forward secure encryption.
 
 This depends on relic (https://github.com/relic-toolkit/relic) and assuming relic is configured to use it, GMP. Install both. 
+It also usees cereal(https://github.com/USCiLab/cereal) for serialization.
+
 
 Known to build on OSX  with Apple LLVM version 6.0 (clang-600.0.54) (based on LLVM 3.5svn).
 
@@ -8,13 +10,13 @@ This project builds with cmake.
 cd build/ 
 cmake ../
 make 
-make check # runs tests.
+make check # builds and runs tests.
 
 Note, Cmake supports a bunch of other build systems via "cmake -G 'generator name' ../"
 Among them Ninja (which is possibly faster than make) and project files for your favorite/
 least favorite IDEs (xcode, eclipse,visualstudio, etc)
 
-For a full list of supported buld systems run:
+For a full list of supported build systems run:
 cmake --help
 
 

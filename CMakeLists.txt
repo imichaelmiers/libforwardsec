@@ -30,14 +30,11 @@ IF(NOT RELIC_HEADER)
 	message(FATAL_ERROR "relic/relic.h headers not found in system. Did you install relic?")
 ENDIF(NOT RELIC_HEADER)
 
-
-#BOOST dependencies for serialization.
-find_package(Boost 1.5 COMPONENTS serialization)
-if(Boost_SERIALIZATION_FOUND)
-    include_directories(${Boost_INCLUDE_DIRS}) 
-else()
-	message(FATAL_ERROR, "Cannot find boost serialization library")
-endif(Boost_SERIALIZATION_FOUND)
+#DEPENDENCY CHECK FOR cereal (USERED FOR SERIALIZATION)
+find_path(CEREAL_HEADER NAMES cereal/types/vector.hpp)
+IF(NOT CEREAL_HEADER)
+	message(FATAL_ERROR "cereal/types/vector.hpp headers not found in system. Did you install cereal(https://github.com/USCiLab/cereal)?")
+ENDIF(NOT CEREAL_HEADER)
 
 
 

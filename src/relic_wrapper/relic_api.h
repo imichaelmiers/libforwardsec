@@ -72,7 +72,7 @@ public:
 
 		friend class cereal::access;
 		template <class Archive>
-		void save( Archive & ar, const unsigned int version ) const
+		void save( Archive & ar) const
 		{
 			std::vector<uint8_t>data(BN_BYTES);
 			std::cout <<"BN BYTES" << BN_BYTES << std::endl;
@@ -80,7 +80,7 @@ public:
 			ar(data);
 		}
 		template <class Archive>
-		void load( Archive & ar, const unsigned int version )
+		void load( Archive & ar)
 		{
 			std::vector<uint8_t>data(BN_BYTES);
 			ar(data);
@@ -128,7 +128,7 @@ public:
 	}
 		bool ismember(const bn_t) const;
     template<class Archive>
-    void save(Archive & ar, const unsigned int version) const
+    void save(Archive & ar) const
     {
     	unsigned int l  = g1_size_bin(g,POINT_COMPRESS);
     	std::cout << "G1 " << l << std::endl;
@@ -137,7 +137,7 @@ public:
 		ar(data);
     }
     template<class Archive>
-    void load(Archive & ar, const unsigned int version){
+    void load(Archive & ar){
     	std::vector<uint8_t>data;
 		ar(data);
     	g1_read_bin(g,&data[0],data.size());
@@ -175,7 +175,7 @@ public:
 	bool ismember(bn_t);
 
     template<class Archive>
-    void save(Archive & ar, const unsigned int version) const
+    void save(Archive & ar) const
     {
 
 		G2 gg(*this);
@@ -187,7 +187,7 @@ public:
 		ar(data,l);
     }
     template<class Archive>
-    void load(Archive & ar, const unsigned int version){
+    void load(Archive & ar){
     	std::vector<uint8_t>data;
 		ar(data);
     	g2_read_bin(g,&data[0],data.size());
@@ -223,7 +223,7 @@ public:
 	}
 	bool ismember(bn_t);
     template<class Archive>
-    void save(Archive & ar, const unsigned int version) const
+    void save(Archive & ar) const
     {
 		GT gg(*this);
     	unsigned int l  = gt_size_bin(gg.g,POINT_COMPRESS);
@@ -234,7 +234,7 @@ public:
 		ar(data);
     }
     template<class Archive>
-    void load(Archive & ar, const unsigned int version){
+    void load(Archive & ar){
     	std::vector<uint8_t>data;
 		ar(data);
     	gt_read_bin(g,&data[0],data.size());
