@@ -1,8 +1,5 @@
-#include <string>
-#include <list>
-#include <vector>
+
 #include <assert.h>
-#include <stdexcept>
 #include <set>
 #include "GMPpke.h"
 #include "util.h"

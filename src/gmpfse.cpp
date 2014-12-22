@@ -1,11 +1,5 @@
 #include <iostream>
-#include <sstream>
-#include <string>
-#include <list>
-#include <vector>
 #include <assert.h>
-#include <stdexcept>
-#include <bitset>
 #include <set>
 
 #include "gmpfse.h"
