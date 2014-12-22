@@ -9,8 +9,9 @@
 #define GMPPKE_H_
 #include <cereal/types/base_class.hpp>
 #include <cereal/access.hpp>
-#include "forwardsec.h"
 #include <cereal/types/vector.hpp>
+
+#include "forwardsec.h"
 
 
 class GmppkePublicKey: public  virtual  baseKey{

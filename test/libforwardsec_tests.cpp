@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <cmath>
 #include <cereal/archives/binary.hpp>
+#include <cereal/types/bitset.hpp>
 
 #include "gtest/gtest.h"
 
@@ -200,6 +201,52 @@ TEST_F(PFSETests,PunctureWrongInterval){
     EXPECT_THROW( test.puncture(2,"8");,invalid_argument); // can't puncture key we don't have children for.
 }
 
+
+TEST_F(PFSETests,testSeperateDecryptandSerialize){
+
+    vector<string> tags;
+    tags.push_back("9");
+    PseCipherText ct1 = test.encrypt(pk,testkey,1,tags);
+
+    //test.puncture(1,eight);
+
+
+	std::stringstream ss;
+	 pfsepubkey pksender;
+
+	Pfse testsender(d);
+
+	EXPECT_NE(pk,pksender);
+	{
+		cereal::BinaryOutputArchive oarchive(ss);
+		oarchive(pk);
+	}
+	{
+	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
+	    iarchive(pksender);
+	}
+
+	bitset<256> a;
+	PseCipherText ctnew,ct = testsender.encrypt(pksender,testkey,1,tags);
+	{
+		cereal::BinaryOutputArchive oarchive(ss);
+	//	oarchive(a);
+		oarchive(ct);
+	}
+	{
+	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
+	  //  iarchive(a);
+	    iarchive(ctnew);
+	}
+    EXPECT_EQ(testkey,test.decrypt(ctnew));
+
+}
+
+
+
+
+
+
 TEST_F(BbghhibeTests,basic){
     GT m = group.random(GT_t);
 
@@ -332,7 +379,7 @@ TEST_F(BbghhibeTests,testSeperateDecryptandSerialize){
 	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
 	    iarchive(ctnew);
 	}
-    EXPECT_EQ(m,test.decrypt(sk1, ct));
+    EXPECT_EQ(m,test.decrypt(sk1, ctnew));
 
 }
 
@@ -456,6 +503,6 @@ TEST_F(Gmmppketest,testSeperateDecryptandSerialize){
 	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
 	    iarchive(ctnew);
 	}
-    EXPECT_EQ(m,test.decrypt(pk,sk,ct));
+    EXPECT_EQ(m,test.decrypt(pk,sk,ctnew));
 
 }

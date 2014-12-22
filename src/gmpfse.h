@@ -5,6 +5,12 @@
 #include <sstream>
 #include <string>
 #include <map>
+#include <cereal/types/base_class.hpp>
+#include <cereal/access.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/map.hpp>
+#include <cereal/types/bitset.hpp>
+
 #include "forwardsec.h"
 #include "GMPpke.h"
 #include "BBGHibe.h"
@@ -12,8 +18,26 @@
 
 
 class pfsepubkey: public BbhHIBEPublicKey,  public GmppkePublicKey{
+	friend bool operator==(const pfsepubkey& x, const pfsepubkey& y){
+		return (BbhHIBEPublicKey)x == (BbhHIBEPublicKey)y && (GmppkePublicKey)x == (GmppkePublicKey)y;
+	}
+	friend bool operator!=(const pfsepubkey& x, const pfsepubkey& y){
+		return !(x==y);
+	}
+	template <class Archive>
+	  void serialize( Archive & ar )
+	{
+		ar(cereal::base_class<BbhHIBEPublicKey>(this),
+				cereal::base_class<GmppkePublicKey>(this));
+	}
+	friend class cereal::access;
 };
-
+namespace cereal
+{
+ template <class Archive>
+ struct specialize<Archive, pfsepubkey, cereal::specialization::member_serialize> {};
+ // cereal no longer has any ambiguity when serializing MyDerived
+}
 class PfsePuncturedPrivateKey{
 public:
 	BbghPrivatekey hibeSK;
@@ -21,6 +45,18 @@ public:
 	 bool punctured() const{
 		return ppkeSK.shares.size() > 1;
 	}
+	friend bool operator==(const PfsePuncturedPrivateKey& x, const PfsePuncturedPrivateKey& y){
+		return x.hibeSK == y.hibeSK && x.ppkeSK == y.ppkeSK;
+	}
+	friend bool operator!=(const PfsePuncturedPrivateKey& x, const PfsePuncturedPrivateKey& y){
+		return !(x==y);
+	}
+	template <class Archive>
+	  void serialize( Archive & ar )
+	{
+		ar(hibeSK,ppkeSK);
+	}
+	friend class cereal::access;
 };
 
 class PseCipherText{
@@ -31,11 +67,25 @@ public:
 	PartialGmmppkeCT ppkeCT;
 	unsigned int interval;
 	bitset256 xorct;
-friend bool operator==(const PseCipherText& l,const PseCipherText& r){
+	friend class cereal::access;
+	friend bool operator==(const PseCipherText& l,const PseCipherText& r){
 		return l.ct0 == r.ct0 && l.hibeCT == r.hibeCT && l.ppkeCT == r.ppkeCT
 				&& l.interval == r.interval && l.xorct == r.xorct;
 	}
+	friend bool operator!=(const PseCipherText& l,const PseCipherText& r){
+		return !(l==r);
+	}
+
+	template <class Archive>
+	void serialize( Archive & ar )
+	{
+		ar(ct0,hibeCT,ppkeCT);
+	}
 };
+//template <class Archive>
+//void serialize( Archive & ar, PseCipherText & b ){
+//		//ar(b.ct0,b.hibeCT,b.ppkeCT,b.interval,b.xorct);
+//}
 
 class PfseKeyStore{
 public:
@@ -48,6 +98,20 @@ public:
 	void erase(unsigned int i);
 	bool hasKey(const unsigned int i) const;
 	bool needsChildKeys(const unsigned int i,const unsigned int d) const;
+
+	friend bool operator==(const PfseKeyStore& l,const PfseKeyStore& r){
+		return l.puncturedKeys == r.puncturedKeys && l.unpucturedHIBEKeys == r.unpucturedHIBEKeys &&
+				l.unpucturedPPKEKey == r.unpucturedPPKEKey;
+	}
+	friend bool operator!=(const PfseKeyStore& l,const PfseKeyStore& r){
+		return !(l==r);
+	}
+	template <class Archive>
+	  void serialize( Archive & ar )
+	{
+		ar(puncturedKeys,unpucturedHIBEKeys,unpucturedPPKEKey);
+	}
+	friend class cereal::access;
 };
 
 class Pfse
