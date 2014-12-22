@@ -294,9 +294,9 @@ ostream& operator<<(ostream& s, const G1& g1)
 	g1_write_bin(&data[0], data.size(), g1.g,POINT_COMPRESS);
 	s << "0x";
 	for(auto i : data){
-	std::cout << std::hex << data[i];
+	s << std::hex << data[i];
 	}
-	std::cout << std::endl;
+	s<< std::endl;
 	return s;
 }
 
@@ -306,7 +306,9 @@ ostream& operator<<(ostream& s, const G1& g1)
 
 G2 operator+(const G2& x, const G2& y)
 {
-	G2 z, x1=x,y1=y ;
+	G2 z;
+	lfrowdsec_G2unconst(x,x1);
+	lfrowdsec_G2unconst(y,y1);
 	g2_add(z.g, x1.g, y1.g);
 	g2_norm(z.g,z.g);
 	return z;
@@ -314,7 +316,9 @@ G2 operator+(const G2& x, const G2& y)
 
 G2 operator-(const G2& x, const G2& y)
 {
-	G2 z,x1=x,y1=y;
+	G2 z;
+	lfrowdsec_G2unconst(x,x1);
+	lfrowdsec_G2unconst(y,y1);
 	g2_sub(z.g,x1.g, y1.g);
 	g2_norm(z.g,z.g);
 	return z;
@@ -322,15 +326,17 @@ G2 operator-(const G2& x, const G2& y)
 
 G2 operator-(const G2& x)
 {
-	G2 z,x1=x;
+	G2 z;
+	lfrowdsec_G2unconst(x,x1);
 	g2_neg(z.g, x1.g);
 	return z;
 }
 
 G2 power(const G2& g, const ZR& zr)
 {
-	G2 g2,g1=g;
-	ZR zr1=zr;
+	G2 g2;
+	lfrowdsec_G2unconst(g,g1);
+	lfrowdsec_ZRunconst(zr,zr1);
 	g2_mul(g2.g,g1.g, zr1.z);
 	return g2;
 }
@@ -364,15 +370,15 @@ bool G2::ismember(bn_t order)
 
 ostream& operator<<(ostream& s, const G2& g2)
 {
-	lfrowdsec_G2unconst(g2);
+	lfrowdsec_G2unconst(g2,gg);
 	unsigned int l  = g2_size_bin(gg.g,POINT_COMPRESS);
 	std::vector<uint8_t>data(l);
 	g2_write_bin(&data[0], data.size(), gg.g,POINT_COMPRESS);
 	s << "0x";
 	for(auto i : data){
-	std::cout << std::hex << data[i];
+	s<< std::hex << data[i];
 	}
-	std::cout << std::endl;
+	s << std::endl;
 	return s;
 }
 
@@ -389,7 +395,9 @@ GT operator*(const GT& x, const GT& y)
 
 GT operator/(const GT& x, const GT& y)
 {
-	GT z, x1=x, y1 = y;
+	GT z;
+	lfrowdsec_GTunconst(x,x1);
+	lfrowdsec_GTunconst(y,y1);
 	// z = x * y^-1
 	gt_t t;
 	gt_inits(t);
@@ -401,8 +409,9 @@ GT operator/(const GT& x, const GT& y)
 
 GT power(const GT& g, const ZR& zr)
 {
-	GT gt,gg=g;
-	ZR zr1 = zr;
+	GT gt;
+	lfrowdsec_GTunconst(g,gg);
+	lfrowdsec_ZRunconst(zr,zr1);
 	if(zr == ZR(-1)) { // find efficient way for comparing bn_t to ints
 		// compute inverse
 		return -g;
@@ -415,7 +424,8 @@ GT power(const GT& g, const ZR& zr)
 
 GT operator-(const GT& g)
 {
-	GT gt,gg=g;
+	GT gt;
+	lfrowdsec_GTunconst(g,gg);
 	gt_inv(gt.g, gg.g);
 	return gt;
 }
@@ -423,8 +433,8 @@ GT operator-(const GT& g)
 GT pairing(const G1& g1, const G2& g2)
 {
 	GT gt;
-	G1 g11=g1;
-	G2 g22=g2;
+	lfrowdsec_G1unconst(g1,g11);
+	lfrowdsec_G2unconst(g2,g22);
 	/* compute optimal ate pairing */
 	pp_map_oatep_k12(gt.g, g11.g, g22.g);
 	//pp_map_k12(gt.g, g11.g, g22.g);
@@ -455,30 +465,15 @@ bool GT::ismember(bn_t order)
 
 ostream& operator<<(ostream& s, const GT& gt)
 {
-	// designed for BN curves at the moment
-	// int length = (compute_length(GT_t) * 2)+2;
-	// char data[length + 1];
-	// char data2[length + 1];
-	// memset(data, 0, length+1);
-	// memset(data2, 0, length+1);
-	// gt_write_str( (uint8_t *) data, length,const_cast<GT&>(gt).g,DECIMAL);
-
-	// int len2 = FP_STR;
-	// int dist_x01 = len2, dist_x10 = len2 * 2, dist_x11 = len2 * 3,
-	// 	dist_x20 = len2 * 4, dist_x21 = len2 * 5, dist_y00 = len2 * 6,
-	// 	dist_y01 = len2 * 7, dist_y10 = len2 * 8, dist_y11 = len2 * 9,
-	// 	dist_y20 = len2 * 10, dist_y21 = len2 * 11;
-	//  snprintf(data2, length, "[%s, %s, %s, %s, %s, %s],\n[%s, %s, %s, %s, %s, %s]",
-	//  			  data, &(data[dist_x01]), &(data[dist_x10]), &(data[dist_x11]),
-	// 			  &(data[dist_x20]), &(data[dist_x21]),
-	// 			  &(data[dist_y00]), &(data[dist_y01]), &(data[dist_y10]), &(data[dist_y11]),
-	// 			  &(data[dist_y20]), &(data[dist_y21]));
-
-	// string s1(data2, length);
-	// s << s1;
-	// memset(data, 0, length);
-	// memset(data2, 0, length);
-	s << "BROKEN";
+//	lfrowdsec_GTunconst(gt,gg);
+//	unsigned int l  = gt_size_bin(gg.g,POINT_COMPRESS);
+//	std::vector<uint8_t>data(l);
+//	gt_write_bin(&data[0], data.size(), gg.g,POINT_COMPRESS);
+//	s << "0x";
+//	for(auto i : data){
+//	s << std::hex << data[i];
+//	}
+//	s << std::endl;
 	return s;
 }
 
