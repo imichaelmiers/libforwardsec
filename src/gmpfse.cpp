@@ -213,7 +213,9 @@ PseCipherText Pfse::encryptFO(const pfsepubkey & pk,  const bitset256  & msg,con
 		const unsigned int interval, const vector<ZR>  & tags ) const {
     std::stringstream ss; //FIXME the << operator returns "BROKEN"
     ss << x;
-    ss << msg;
+    for(auto a : msg){
+    	ss << a;
+    }
     ZR s = group.hashListToZR(ss.str());
    
     PseCipherText ct = encrypt(pk,x,s,interval,tags);
@@ -225,7 +227,7 @@ PseCipherText Pfse::encryptFO(const pfsepubkey & pk,  const bitset256  & msg,con
     ZR xorash = group.hashListToZR(sss.str().c_str());
     bitset256 bits = intToBits(xorash);
 
-    ct.xorct = msg ^ bits;
+    ct.xorct = xorarray(msg, bits);
     return ct;
 
 }
@@ -265,7 +267,7 @@ bitset256 Pfse::decryptFO(const PfsePuncturedPrivateKey & sk,const PseCipherText
     ZR xorash = group.hashListToZR(sss.str());
 
     bitset256 bits = intToBits(xorash);
-    bitset256 aes_key = ct.xorct ^ bits;
+    bitset256 aes_key = xorarray(ct.xorct, bits);
     PseCipherText cttest = encryptFO(pk,aes_key,x,ct.interval,ct.ppkeCT.tags);
     if(ct == cttest ){
         return aes_key;

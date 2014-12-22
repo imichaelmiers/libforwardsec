@@ -850,7 +850,7 @@ G2 PairingGroup::hashListToG2(string str) const
 }
 
 bitset256 intToBits(const ZR &id){
-	std::bitset<256> zrlist;
+	bitset256 zrlist;
 	int l=256;
     int intval;
     int j = l-1;

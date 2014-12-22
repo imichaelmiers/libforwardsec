@@ -10,6 +10,8 @@
 #include <math.h>
 #include <bitset> 
 #include <cereal/types/vector.hpp>
+#include <array>
+
 // define classes
 #ifdef __cplusplus
 	// gmp.h uses __cplusplus to decide if it's right to include c++ headers.
@@ -38,7 +40,7 @@ extern "C" {
 void ro_error(void);
 
 
-typedef  std::bitset<256> bitset256;
+typedef  std::array<uint8_t,256> bitset256;
 
 
 class RelicDividByZero : public std::logic_error

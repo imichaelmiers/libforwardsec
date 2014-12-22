@@ -1,6 +1,18 @@
 #include<assert.h>
 #include"util.h"
 using namespace std;
+
+util_ar_type xorarray(const util_ar_type & l,const util_ar_type & r){
+	if(l.size()!=r.size()){
+		throw invalid_argument("Arrays must be be same size. Instead  l:" +std::to_string(l.size()) +  " r:" +std::to_string(r.size()));
+	}
+	util_ar_type result;
+	for(unsigned int i=0;i<l.size();i++){
+		result[i] = l[i] ^ r[i];
+	}
+	return result;
+}
+
 unsigned int treeSize(unsigned int k){
     return (2 <<(k)) -1;
 }

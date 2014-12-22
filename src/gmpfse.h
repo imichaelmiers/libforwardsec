@@ -9,7 +9,7 @@
 #include <cereal/access.hpp>
 #include <cereal/types/vector.hpp>
 #include <cereal/types/map.hpp>
-#include <cereal/types/bitset.hpp>
+#include <cereal/types/array.hpp>
 
 #include "forwardsec.h"
 #include "GMPpke.h"
@@ -79,7 +79,7 @@ public:
 	template <class Archive>
 	void serialize( Archive & ar )
 	{
-		ar(ct0,hibeCT,ppkeCT);
+		ar(ct0,hibeCT,ppkeCT,interval,xorct);
 	}
 };
 //template <class Archive>

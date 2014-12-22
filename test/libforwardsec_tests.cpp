@@ -34,12 +34,12 @@ protected:
 	 	pk = test.pk;
 	 } 
 	 unsigned int d=3;
-	 PFSETests():test(d),testkey(teststring){}
+	 PFSETests():test(d){}
  	 //PairingGroup group;
 	 Pfse test;
 	 pfsepubkey pk ;
-     string teststring = "1111111110101010000011110001001100100111101101110000010001101010100000010110100010111010000100011100011111010100101011011001001110110000110100110011101001110010110001100100111100000111100001101110101000010000001011010110000100100001001001111010001000111001";
-	 bitset256 testkey;
+	 bitset256 testkey = {0x3a, 0x5d, 0x7a, 0x42, 0x44, 0xd3, 0xd8, 0xaf, 0xf5, 0xf3, 0xf1, 0x87, 0x81, 0x82, 0xb2,
+						  0x53, 0x57, 0x30, 0x59, 0x75, 0x8d, 0xe6, 0x18, 0x17, 0x14, 0xdf, 0xa5, 0xa4, 0x0b};
 	// static PairingGroup _group;
 };
 
@@ -201,6 +201,57 @@ TEST_F(PFSETests,PunctureWrongInterval){
     EXPECT_THROW( test.puncture(2,"8");,invalid_argument); // can't puncture key we don't have children for.
 }
 
+TEST_F(PFSETests,serializePseCipherText){
+	std::stringstream ss;
+    vector<std::string> tags;
+    tags.push_back("2");
+    PseCipherText ctnew, ct = test.encrypt(pk,testkey,1,tags);
+	EXPECT_NE(ct,ctnew);
+	{
+		cereal::BinaryOutputArchive oarchive(ss);
+		oarchive(ct);
+	}
+	//cout << "PseCipherText size " << size << endl;
+	{
+	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
+	    iarchive(ctnew);
+	}
+	EXPECT_EQ(ct,ctnew);
+}
+
+TEST_F(PFSETests,serializePfsepubkey){
+	pfsepubkey pknew;
+	std::stringstream ss;
+	EXPECT_NE(pk,pknew);
+	{
+		cereal::BinaryOutputArchive oarchive(ss);
+		oarchive(pk);
+	}
+	int size = ss.tellp();
+//	cout << "pfsepubkey size " << size << endl;
+	{
+	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
+	    iarchive(pknew);
+	}
+	EXPECT_EQ(pk,pknew);
+}
+TEST_F(PFSETests,serializeGmppkePrivateKey){
+	std::stringstream ss;
+	PfseKeyStore storen;
+	EXPECT_NE(test.privatekeys,storen);
+	{
+		cereal::BinaryOutputArchive oarchive(ss);
+		oarchive(test.privatekeys);
+	}
+	int size = ss.tellp();
+//	cout << "serializeBbhHIBEPublicKey size " << size << endl;
+	{
+	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
+	    iarchive(storen);
+	}
+	EXPECT_EQ(test.privatekeys,storen);
+}
+
 
 TEST_F(PFSETests,testSeperateDecryptandSerialize){
 
@@ -225,8 +276,6 @@ TEST_F(PFSETests,testSeperateDecryptandSerialize){
 	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
 	    iarchive(pksender);
 	}
-
-	bitset<256> a;
 	PseCipherText ctnew,ct = testsender.encrypt(pksender,testkey,1,tags);
 	{
 		cereal::BinaryOutputArchive oarchive(ss);
