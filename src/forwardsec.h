@@ -42,6 +42,9 @@ public:
 		return (x.gG1 == y.gG1 && x.gG2 == y.gG2 && x.g2G1 == y.g2G1
 				&& x.g2G2 == y.g2G2);
 	}
+	friend bool operator!=(const baseKey& x, const baseKey& y){
+		return !(x==y);
+	}
 };
 
 // (from cereal documentation )Note the non-member serialize - trying to call serialize

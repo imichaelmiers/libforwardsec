@@ -21,6 +21,19 @@ public:
 	G2 a1;
 	std::vector<G1> b;
 	std::vector<G2> bG2;
+	friend bool operator==(const BbghPrivatekey& x, const BbghPrivatekey& y){
+		return  (x.a0 == y.a0 && x.a1 == y.a1 && x.b == y.b &&
+				x.bG2 == y.bG2);
+	}
+	friend bool operator!=(const BbghPrivatekey& x, const BbghPrivatekey& y){
+		return !(x==y);
+	}
+	template <class Archive>
+	  void serialize( Archive & ar )
+	{
+		ar(a0,a1,b,bG2);
+	}
+	friend class cereal::access;
 };
 
 
@@ -48,29 +61,48 @@ public:
 	}
 	friend class cereal::access;
 };
-//
+// cereal can't find he function if we don't do this.
 namespace cereal
 {
  template <class Archive>
  struct specialize<Archive, BbhHIBEPublicKey, cereal::specialization::member_serialize> {};
  // cereal no longer has any ambiguity when serializing MyDerived
 }
+
 class PartialBbghCT{
 public:
+	PartialBbghCT(){};
 	PairingGroup group;
 	G1 B;
 	G1 C;
 	friend bool operator==(const PartialBbghCT& x,const PartialBbghCT& y){
 		return x.B == y.B && x.C == y.C;
 	}
+	friend bool operator!=(const PartialBbghCT& x,const PartialBbghCT& y){
+		return !(x==y);
+	}
+	template <class Archive>
+	void serialize( Archive & ar ){
+		ar(B,C);
+	}
+	friend class cereal::access;
 };
 class BbghCT: public PartialBbghCT{
 public:
+	BbghCT(){};
 	BbghCT(const  PartialBbghCT & c) : PartialBbghCT(c){}
 	GT A;
 	friend bool operator==(const BbghCT& x,const BbghCT& y){
-		return x.A == y.A && x.B == y.B && x.C == y.C; //FIXME call bass operator
+		return x.A == y.A  && (PartialBbghCT) x == (PartialBbghCT) y;
 	}
+	friend bool operator!=(const BbghCT& x,const BbghCT& y){
+		return !(x==y);
+	}
+	template <class Archive>
+	void serialize( Archive & ar ){
+		ar(cereal::base_class<PartialBbghCT>(this),A);
+	}
+	friend class cereal::access;
 };
 
 class Bbghibe

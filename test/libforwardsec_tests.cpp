@@ -96,23 +96,6 @@ protected:
     // static PairingGroup _group;
 };
 
-TEST_F(BbghhibeTests,serializeBbhHIBEPublicKey){
-	BbhHIBEPublicKey pknew;
-	std::stringstream ss;
-	EXPECT_NE(pk,pknew);
-	{
-		cereal::BinaryOutputArchive oarchive(ss);
-		oarchive(pk);
-	}
-	int size = ss.tellp();
-	cout << "BbhHIBEPublicKey size " << size << endl;
-	ss.seekg(0);
-	{
-	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
-	    iarchive(pknew);
-	}
-	EXPECT_EQ(pk,pknew);
-}
 
 TEST_F(PFSETests,Decrypt){
     vector<string> tags;
@@ -258,6 +241,102 @@ TEST_F(BbghhibeTests,derivedFurther){
 
 }
 
+TEST_F(BbghhibeTests,serializeBbghCT){
+	std::stringstream ss;
+    GT m = group.random(GT_t);
+
+    BbghCT ctnew;
+    BbghCT ct = test.encrypt(pk,m,id1);
+	EXPECT_NE(ct,ctnew);
+	{
+		cereal::BinaryOutputArchive oarchive(ss);
+		oarchive(ct);
+	}
+	int size = ss.tellp();
+	//cout << "BbhHIBEPublicKey size " << size << endl;
+	{
+	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
+	    iarchive(ctnew);
+	}
+	EXPECT_EQ(ct,ctnew);
+}
+
+TEST_F(BbghhibeTests,serializeBbhHIBEPublicKey){
+	BbhHIBEPublicKey pknew;
+	std::stringstream ss;
+	EXPECT_NE(pk,pknew);
+	{
+		cereal::BinaryOutputArchive oarchive(ss);
+		oarchive(pk);
+	}
+	int size = ss.tellp();
+//	cout << "serializeBbhHIBEPublicKey size " << size << endl;
+	{
+	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
+	    iarchive(pknew);
+	}
+	EXPECT_EQ(pk,pknew);
+}
+TEST_F(BbghhibeTests,serializeBbghPrivatekey){
+	BbhHIBEPublicKey pknew;
+	std::stringstream ss;
+	BbghPrivatekey skn;
+	EXPECT_NE(sk0,skn);
+	{
+		cereal::BinaryOutputArchive oarchive(ss);
+		oarchive(sk0);
+	}
+	int size = ss.tellp();
+//	cout << "serializeBbhHIBEPublicKey size " << size << endl;
+	{
+	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
+	    iarchive(skn);
+	}
+	EXPECT_EQ(skn,sk0);
+	EXPECT_NE(sk111,skn);
+
+	{
+		cereal::BinaryOutputArchive oarchive(ss);
+		oarchive(sk111);
+	}
+	{
+	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
+	    iarchive(skn);
+	}
+	EXPECT_EQ(skn,sk111);
+}
+
+TEST_F(BbghhibeTests,testSeperateDecryptandSerialize){
+	std::stringstream ss;
+	BbhHIBEPublicKey pksender;
+
+	Bbghibe testsender;
+	EXPECT_NE(pk,pksender);
+	{
+		cereal::BinaryOutputArchive oarchive(ss);
+		oarchive(pk);
+	}
+	{
+	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
+	    iarchive(pksender);
+	}
+
+    GT m = group.random(GT_t);
+
+    BbghCT ctnew,ct = testsender.encrypt(pksender,m,id1);
+	{
+		cereal::BinaryOutputArchive oarchive(ss);
+		oarchive(ct);
+	}
+	{
+	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
+	    iarchive(ctnew);
+	}
+    EXPECT_EQ(m,test.decrypt(sk1, ct));
+
+}
+
+
 TEST_F(Gmmppketest,basic){
     GT m = group.random(GT_t);
     vector<ZR> tags;
@@ -294,20 +373,3 @@ TEST_F(Gmmppketest,punctureFail){
     EXPECT_THROW(test.decrypt_unchecked(pk,sk,ct),std::logic_error);
     EXPECT_THROW(test.decrypt(pk,sk,ct),PuncturedCiphertext);
 }
-
-
-// TEST_F(PFSETests,Basic){
-//     GT M;
-//     M = group.random(GT_t);
-//     Pfse test(3);
-//     test.keygen();
-//     pfsepubkey pk = test.pk;
-
-//     CharmListZR tags;
-//      ZR tag = 19;
-//      ZR eight = 8;
-//      tags.insert(0,tag);
-//     CharmList ct1 = test.encrypt(pk,M,1,tags);
-//      GT newM = test.decryptGT(ct1);
-//      EXPECT_EQ(M,newM);
-// }
