@@ -65,7 +65,7 @@ void Gmppke::keygen(GmppkePublicKey & pk, GmppkePrivateKey & sk,const unsigned i
    pk.gG2 = bpk.gG2;
    pk.g2G1 = bpk.g2G1;
    pk.g2G2 = bpk.g2G2;
-   keygenPartial(alpha,pk,sk);
+   keygenPartial(alpha,pk,sk,d);
 }
 void Gmppke::keygenPartial(const ZR & alpha, GmppkePublicKey & pk, GmppkePrivateKey & sk, const unsigned int & d) const
 {
