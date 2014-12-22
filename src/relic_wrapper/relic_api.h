@@ -34,7 +34,14 @@
 extern "C" {
 	   #include "common.h"
 }
-
+// this exists to deal with a const issue with relic. we can either copy (guaranteed  to be safe) or just
+// cast away the const under the assumption that the underlying methods are ocnst (which they are supposed to be already)
+#define LFORWARDSEC_UNCONST
+#ifdef LFORWARDSEC_UNCONST
+#define lfrowdsec_G2unconst(x) G2 & gg = const_cast<G2&>(x)
+#else
+#define lfrowdsec_G2unconst(x) G2 gg(x)
+#endif
 
 #define convert_str(a)  a /* nothing */
 void ro_error(void);

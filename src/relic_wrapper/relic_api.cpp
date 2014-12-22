@@ -51,44 +51,44 @@ const ZR ZR::inverse() const{
 
 ZR operator+(const ZR& x, const ZR& y)
 {
-	ZR zr , x1=x,t;
-	bn_add(t.z, x1.z, y.z);
-	bn_mod(zr.z, t.z, zr.order);
+	ZR zr;
+	bn_add(zr.z, x.z, y.z);
+	bn_mod(zr.z, zr.z, zr.order);
 	return zr;
 }
 
 ZR operator-(const ZR& x, const ZR& y)
 {
-	ZR zr,t,x1=x;
+	ZR zr;
 
-	bn_sub(t.z, x1.z, y.z);
-	if(bn_sign(t.z) == BN_NEG) bn_add(zr.z, t.z, t.order);
+	bn_sub(zr.z, x.z, y.z);
+	if(bn_sign(zr.z) == BN_NEG) bn_add(zr.z, zr.z, zr.order);
 	else {
-		bn_mod(zr.z, t.z, t.order);
+		bn_mod(zr.z, zr.z, zr.order);
 	}
 	return zr;
 }
 
 ZR operator-(const ZR& x)
 {
-	ZR zr,t,x1 = x;
-	bn_neg(t.z, x1.z);
-	if(bn_sign(t.z) == BN_NEG) {
-		bn_add(zr.z, t.z, t.order);
+	ZR zr;
+	bn_neg(zr.z, x.z);
+	if(bn_sign(zr.z) == BN_NEG) {
+		bn_add(zr.z, zr.z, zr.order);
 		return zr;
 	}else{
-		return t;
+		return zr;
 	}
 }
 
 
 ZR operator*(const ZR& x, const ZR& y)
 {
-	ZR zr,t,x1=x;
-	bn_mul(t.z, x1.z, y.z);
-	if(bn_sign(t.z) == BN_NEG) bn_add(zr.z, t.z, t.order);
+	ZR zr;
+	bn_mul(zr.z, x.z, y.z);
+	if(bn_sign(zr.z) == BN_NEG) bn_add(zr.z, zr.z, zr.order);
 	else {
-		bn_mod(zr.z, t.z, t.order);
+		bn_mod(zr.z, zr.z, zr.order);
 	}
 
 	return zr;
@@ -289,21 +289,14 @@ bool G1::ismember(const bn_t order) const
 
 ostream& operator<<(ostream& s, const G1& g1)
 {
-	// base field
-	// int length = (compute_length(G1_t) * 2)+1;
-	// char data[length + 1];
-	// char data2[length + 1];
-	// memset(data, 0, length+1);
-	// memset(data2, 0, length+1);
-	// g1_write_str((uint8_t *) data, length, const_cast<G1&>(g1).g, DECIMAL);
-	// int dist_y = FP_STR;
-	// snprintf(data2, length, "[%s, %s]", data, &(data[dist_y]));
-
-	// string s1(data2, length);
-	// s << s1;
-	// memset(data, 0, length);
-	// memset(data2, 0, length);
-	s << "BROKEN";
+	unsigned int l  = g1_size_bin(g1.g,POINT_COMPRESS);
+	std::vector<uint8_t>data(l);
+	g1_write_bin(&data[0], data.size(), g1.g,POINT_COMPRESS);
+	s << "0x";
+	for(auto i : data){
+	std::cout << std::hex << data[i];
+	}
+	std::cout << std::endl;
 	return s;
 }
 
@@ -371,23 +364,15 @@ bool G2::ismember(bn_t order)
 
 ostream& operator<<(ostream& s, const G2& g2)
 {
-	// designed for BN curves at the moment
-	// int length = (compute_length(G2_t) * 2)+1;
-	// char data[length + 1];
-	// char data2[length + 1];
-	// memset(data, 0, length+1);
-	// memset(data2, 0, length+1);
-	// g2_write_str((uint8_t *) data, length,const_cast<G2&>(g2).g, DECIMAL);
-
-	// int len2 = FP_STR;
-	// int dist_x1 = len2, dist_y0 = len2 * 2, dist_y1 = len2 * 3;
-	// snprintf(data2, length, "[%s, %s,\n%s, %s]", data, &(data[dist_x1]), &(data[dist_y0]), &(data[dist_y1]));
-
-	// string s1(data2, length);
-	// s << s1;
-	// memset(data, 0, length);
-	// memset(data2, 0, length);
-	s << "BROKEN ";
+	lfrowdsec_G2unconst(g2);
+	unsigned int l  = g2_size_bin(gg.g,POINT_COMPRESS);
+	std::vector<uint8_t>data(l);
+	g2_write_bin(&data[0], data.size(), gg.g,POINT_COMPRESS);
+	s << "0x";
+	for(auto i : data){
+	std::cout << std::hex << data[i];
+	}
+	std::cout << std::endl;
 	return s;
 }
 
