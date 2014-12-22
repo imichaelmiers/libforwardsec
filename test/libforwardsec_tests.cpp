@@ -5,8 +5,13 @@
 #include <bitset>
 #include <assert.h>
 #include <cmath>
-#include "gmpfse.h"
+
 #include "gtest/gtest.h"
+
+#include "gmpfse.h"
+#include "GMPpke.h"
+#include "BBGHibe.h"
+
 using namespace std;
 class Gmmppketest : public ::testing::Test {
 protected:
