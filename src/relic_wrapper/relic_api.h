@@ -281,23 +281,11 @@ public:
 	~PairingGroup();
 	void setCurve(int sec_level);
 
-	void init(ZR&, char*) const;
-	void init(ZR&, int) const;
-	void init(G1&, int) const;
-	void init(GT&, int) const;
 
-	ZR init(ZR_type) const;
-	ZR init(ZR_type, int) const;
-	G1 init(G1_type) const ;
-	G1 init(G1_type, int) const ;
-	GT init(GT_type) const ;
-	GT init(GT_type, int) const ;
-	ZR random(ZR_type) const;
-	G1 random(G1_type) const;
-	GT random(GT_type) const;
-	//template<typename T> T random12(){ T foo; return foo;};
-
-
+	ZR randomZR() const;
+	G1 randomG1() const;
+	G2 randomG2() const;
+	GT randomGT() const;
 //	bool ismember(CharmMetaListZR&);
 //	bool ismember(CharmMetaListG1&);
 //	bool ismember(CharmMetaListG2&);
@@ -312,9 +300,7 @@ public:
 	bool ismember(GT&);
 	bool ismember(G2&);
 
-	G2 init(G2_type) const;
-	G2 init(G2_type, int) const;
-	void init(G2&, int) const;
+
 	G2 random(G2_type) const;
 	G2 mul(const G2 &, const G2 &) const;
 	G2 div(const G2 &, const G2 &) const;

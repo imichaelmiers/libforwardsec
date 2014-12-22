@@ -97,8 +97,8 @@ void Pfse::keygen(){
     hibe.keygen(this->pk,msk,right,skrighthibe);
     int l = pathToIndex(left,depth);
     int r = pathToIndex(right,depth);
-    ZR gamma = group.random(ZR_t);
-    ZR gamma1 = group.random(ZR_t); // XXX FIXME . this should break. we are randomizing the left key w/ the wrong alpha
+    ZR gamma = group.randomZR();
+    ZR gamma1 = group.randomZR(); // XXX FIXME . this should break. we are randomizing the left key w/ the wrong alpha
     assert(!(gamma1 == gamma));
     sklefthibe.a0 = group.mul(sklefthibe.a0,group.exp(this->pk.g2G2,group.neg(gamma)));
     skrighthibe.a0 = group.mul(skrighthibe.a0,group.exp(this->pk.g2G2,group.neg(gamma1)));
@@ -143,7 +143,7 @@ void Pfse::prepareNextInterval(){
 }
 
 void Pfse::bindKey(PfsePuncturedPrivateKey & k) {
-    const ZR gamma = group.random(ZR_t);
+    const ZR gamma = group.randomZR();
     GmppkePrivateKey puncturedKey;
 
 	k.hibeSK.a0 = group.mul(k.hibeSK.a0,group.exp(pk.g2G2,group.neg(gamma)));
@@ -205,7 +205,7 @@ PseCipherText Pfse::encrypt(const pfsepubkey & pk, const bitset256 msg, const un
 }
 PseCipherText Pfse::encryptFO(const pfsepubkey & pk,const bitset256  & msg
 		, const unsigned int interval, const vector<ZR>  & tags ) const {
-    GT x = group.random(GT_t);
+    GT x = group.randomGT();
     return encryptFO(pk,msg,x,interval,tags);
 
 }
@@ -232,7 +232,7 @@ PseCipherText Pfse::encryptFO(const pfsepubkey & pk,  const bitset256  & msg,con
 
 }
 PseCipherText Pfse::encrypt(const pfsepubkey & pk,const  GT & M, const unsigned int interval, const vector<ZR>  & tags) const{
-        ZR s = group.random(ZR_t);
+        ZR s = group.randomZR();
         return Pfse::encrypt(pk,M,s,interval,tags);
 }
 

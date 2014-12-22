@@ -510,89 +510,7 @@ PairingGroup::~PairingGroup()
 	}
 }
 
-void PairingGroup::init(ZR & r, char *value) const
-{
-	r = ZR(value);
-}
-
-ZR PairingGroup::init(ZR_type t, int value) const
-{
-	ZR zr(value);
-	return zr;
-}
-
-void PairingGroup::init(ZR & r, int value) const
-{
-	r = ZR(value); //should copy this
-	return;
-}
-
-ZR PairingGroup::init(ZR_type t) const
-{
-	ZR zr;
-	return zr;
-}
-
-G1 PairingGroup::init(G1_type t) const
-{
-	G1 g1;
-	return g1;
-}
-
-void PairingGroup::init(G1 & t, int value) const
-{
-	G1 g1;
-	if(value == 1) t = g1; // set to the identity element
-	return;
-}
-
-G1 PairingGroup::init(G1_type t, int value) const
-{
-	G1 g1; // = new G1();
-	return g1;
-}
-
-//#ifdef ASYMMETRIC
-G2 PairingGroup::init(G2_type t) const
-{
-	G2 g2; // = new G2();
-	return g2;
-}
-
-// G2 PairingGroup::init(G2_type t, int value)
-// {
-// 	G2 g2; // = new G2();
-// 	return g2;
-// }
-
-// void PairingGroup::init(G2 & t, int value)
-// {
-// 	G2 g2;
-// 	t = g2;
-// 	return;
-// }
-//#endif
-
-GT PairingGroup::init(GT_type t) const
-{
-	GT g;
-	return g;
-}
-
-GT PairingGroup::init(GT_type t, int value) const
-{
-	GT g;
-	return g;
-}
-
-// void PairingGroup::init(GT & t, int value)
-// {
-// 	GT g;
-// 	t = g;
-// 	return;
-// }
-
-ZR PairingGroup::random(ZR_type t) const
+ZR PairingGroup::randomZR() const
 {
 	ZR zr,tt;
 	bn_rand(tt.z, BN_POS, bn_bits(grp_order));
@@ -600,21 +518,21 @@ ZR PairingGroup::random(ZR_type t) const
 	return zr;
 }
 
-G1 PairingGroup::random(G1_type t) const
+G1 PairingGroup::randomG1() const
 {
 	G1  g1;
 	g1_rand(g1.g);
 	return g1;
 }
 
-G2 PairingGroup::random(G2_type t) const
+G2 PairingGroup::randomG2() const
 {
 	G2  g2;
 	g2_rand(g2.g);
 	return g2;
 }
 
-GT PairingGroup::random(GT_type t) const
+GT PairingGroup::randomGT() const
 {
 	GT gts;
 	gt_rand(gts.g);

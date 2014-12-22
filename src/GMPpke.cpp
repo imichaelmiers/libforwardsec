@@ -55,10 +55,10 @@ G2 Gmppke::vG2(const std::vector<G2> & gqofxG2,const ZR & x) const{
 void Gmppke::keygen(GmppkePublicKey & pk, GmppkePrivateKey & sk,const unsigned int & d) const
 {
    GmppkePublicKey bpk;
-   const ZR alpha = group.random(ZR_t);
-   bpk.gG1 = group.random(G1_t);
-   bpk.gG2 = group.random(G2_t);
-   const ZR beta = group.random(ZR_t);
+   const ZR alpha = group.randomZR();
+   bpk.gG1 = group.randomG1();
+   bpk.gG2 = group.randomG2();
+   const ZR beta = group.randomZR();
    bpk.g2G1 = group.exp(bpk.gG1, beta);
    bpk.g2G2 = group.exp(bpk.gG2, beta);
    pk.gG1 = bpk.gG1;
@@ -88,7 +88,7 @@ void Gmppke::keygenPartial(const ZR & alpha, GmppkePublicKey & pk, GmppkePrivate
     // of easily computing g^q(0).... g^q(d).
     for (unsigned int i = 1; i <= d; i++)
     {
-        const ZR ry = group.random(ZR_t);
+        const ZR ry = group.randomZR();
 
         polynomial_xcordinates.push_back(ZR(i));
         pk.gqofxG1.push_back(group.exp(pk.gG1,ry));
@@ -109,7 +109,7 @@ void Gmppke::keygenPartial(const ZR & alpha, GmppkePublicKey & pk, GmppkePrivate
 GmppkePrivateKeyShare Gmppke::skgen(const GmppkePublicKey &pk,const ZR & alpha  ) const{
 	GmppkePrivateKeyShare share;
     share.sk4 = ZR(NULLTAG);
-    const ZR r = group.random(ZR_t);
+    const ZR r = group.randomZR();
     share.sk1 = group.exp(pk.g2G2, group.add(r,alpha));
     G2 vofx = vG2(pk.gqofxG2,share.sk4); // calculate v(t0).
     share.sk2 = group.exp(vofx, r);// v(t0)^r
@@ -122,9 +122,9 @@ void Gmppke::puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const Z
     GmppkePrivateKeyShare skentryn;
     GmppkePrivateKeyShare & skentry0 = sk.shares[0];
 
-    const ZR r0 = group.random(ZR_t);
-    const ZR r1 = group.random(ZR_t);
-    const ZR lambda = group.random(ZR_t);
+    const ZR r0 = group.randomZR();
+    const ZR r1 = group.randomZR();
+    const ZR lambda = group.randomZR();
 
     assert(skentry0.sk4 == ZR(NULLTAG));
 
@@ -143,9 +143,9 @@ void Gmppke::puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const Z
 }
 
 GmmppkeCT Gmppke::encrypt(const GmppkePublicKey & pk,const GT & M,const std::vector<ZR> & tags) const{
-	const ZR s = group.random(ZR_t);
+	const ZR s = group.randomZR();
 //	const ZR alpha(42);
-//	const ZR beta = ZR(747);//group.random(ZR_t);
+//	const ZR beta = ZR(747);//group.randomZR();
 
 	GmmppkeCT ct = blind(pk,s,tags);
 //    assert(pk.ppkeg1 ==  group.exp(pk.gG2,alpha));

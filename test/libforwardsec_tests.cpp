@@ -38,8 +38,8 @@ protected:
  	 //PairingGroup group;
 	 Pfse test;
 	 pfsepubkey pk ;
-	 bitset256 testkey = {0x3a, 0x5d, 0x7a, 0x42, 0x44, 0xd3, 0xd8, 0xaf, 0xf5, 0xf3, 0xf1, 0x87, 0x81, 0x82, 0xb2,
-						  0x53, 0x57, 0x30, 0x59, 0x75, 0x8d, 0xe6, 0x18, 0x17, 0x14, 0xdf, 0xa5, 0xa4, 0x0b};
+	 bitset256 testkey = {{0x3a, 0x5d, 0x7a, 0x42, 0x44, 0xd3, 0xd8, 0xaf, 0xf5, 0xf3, 0xf1, 0x87, 0x81, 0x82, 0xb2,
+						  0x53, 0x57, 0x30, 0x59, 0x75, 0x8d, 0xe6, 0x18, 0x17, 0x14, 0xdf, 0xa5, 0xa4, 0x0b}};
 	// static PairingGroup _group;
 };
 
@@ -227,7 +227,7 @@ TEST_F(PFSETests,serializePfsepubkey){
 		cereal::BinaryOutputArchive oarchive(ss);
 		oarchive(pk);
 	}
-	int size = ss.tellp();
+//	int size = ss.tellp();
 //	cout << "pfsepubkey size " << size << endl;
 	{
 	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
@@ -243,7 +243,7 @@ TEST_F(PFSETests,serializeGmppkePrivateKey){
 		cereal::BinaryOutputArchive oarchive(ss);
 		oarchive(test.privatekeys);
 	}
-	int size = ss.tellp();
+//	int size = ss.tellp();
 //	cout << "serializeBbhHIBEPublicKey size " << size << endl;
 	{
 	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
@@ -298,7 +298,7 @@ TEST_F(PFSETests,testSeperateDecryptandSerialize){
 
 
 TEST_F(BbghhibeTests,basic){
-    GT m = group.random(GT_t);
+    GT m = group.randomGT();
 
     BbghCT ct = test.encrypt(pk,m,id1);
     EXPECT_EQ(m,test.decrypt(sk1, ct));
@@ -307,7 +307,7 @@ TEST_F(BbghhibeTests,basic){
 
 
 TEST_F(BbghhibeTests,basicFail){
-    GT m = group.random(GT_t);
+    GT m = group.randomGT();
 
     BbghCT ct = test.encrypt(pk,m,id1);
 
@@ -317,7 +317,7 @@ TEST_F(BbghhibeTests,basicFail){
 
 }
 TEST_F(BbghhibeTests,derived){
-    GT m = group.random(GT_t);
+    GT m = group.randomGT();
 
 
     BbghCT ct = test.encrypt(pk,m,id11);
@@ -328,7 +328,7 @@ TEST_F(BbghhibeTests,derived){
 
 }
 TEST_F(BbghhibeTests,derivedFurther){
-    GT m = group.random(GT_t);
+    GT m = group.randomGT();
 
     BbghCT ct = test.encrypt(pk,m,id111);
     EXPECT_EQ(m,test.decrypt(sk111,ct));
@@ -340,7 +340,7 @@ TEST_F(BbghhibeTests,derivedFurther){
 
 TEST_F(BbghhibeTests,serializeBbghCT){
 	std::stringstream ss;
-    GT m = group.random(GT_t);
+    GT m = group.randomGT();
 
     BbghCT ctnew;
     BbghCT ct = test.encrypt(pk,m,id1);
@@ -349,7 +349,7 @@ TEST_F(BbghhibeTests,serializeBbghCT){
 		cereal::BinaryOutputArchive oarchive(ss);
 		oarchive(ct);
 	}
-	int size = ss.tellp();
+//	int size = ss.tellp();
 	//cout << "BbhHIBEPublicKey size " << size << endl;
 	{
 	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
@@ -366,7 +366,7 @@ TEST_F(BbghhibeTests,serializeBbhHIBEPublicKey){
 		cereal::BinaryOutputArchive oarchive(ss);
 		oarchive(pk);
 	}
-	int size = ss.tellp();
+//	int size = ss.tellp();
 //	cout << "serializeBbhHIBEPublicKey size " << size << endl;
 	{
 	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
@@ -383,7 +383,7 @@ TEST_F(BbghhibeTests,serializeBbghPrivatekey){
 		cereal::BinaryOutputArchive oarchive(ss);
 		oarchive(sk0);
 	}
-	int size = ss.tellp();
+//	int size = ss.tellp();
 //	cout << "serializeBbhHIBEPublicKey size " << size << endl;
 	{
 	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
@@ -418,7 +418,7 @@ TEST_F(BbghhibeTests,testSeperateDecryptandSerialize){
 	    iarchive(pksender);
 	}
 
-    GT m = group.random(GT_t);
+    GT m = group.randomGT();
 
     BbghCT ctnew,ct = testsender.encrypt(pksender,m,id1);
 	{
@@ -435,7 +435,7 @@ TEST_F(BbghhibeTests,testSeperateDecryptandSerialize){
 
 
 TEST_F(Gmmppketest,basic){
-    GT m = group.random(GT_t);
+    GT m = group.randomGT();
     vector<ZR> tags;
     tags.push_back(ZR(2));
 
@@ -444,7 +444,7 @@ TEST_F(Gmmppketest,basic){
 
 }
 TEST_F(Gmmppketest,puncture){
-    GT m = group.random(GT_t);
+    GT m = group.randomGT();
     vector<ZR> tags;
     tags.push_back(ZR(2));
 
@@ -456,7 +456,7 @@ TEST_F(Gmmppketest,puncture){
     EXPECT_EQ(m,test.decrypt(pk,sk,ct));
 }
 TEST_F(Gmmppketest,punctureFail){
-    GT m = group.random(GT_t);
+    GT m = group.randomGT();
     vector<ZR> tags;
     tags.push_back(ZR(2));
 
@@ -475,7 +475,7 @@ TEST_F(Gmmppketest,serializeGmmppkeCT){
 	std::stringstream ss;
     vector<ZR> tags;
     tags.push_back(ZR(2));
-    GT m = group.random(GT_t);
+    GT m = group.randomGT();
 
     GmmppkeCT ctnew, ct = test.encrypt(pk,m,tags);
 	EXPECT_NE(ct,ctnew);
@@ -499,7 +499,7 @@ TEST_F(Gmmppketest,serializeGmppkePublicKey){
 		cereal::BinaryOutputArchive oarchive(ss);
 		oarchive(pk);
 	}
-	int size = ss.tellp();
+//	int size = ss.tellp();
 //	cout << "GmppkePublicKey size " << size << endl;
 	{
 	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
@@ -515,7 +515,7 @@ TEST_F(Gmmppketest,serializeGmppkePrivateKey){
 		cereal::BinaryOutputArchive oarchive(ss);
 		oarchive(sk);
 	}
-	int size = ss.tellp();
+//	int size = ss.tellp();
 //	cout << "serializeBbhHIBEPublicKey size " << size << endl;
 	{
 	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
@@ -542,7 +542,7 @@ TEST_F(Gmmppketest,testSeperateDecryptandSerialize){
 	    iarchive(pksender);
 	}
 
-    GT m = group.random(GT_t);
+    GT m = group.randomGT();
 
     GmmppkeCT ctnew,ct = testsender.encrypt(pksender,m,tags);
 	{

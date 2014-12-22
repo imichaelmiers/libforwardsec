@@ -3,16 +3,16 @@
 #include <cereal/archives/binary.hpp>
 using namespace std;
 void rand(ZR &a, PairingGroup &g){
-	a= g.random(ZR_t);
+	a= g.randomZR();
 }
 void rand(G1 &a, PairingGroup &g){
-	a= g.random(G1_t);
+	a= g.randomG1();
 }
 void rand(G2 &a, PairingGroup &g){
-	a= g.random(G2_t);
+	a= g.randomG2();
 }
 void rand(GT &a, PairingGroup &g){
-	a= g.random(GT_t);
+	a= g.randomGT();
 }
 
 class Environment {
@@ -46,11 +46,11 @@ protected:
 
 
 #define randabcd(T) 		\
-T a = group.random( T##_t );\
-T b = group.random( T##_t); \
-T c = group.random( T##_t); \
-T d = group.random( T##_t); \
-T e = group.random( T##_t); \
+T a = group.random##T(); \
+T b = group.random##T(); \
+T c = group.random##T(); \
+T d = group.random##T(); \
+T e = group.random##T(); \
 T i;
 
 //TEST(Foo,serialization){
@@ -156,9 +156,9 @@ TYPED_TEST(AlgTest,copy){
 }
 
 TEST_F(pg,G1Comp){
-	G1 a = group.random(G1_t);
-	G1 b = group.random(G1_t);
-	G1 c = group.random(G1_t);
+	G1 a = group.randomG1();
+	G1 b = group.randomG1();
+	G1 c = group.randomG1();
 	EXPECT_NE(a,b);
 	ASSERT_EQ(a,a);
 	ASSERT_EQ(b,b);
@@ -166,18 +166,18 @@ TEST_F(pg,G1Comp){
 }
 
 TEST_F(pg,G2Comp){
-	G2 a = group.random(G2_t);
-	G2 b = group.random(G2_t);
-	G2 c = group.random(G2_t);
+	G2 a = group.randomG2();
+	G2 b = group.randomG2();
+	G2 c = group.randomG2();
 	EXPECT_NE(a,b);
 	ASSERT_EQ(a,a);
 	ASSERT_EQ(b,b);
 
 }
 TEST_F(pg,GTComp){
-	GT a = group.random(GT_t);
-	GT b = group.random(GT_t);
-	GT c = group.random(GT_t);
+	GT a = group.randomGT();
+	GT b = group.randomGT();
+	GT c = group.randomGT();
 	EXPECT_NE(a,b);
 	ASSERT_EQ(a,a);
 	ASSERT_EQ(b,b);
@@ -185,7 +185,7 @@ TEST_F(pg,GTComp){
 
 TEST_F(pg,G1Identity){
 	G1 a,b,c;
-	G1 d = group.random(G1_t);
+	G1 d = group.randomG1();
 	EXPECT_EQ(a,b);
 	EXPECT_EQ(a+b,c);
 	EXPECT_EQ(d,d);
@@ -194,7 +194,7 @@ TEST_F(pg,G1Identity){
 }
 TEST_F(pg,G2Identity){
 	G2 a,b,c;
-	G2 d = group.random(G2_t);
+	G2 d = group.randomG2();
 	EXPECT_EQ(a,b);
 	EXPECT_EQ(a+b,c);
 	EXPECT_EQ(d,d);
@@ -205,7 +205,7 @@ TEST_F(pg,G2Identity){
 
 TEST_F(pg,GTIdentity){
 	GT a,b,c;
-	GT d = group.random(GT_t);
+	GT d = group.randomGT();
 	EXPECT_EQ(a,b);
 	EXPECT_EQ(a*b,c);
 	EXPECT_NE(a,d);
@@ -284,9 +284,9 @@ TEST_F(pg,G2Sub){
 
 
 TEST_F(pg,ZRAdd){
-	ZR a = group.random(ZR_t);
-	ZR b = group.random(ZR_t);
-	ZR c = group.random(ZR_t);
+	ZR a = group.randomZR();
+	ZR b = group.randomZR();
+	ZR c = group.randomZR();
 	ZR z = 0;	EXPECT_EQ(a+b,b+a) << "not commutative";
 	ZR d,e;
 	EXPECT_EQ(a+z,a) << "identity is wrong";
@@ -300,8 +300,8 @@ TEST_F(pg,ZRAdd){
 }
 
 TEST_F(pg,ZRSub){
-	ZR a = group.random(ZR_t);
-	ZR b = group.random(ZR_t);
+	ZR a = group.randomZR();
+	ZR b = group.randomZR();
 	ZR z = 0;
 	EXPECT_EQ(-(b-a),a-b) << "not anti-commutative";
 	EXPECT_EQ(a-z,a) << "identity is wrong";
@@ -316,8 +316,8 @@ TEST_F(pg,ZRMul){
 }
 
 TEST_F(pg,ZRinv){
-	ZR a = group.random(ZR_t);
-	ZR b = group.random(ZR_t);
+	ZR a = group.randomZR();
+	ZR b = group.randomZR();
 	EXPECT_EQ(a*a.inverse(),1);
 	EXPECT_EQ(a*b*a.inverse(),b);
 	EXPECT_EQ(a*b*b.inverse(),a);
@@ -327,8 +327,8 @@ TEST_F(pg,ZRinv){
 }
 
 TEST_F(pg,ZRDiv){
-	ZR a = group.random(ZR_t);
-	ZR b = group.random(ZR_t);
+	ZR a = group.randomZR();
+	ZR b = group.randomZR();
 	ZR c = a*b;
 	ZR d = group.div(a*b,b);
 	EXPECT_EQ(d,a);
@@ -336,9 +336,9 @@ TEST_F(pg,ZRDiv){
 }
 
 TEST_F(pg,Pair){
-	G1 g1 = group.random(G1_t);
-	G2 g2 = group.random(G2_t);
-	ZR r = group.random(ZR_t);
+	G1 g1 = group.randomG1();
+	G2 g2 = group.randomG2();
+	ZR r = group.randomZR();
 	GT u;
 	EXPECT_NE(group.pair(g1,g2),u) << "pairing degenerate";
 	GT e1 = group.pair(group.exp(g1,r),g2);
@@ -349,7 +349,7 @@ TEST_F(pg,Pair){
 
 TEST_F(pg,GTExp){
 	GT a,i;
-	GT b= group.random(GT_t);
+	GT b= group.randomGT();
 	gt_get_gen(a.g);
 
 	ZR n = group.order();
@@ -361,8 +361,8 @@ TEST_F(pg,GTExp){
 
 }
 TEST_F(pg,GTInv){
-	GT a = group.random(GT_t);
-	GT b = group.random(GT_t);
+	GT a = group.randomGT();
+	GT b = group.randomGT();
 	GT u;
 	EXPECT_EQ(a*(-a),u);
 }

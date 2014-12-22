@@ -10,20 +10,20 @@
 using namespace std;
 void Bbghibe::setup(const unsigned int & l, BbhHIBEPublicKey & pk, G2 & msk) const
 {
-    ZR alpha = group.random(ZR_t);
-    pk.gG1 = group.random(G1_t);
-    pk.gG2 = group.random(G2_t);
+    ZR alpha = group.randomZR();
+    pk.gG1 = group.randomG1();
+    pk.gG2 = group.randomG2();
     pk.hibeg1 = group.exp(pk.gG2, alpha);
     pk.l = l;
-    const ZR r = group.random(ZR_t);
+    const ZR r = group.randomZR();
     pk.g2G1 = group.exp(pk.gG1, r);
     pk.g2G2 = group.exp(pk.gG2, r);
-    const ZR r1 = group.random(ZR_t);
+    const ZR r1 = group.randomZR();
     pk.g3G1 = group.exp(pk.gG1, r1);
     pk.g3G2 = group.exp(pk.gG2, r1);
     for (unsigned int i = 0; i < l; i++)
     {
-        ZR h = group.random(ZR_t);
+        ZR h = group.randomZR();
         pk.hG1.push_back(group.exp(pk.gG1, h));
         pk.hG2.push_back(group.exp(pk.gG2, h));
     }
@@ -34,7 +34,7 @@ void Bbghibe::setup(const unsigned int & l, BbhHIBEPublicKey & pk, G2 & msk) con
 
 void Bbghibe::keygen(const BbhHIBEPublicKey & pk, const G2 & msk, const std::vector<ZR> & id, BbghPrivatekey & sk) const
 {
-    const ZR r = group.random(ZR_t);
+    const ZR r = group.randomZR();
     const unsigned int k = id.size();
     for (unsigned int i = 0; i < k; i++)
     {
@@ -57,7 +57,7 @@ void Bbghibe::keygen(const BbhHIBEPublicKey & pk, const G2 & msk, const std::vec
 
 void Bbghibe::keygen(const BbhHIBEPublicKey & pk,const  BbghPrivatekey & sk, const std::vector<ZR> &id,BbghPrivatekey & skout) const{
     const unsigned int k = id.size();
-    ZR t = group.random(ZR_t);
+    ZR t = group.randomZR();
 
     G2 hprod;
     for (unsigned int i = 0; i < k ; i++)
@@ -83,7 +83,7 @@ void Bbghibe::keygen(const BbhHIBEPublicKey & pk,const  BbghPrivatekey & sk, con
 }
 
 BbghCT Bbghibe::encrypt(const BbhHIBEPublicKey & pk, const GT & M, const std::vector<ZR> & id) const{
-    ZR s = group.random(ZR_t);
+    ZR s = group.randomZR();
 
      BbghCT ct =blind(pk,s,id);
      ct.A = group.mul(group.exp(group.pair(pk.g2G1, pk.hibeg1), s), M);
