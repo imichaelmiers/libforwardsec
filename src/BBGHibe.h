@@ -9,6 +9,7 @@
 #define SRC_BBGHIBE_H_
 #include <cereal/types/base_class.hpp>
 #include <cereal/access.hpp>
+#include <cereal/types/vector.hpp>
 
 #include "relic_wrapper/relic_api.h"
 
@@ -61,7 +62,7 @@ public:
 	}
 	friend class cereal::access;
 };
-// cereal can't find he function if we don't do this.
+// cereal can't find the function if we don't do this.
 namespace cereal
 {
  template <class Archive>

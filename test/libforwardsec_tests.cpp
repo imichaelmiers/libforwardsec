@@ -373,3 +373,89 @@ TEST_F(Gmmppketest,punctureFail){
     EXPECT_THROW(test.decrypt_unchecked(pk,sk,ct),std::logic_error);
     EXPECT_THROW(test.decrypt(pk,sk,ct),PuncturedCiphertext);
 }
+
+TEST_F(Gmmppketest,serializeGmmppkeCT){
+	std::stringstream ss;
+    vector<ZR> tags;
+    tags.push_back(ZR(2));
+    GT m = group.random(GT_t);
+
+    GmmppkeCT ctnew, ct = test.encrypt(pk,m,tags);
+	EXPECT_NE(ct,ctnew);
+	{
+		cereal::BinaryOutputArchive oarchive(ss);
+		oarchive(ct);
+	}
+	//cout << "BbghCT size " << size << endl;
+	{
+	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
+	    iarchive(ctnew);
+	}
+	EXPECT_EQ(ct,ctnew);
+}
+
+TEST_F(Gmmppketest,serializeGmppkePublicKey){
+	GmppkePublicKey pknew;
+	std::stringstream ss;
+	EXPECT_NE(pk,pknew);
+	{
+		cereal::BinaryOutputArchive oarchive(ss);
+		oarchive(pk);
+	}
+	int size = ss.tellp();
+//	cout << "GmppkePublicKey size " << size << endl;
+	{
+	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
+	    iarchive(pknew);
+	}
+	EXPECT_EQ(pk,pknew);
+}
+TEST_F(Gmmppketest,serializeGmppkePrivateKey){
+	std::stringstream ss;
+	GmppkePrivateKey skn;
+	EXPECT_NE(sk,skn);
+	{
+		cereal::BinaryOutputArchive oarchive(ss);
+		oarchive(sk);
+	}
+	int size = ss.tellp();
+//	cout << "serializeBbhHIBEPublicKey size " << size << endl;
+	{
+	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
+	    iarchive(skn);
+	}
+	EXPECT_EQ(sk,skn);
+}
+
+TEST_F(Gmmppketest,testSeperateDecryptandSerialize){
+    vector<ZR> tags;
+    tags.push_back(ZR(2));
+	std::stringstream ss;
+	GmppkePublicKey pksender;
+
+	Gmppke testsender;
+
+	EXPECT_NE(pk,pksender);
+	{
+		cereal::BinaryOutputArchive oarchive(ss);
+		oarchive(pk);
+	}
+	{
+	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
+	    iarchive(pksender);
+	}
+
+    GT m = group.random(GT_t);
+
+    GmmppkeCT ctnew,ct = testsender.encrypt(pksender,m,tags);
+	{
+		cereal::BinaryOutputArchive oarchive(ss);
+		oarchive(ct);
+	}
+	{
+	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
+	    iarchive(ctnew);
+	}
+    EXPECT_EQ(m,test.decrypt(pk,sk,ct));
+
+}
