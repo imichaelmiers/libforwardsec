@@ -65,6 +65,8 @@ public:
         : std::logic_error(error)
     {}
 };
+
+
 class ZR
 {
 
@@ -294,11 +296,23 @@ public:
       { return  gt_cmp(const_cast<GT&>(x).g, const_cast<GT&>(y).g) != CMP_EQ;}
 };
 
+class relicResourceHandle{
+public:
+	relicResourceHandle();
+	~relicResourceHandle();
+
+	// you cannot meaningfully copy this resource
+	relicResourceHandle(const relicResourceHandle & t) = delete;
+	bool isInitalized();
+private:
+	bool isInit;
+};
+
+
 class PairingGroup
 {
 public:
 	PairingGroup();
-	PairingGroup(int);
 	// PairingGroup(int ptype,bool init,bn_t o){
 	// 	pairingType = ptype;
 	// 	isInit = init;
@@ -306,7 +320,6 @@ public:
 	// }
 
 	~PairingGroup();
-	void setCurve(int sec_level);
 
 
 	ZR randomZR() const;

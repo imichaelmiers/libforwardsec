@@ -477,36 +477,38 @@ ostream& operator<<(ostream& s, const GT& gt)
 	return s;
 }
 
-
+relicResourceHandle::relicResourceHandle(){
+	const int err_code = core_init();
+	if(err_code != STS_OK){
+			isInit = false;
+			throw std::runtime_error("ERROR cannot initialize  relic: core_init returned: " +std::to_string(err_code)+".");
+	}
+	const int err_code_2 = pc_param_set_any();
+	if(err_code_2 != STS_OK){
+		isInit = false;
+		throw std::runtime_error("ERROR cannot initialize  relic: pc_param_set_any returned: " +std::to_string(err_code_2)+".");
+	}
+	isInit =true;
+}
+relicResourceHandle::~relicResourceHandle(){
+	if(isInit){
+		core_clean();
+	}
+}
+bool relicResourceHandle::isInitalized(){
+	return isInit;
+}
 PairingGroup::PairingGroup()
 {
-	this->setCurve(256);
-	isInit = true ; // user needs to call setCurve after construction
-}
-
-PairingGroup::PairingGroup(int sec_level)
-{
-	this->setCurve(sec_level);
-}
-
-void PairingGroup::setCurve(int sec_level)
-{
-//	cout << "Initializing PairingGroup: RELIC" << endl;
-	int err_code = core_init();
-//	cout <<"core_init_done" << endl;
-	if(err_code != STS_OK) isInit = false;
-//	conf_print();
-	pc_param_set_any(); // see if we can open this up?
-	isInit = true;
 	bn_inits(grp_order);
 	g1_get_ord(grp_order);
+	isInit = true ; // user needs to call setCurve after construction
 }
 
 PairingGroup::~PairingGroup()
 {
 	if(isInit) {
-//		core_clean();
-//		bn_free(grp_order);
+		bn_free(grp_order);
 	}
 }
 

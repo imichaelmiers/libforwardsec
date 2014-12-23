@@ -1,6 +1,8 @@
+#include <cereal/archives/binary.hpp>
+#include <memory>
+
 #include "gtest/gtest.h"
 #include "relic_wrapper/relic_api.h"
-#include <cereal/archives/binary.hpp>
 using namespace std;
 void rand(ZR &a, PairingGroup &g){
 	a= g.randomZR();
@@ -14,17 +16,28 @@ void rand(G2 &a, PairingGroup &g){
 void rand(GT &a, PairingGroup &g){
 	a= g.randomGT();
 }
-
-class Environment {
+extern 	void pc_param_print();
+extern int pc_param_level();
+class RelicEnvironment: public ::testing::Environment{
+	std::unique_ptr<relicResourceHandle> handle;
  public:
-  virtual ~Environment() {}
+  virtual ~RelicEnvironment() {}
   // Override this to define how to set up the environment.
-  virtual void SetUp() {}
-  // Override this to define how to tear down the environment.
+  virtual void SetUp() {
+	  cout << "Attempting to initalize relic" <<endl;
+	  handle = std::unique_ptr<relicResourceHandle>(new relicResourceHandle);
+	  if(!handle){
+		  cerr << "Error. Cannot initialze relic. new relicResourceHandle failed." << endl;
+		  throw runtime_error("Error. Cannot initialze relic. new relicResourceHandle failed.");
+	  }
+	  cout << "relic intialized:\t" << std::boolalpha << handle->isInitalized() << std::noboolalpha << endl;
+	  cout << "relic curve security level:\t" << pc_param_level();
+	  pc_param_print();
+  }
+	  // Override this to define how to tear down the environment.
   virtual void TearDown() {}
-  PairingGroup groups;
 };
-Environment* AddGlobalTestEnvironment(Environment* env);
+::testing::Environment* const foo_env = ::testing::AddGlobalTestEnvironment(new RelicEnvironment);
 
 template <typename T>
 class AlgTest : public :: testing::Test{
