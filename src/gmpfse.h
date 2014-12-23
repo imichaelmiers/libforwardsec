@@ -43,7 +43,7 @@ public:
 	BbghPrivatekey hibeSK;
 	GmppkePrivateKey ppkeSK;
 	 bool punctured() const{
-		return ppkeSK.shares.size() > 1;
+		return ppkeSK.punctured();
 	}
 	friend bool operator==(const PfsePuncturedPrivateKey& x, const PfsePuncturedPrivateKey& y){
 		return x.hibeSK == y.hibeSK && x.ppkeSK == y.ppkeSK;

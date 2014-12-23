@@ -12,13 +12,6 @@ using namespace std;
 #define libforwardsec_DBG(x)
 #endif
 
-/** Checks if you can decrypt a pfse ciphertext
- *
- * @param sk
- * @param ct
- * @return
- */
-
 PfsePuncturedPrivateKey PfseKeyStore::getKey(unsigned int i)  const{
 	PfsePuncturedPrivateKey p;
 	auto x = puncturedKeys.find(i);
