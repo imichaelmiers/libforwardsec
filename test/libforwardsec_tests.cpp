@@ -16,6 +16,7 @@
 #include "BBGHibe.h"
 
 using namespace std;
+using namespace forwardsec;
 class Gmmppketest : public ::testing::Test {
 protected:
 	 virtual void SetUp(){

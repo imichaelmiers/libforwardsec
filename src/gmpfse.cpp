@@ -11,6 +11,7 @@ using namespace std;
 #else
 #define libforwardsec_DBG(x)
 #endif
+namespace forwardsec{
 PfseKeyStore::PfseKeyStore(const GmppkePrivateKey & unpuncturedKey){
 	this->unpucturedPPKEKey = unpuncturedKey;
 }
@@ -277,4 +278,5 @@ GT Pfse::decryptGT(const PfsePuncturedPrivateKey & sk,const PseCipherText &ct) c
     GT b2 = ppke.recoverBlind(pk,sk.ppkeSK,ct.ppkeCT);
    // assert(b2 ==group.exp(group.pair(g2G1,gG2),group.mul(ss,gam1)));
     return group.div(ct.ct0,group.mul(b1,b2));
+}
 }

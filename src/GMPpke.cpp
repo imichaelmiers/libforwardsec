@@ -3,6 +3,8 @@
 #include <set>
 #include "GMPpke.h"
 #include "util.h"
+namespace forwardsec{
+
 using namespace std;
 static const unsigned int NULLTAG = 42; // the reserved tag
 
@@ -237,4 +239,5 @@ GT Gmppke::recoverBlind(const GmppkePublicKey & pk, const GmppkePrivateKey & sk,
         zprod = group.mul(zprod, z[i]);
     }
     return zprod;
+}
 }

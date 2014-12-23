@@ -15,7 +15,7 @@
 #include "GMPpke.h"
 #include "BBGHibe.h"
 
-
+namespace forwardsec{
 class Pfse;
 class PfseKeyStore;
 class pfsepubkey: public BbhHIBEPublicKey,  public GmppkePublicKey{
@@ -28,17 +28,12 @@ class pfsepubkey: public BbhHIBEPublicKey,  public GmppkePublicKey{
 	template <class Archive>
 	  void serialize( Archive & ar )
 	{
-		ar(cereal::base_class<BbhHIBEPublicKey>(this),
-				cereal::base_class<GmppkePublicKey>(this));
+		ar(::cereal::base_class<BbhHIBEPublicKey>(this),
+				::cereal::base_class<GmppkePublicKey>(this));
 	}
-	friend class cereal::access;
+	friend class ::cereal::access;
 };
-namespace cereal
-{
- template <class Archive>
- struct specialize<Archive, pfsepubkey, cereal::specialization::member_serialize> {};
- // cereal no longer has any ambiguity when serializing MyDerived
-}
+
 class PfsePuncturedPrivateKey{
 public:
 	 bool punctured() const{
@@ -58,14 +53,14 @@ protected:
 	{
 		ar(hibeSK,ppkeSK);
 	}
-	friend class cereal::access;
+	friend class ::cereal::access;
 	friend class Pfse;
 	friend class PfseKeyStore;
 };
 
 class PseCipherText{
 public:
-	friend class cereal::access;
+	friend class ::cereal::access;
 	friend bool operator==(const PseCipherText& l,const PseCipherText& r){
 		return l.ct0 == r.ct0 && l.hibeCT == r.hibeCT && l.ppkeCT == r.ppkeCT
 				&& l.interval == r.interval && l.xorct == r.xorct;
@@ -119,7 +114,7 @@ private:
 	{
 		ar(puncturedKeys,unpucturedHIBEKeys,unpucturedPPKEKey);
 	}
-	friend class cereal::access;
+	friend class ::cereal::access;
 };
 
 class Pfse
@@ -193,5 +188,12 @@ private:
 	GT decryptGT(const PfsePuncturedPrivateKey & sk, const PseCipherText &ct) const;
 	unsigned int nextParentInterval;
 };
+}
+namespace cereal
+{
+ template <class Archive>
+ struct specialize<Archive, forwardsec::pfsepubkey, cereal::specialization::member_serialize> {};
+ // cereal no longer has any ambiguity when serializing MyDerived
+}
 #endif
 

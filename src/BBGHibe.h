@@ -14,6 +14,8 @@
 #include "relic_wrapper/relic_api.h"
 
 #include "forwardsec.h"
+namespace forwardsec{
+
 class Pfse;
 class Bbghibe;
 class BbghPrivatekey{
@@ -37,7 +39,7 @@ protected:
 	{
 		ar(a0,a1,b,bG2);
 	}
-	friend class cereal::access;
+	friend class ::cereal::access;
 	friend class Pfse;
 	friend class Bbghibe;
 };
@@ -64,20 +66,13 @@ protected:
 	template <class Archive>
 	  void serialize( Archive & ar )
 	{
-		ar(cereal::virtual_base_class<baseKey>(this),
+		ar(::cereal::virtual_base_class<baseKey>(this),
 				l,hibeg1,g3G1,g3G2,hG1,hG2);
 	}
-	friend class cereal::access;
+	friend class ::cereal::access;
 	friend class Pfse;
 	friend class Bbghibe;
 };
-// cereal can't find the function if we don't do this.
-namespace cereal
-{
- template <class Archive>
- struct specialize<Archive, BbhHIBEPublicKey, cereal::specialization::member_serialize> {};
- // cereal no longer has any ambiguity when serializing MyDerived
-}
 
 class PartialBbghCT{
 public:
@@ -97,7 +92,7 @@ protected:
 	void serialize( Archive & ar ){
 		ar(B,C);
 	}
-	friend class cereal::access;
+	friend class ::cereal::access;
 	friend class Pfse;
 	friend class Bbghibe;
 };
@@ -116,9 +111,9 @@ protected:
 	GT A;
 	template <class Archive>
 	void serialize( Archive & ar ){
-		ar(cereal::base_class<PartialBbghCT>(this),A);
+		ar(::cereal::base_class<PartialBbghCT>(this),A);
 	}
-	friend class cereal::access;
+	friend class ::cereal::access;
 	friend class Pfse;
 	friend class Bbghibe;
 };
@@ -142,6 +137,13 @@ public:
 	GT decrypt(const BbghPrivatekey & sk,const BbghCT & ct) const; // actual decrypt
 
 };
-
-
+}
+// cereal can't find the serialization function if we don't do this.
+// this has to be outside of the namespace..
+namespace cereal
+{
+ template <class Archive>
+ struct specialize<Archive, forwardsec::BbhHIBEPublicKey, cereal::specialization::member_serialize> {};
+ // cereal no longer has any ambiguity when serializing MyDerived
+}
 #endif /* SRC_BBGHIBE_H_ */

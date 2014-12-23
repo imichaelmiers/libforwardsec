@@ -6,6 +6,7 @@
  */
 #include <assert.h>
 #include "BBGHibe.h"
+namespace forwardsec{
 
 using namespace std;
 void Bbghibe::setup(const unsigned int & l, BbhHIBEPublicKey & pk, G2 & msk) const
@@ -118,6 +119,6 @@ GT Bbghibe::decrypt(const BbghPrivatekey & sk, const BbghCT & ct) const
     return group.div(ct.A, recoverBlind(sk,ct));
 }
 
-
+}
 
 

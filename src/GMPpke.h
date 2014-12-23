@@ -12,7 +12,7 @@
 #include <cereal/types/vector.hpp>
 
 #include "forwardsec.h"
-
+namespace forwardsec{
 class Gmppke;
 class Pfse;
 class PartialGmmppkeCT;
@@ -30,7 +30,7 @@ public:
 	template <class Archive>
 	  void serialize( Archive & ar )
 	{
-		ar(cereal::virtual_base_class<baseKey>(this),
+		ar(::cereal::virtual_base_class<baseKey>(this),
 				ppkeg1,d,gqofxG1,gqofxG2);
 	}
 protected:
@@ -38,17 +38,10 @@ protected:
 	unsigned int d;
 	std::vector<G1> gqofxG1;
 	std::vector<G2> gqofxG2;
-	friend class cereal::access;
+	friend class ::cereal::access;
 	friend class Gmppke;
 	friend class Pfse;
 };
-// cereal can't find the function if we don't do this.
-namespace cereal
-{
- template <class Archive>
- struct specialize<Archive, GmppkePublicKey, cereal::specialization::member_serialize> {};
- // cereal no longer has any ambiguity when serializing MyDerived
-}
 
  class GmppkePrivateKeyShare{
 public:
@@ -183,5 +176,13 @@ protected:
 	friend class Pfse;
 };
 
-
+}
+// cereal can't find the serialization function if we don't do this.
+// this has to be outside of the namespace.
+namespace cereal
+{
+ template <class Archive>
+ struct specialize<Archive, forwardsec::GmppkePublicKey, cereal::specialization::member_serialize> {};
+ // cereal no longer has any ambiguity when serializing MyDerived
+}
 #endif /* GMPPKE_H_ */
