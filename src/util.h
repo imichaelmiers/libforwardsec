@@ -3,12 +3,12 @@
 #include <vector>
 #include <array>
 #include"relic_wrapper/relic_api.h"
-
+namespace forwardsec{
 std::vector<ZR>  indexToPath(const unsigned int &index,const unsigned int & treeDepth);
 unsigned int pathToIndex(const std::vector<ZR> & path, const unsigned int & treeDepth);
 
-typedef std::array<uint8_t, 256> util_ar_type;
-util_ar_type xorarray(const util_ar_type & l,const util_ar_type & r);
+typedef  std::array<uint8_t,256> byte256;
+byte256 xorarray(const byte256 & l,const byte256 & r);
 
 
 ZR LagrangeBasisCoefficients(const PairingGroup & group, const unsigned int & j,const ZR &x , const std::vector<ZR> & polynomial_xcordinates);
@@ -27,6 +27,6 @@ template <class type> type LagrangeInterpInExponent( const PairingGroup & group,
 	}
 	return prod;
 }
-
+}
 
 #endif /* SRC_UTIL_H_ */

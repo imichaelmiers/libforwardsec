@@ -1,12 +1,13 @@
 #include<assert.h>
 #include"util.h"
 using namespace std;
+namespace forwardsec{
 
-util_ar_type xorarray(const util_ar_type & l,const util_ar_type & r){
+byte256 xorarray(const byte256 & l,const byte256 & r){
 	if(l.size()!=r.size()){
 		throw invalid_argument("Arrays must be be same size. Instead  l:" +std::to_string(l.size()) +  " r:" +std::to_string(r.size()));
 	}
-	util_ar_type result;
+	byte256 result;
 	for(unsigned int i=0;i<l.size();i++){
 		result[i] = l[i] ^ r[i];
 	}
@@ -94,4 +95,5 @@ ZR LagrangeInterp(const PairingGroup & group, const ZR &x , const vector<ZR> & p
 
     // cout << "final prod =" << prod << endl;
     return prod;
+}
 }

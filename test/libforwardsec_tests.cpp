@@ -39,7 +39,7 @@ protected:
  	 //PairingGroup group;
 	 Pfse test;
 	 pfsepubkey pk ;
-	 bitset256 testkey = {{0x3a, 0x5d, 0x7a, 0x42, 0x44, 0xd3, 0xd8, 0xaf, 0xf5, 0xf3, 0xf1, 0x87, 0x81, 0x82, 0xb2,
+	 byte256 testkey = {{0x3a, 0x5d, 0x7a, 0x42, 0x44, 0xd3, 0xd8, 0xaf, 0xf5, 0xf3, 0xf1, 0x87, 0x81, 0x82, 0xb2,
 						  0x53, 0x57, 0x30, 0x59, 0x75, 0x8d, 0xe6, 0x18, 0x17, 0x14, 0xdf, 0xa5, 0xa4, 0x0b}};
 	// static PairingGroup _group;
 };
@@ -106,7 +106,7 @@ TEST_F(PFSETests,Decrypt){
 
     //test.puncture(1,eight);
 
-    bitset256 result = test.decrypt(ct1);
+    byte256 result = test.decrypt(ct1);
     ASSERT_EQ(testkey,result);
 }
 
@@ -128,7 +128,7 @@ TEST_F(PFSETests,DecryptOnPuncture){
 
     test.puncture(1,"8");
 
-    bitset256 result = test.decrypt(ct);
+    byte256 result = test.decrypt(ct);
 
     EXPECT_EQ(testkey,result);
 
@@ -142,7 +142,7 @@ TEST_F(PFSETests,DecryptOnPuncture){
 
     PseCipherText ct2 = test.encrypt(pk,testkey,2,tags);
 
-    bitset256 result1 = test.decrypt(ct2);
+    byte256 result1 = test.decrypt(ct2);
 
     EXPECT_EQ(testkey,result1) ;
 }
@@ -160,7 +160,7 @@ TEST_F(PFSETests,PassOnPunctureNextInterval){
 	test.prepareNextInterval();
     PseCipherText ct1 = test.encrypt(pk,testkey,3,tags);
 
-    bitset256 result = test.decrypt(ct1);
+    byte256 result = test.decrypt(ct1);
     EXPECT_EQ(testkey,result);
 
 }
@@ -176,7 +176,7 @@ TEST_F(PFSETests,PunctureAndDeriveAll){
 	    test.puncture("11");
 	    test.puncture("12");
 	    PseCipherText ct1 = test.encrypt(pk,testkey,i,tags);
-	    bitset256 result = test.decrypt(ct1);
+	    byte256 result = test.decrypt(ct1);
 	    EXPECT_EQ(testkey,result);
 		test.prepareNextInterval();
 	}
@@ -192,7 +192,7 @@ TEST_F(PFSETests,Delete){
 
     PseCipherText ct = test.encrypt(pk,testkey,1,tags);
 
-    bitset256 result = test.decrypt(ct);
+    byte256 result = test.decrypt(ct);
     EXPECT_EQ(testkey,result);
     test.eraseKey(1);
     EXPECT_THROW(test.decrypt(ct),invalid_argument); // no key

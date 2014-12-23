@@ -73,7 +73,7 @@ protected:
 	PartialBbghCT hibeCT;
 	PartialGmmppkeCT ppkeCT;
 	unsigned int interval;
-	bitset256 xorct;
+	byte256 xorct;
 	template <class Archive>
 	void serialize( Archive & ar )
 	{
@@ -137,14 +137,14 @@ public:
 	 * @param tags the tags for the message
 	 * @return the ciphertext
 	 */
-	PseCipherText encrypt(const pfsepubkey & pk, const bitset256 msg, const unsigned int interval, const std::vector<std::string> tags) const;
+	PseCipherText encrypt(const pfsepubkey & pk, const byte256 msg, const unsigned int interval, const std::vector<std::string> tags) const;
 
 	/**Decrypt a message using the private key stored in the object.
 	 *
 	 * @param ct the ciphertext
 	 * @return the decrypted message.
 	 */
-	bitset256 decrypt( const PseCipherText &ct) const;
+	byte256 decrypt( const PseCipherText &ct) const;
 	
 	/**Derives the keys needed to decrypt the next interval.
 	 *
@@ -174,16 +174,16 @@ private:
 	Gmppke ppke;
 	unsigned int depth;
 	void bindKey(PfsePuncturedPrivateKey & k);
-	PseCipherText encryptFO( const pfsepubkey & pk, const bitset256 & bitmsg,
+	PseCipherText encryptFO( const pfsepubkey & pk, const byte256 & bitmsg,
 			              const unsigned int interval, const std::vector<ZR>  & tags) const;
-	PseCipherText encryptFO( const pfsepubkey & pk, const bitset256 & bitmsg,
+	PseCipherText encryptFO( const pfsepubkey & pk, const byte256 & bitmsg,
 			const GT & x, const unsigned int interval, const std::vector<ZR>  & tags) const;
 
 	PseCipherText encrypt( const pfsepubkey & pk, const GT & M,              const unsigned int interval, const std::vector<ZR>  & tags) const;
 	PseCipherText encrypt( const pfsepubkey & pk, const GT & M,const ZR & s, const unsigned int interval, const std::vector<ZR>  & tags) const;
 
 
-	bitset256 decryptFO(const PfsePuncturedPrivateKey &sk, const PseCipherText &ct) const;
+	byte256 decryptFO(const PfsePuncturedPrivateKey &sk, const PseCipherText &ct) const;
 	GT decryptGT(const PfsePuncturedPrivateKey & sk, const PseCipherText &ct) const;
 	unsigned int nextParentInterval;
 };
