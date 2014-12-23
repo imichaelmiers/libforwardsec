@@ -66,7 +66,7 @@ public:
     {}
 };
 
-
+void error_if_relic_not_init();
 class ZR
 {
 
@@ -74,11 +74,11 @@ public:
 	bn_t z;
 	bn_t order;
 	bool isInit;
-	ZR() 	 { bn_inits(z); bn_inits(order); g1_get_ord(order); isInit = true;bn_set_dig(z,1); }
+	ZR() 	 {error_if_relic_not_init(); bn_inits(z); bn_inits(order); g1_get_ord(order); isInit = true;bn_set_dig(z,1); }
 	ZR(int);
 	ZR(char*);
-	ZR(const bn_t y) { bn_inits(z); bn_inits(order); g1_get_ord(order); isInit = true; bn_copy(z, y); }
-	ZR(const ZR& w) { bn_inits(z); bn_inits(order); bn_copy(z, w.z); bn_copy(order, w.order); isInit = true; }
+	ZR(const bn_t y) {error_if_relic_not_init(); bn_inits(z); bn_inits(order); g1_get_ord(order); isInit = true; bn_copy(z, y); }
+	ZR(const ZR& w) { error_if_relic_not_init();bn_inits(z); bn_inits(order); bn_copy(z, w.z); bn_copy(order, w.order); isInit = true; }
 //	ZR&&  operator=(ZR && rhs){
 //		if(this !=&rhs){
 //			if(isInit){
@@ -149,7 +149,7 @@ class G1
 public:
 	g1_t g;
 	bool isInit;
-    G1()   { g1_inits(g); isInit = true; g1_set_infty(g); }
+    G1()   {error_if_relic_not_init(); g1_inits(g); isInit = true; g1_set_infty(g); }
 	G1(const G1& w) { g1_inits(g); g1_copy(g, w.g); isInit = true; }
 	~G1()  {
 		if(isInit) {
@@ -198,7 +198,7 @@ class G2
 public:
 	g2_t g;
 	bool isInit;
-    G2()   { g2_inits(g); isInit = true; g2_set_infty(g); }
+    G2()   {error_if_relic_not_init(); g2_inits(g); isInit = true; g2_set_infty(g); }
 	G2(const G2& w) { g2_inits(g); g2_copy(g, const_cast<G2&>(w).g); isInit = true; }
 	~G2()  {
 		if(isInit){
@@ -250,8 +250,8 @@ class GT
 public:
 	gt_t g;
 	bool isInit;
-    GT()   { gt_inits(g); isInit = true; gt_set_unity(g); }
-    GT(const GT& x) { gt_inits(g); isInit = true; gt_copy(g, const_cast<GT&>(x).g); }
+    GT()   { error_if_relic_not_init();gt_inits(g); isInit = true; gt_set_unity(g); }
+    GT(const GT& x) { error_if_relic_not_init();gt_inits(g); isInit = true; gt_copy(g, const_cast<GT&>(x).g); }
     ~GT()  {
     	if(isInit) {
     		gt_free(g);

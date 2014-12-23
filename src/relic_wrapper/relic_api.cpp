@@ -6,6 +6,13 @@ void ro_error(void)
 {
 	throw  std::invalid_argument("writing to read only object");
 }
+void error_if_relic_not_init(){
+	if(nullptr==core_get()){
+		throw::runtime_error("\n\nERROR. relic core_get() returned null. Relic is probably not initialized.\n ??? DID YOU INITIALIZE LIBFORWARDSEC ???\n"
+				"You need to initialize the library once per thread by grabbing an instance of relicResourceHandle\n"
+				"and holding it until you are done with the library/thread.\n\n"); //FIXME add namespace for relicResourceHandle
+	}
+}
 
 void invertZR(ZR & c, const ZR & a, const bn_t order)
 {
@@ -21,6 +28,7 @@ void invertZR(ZR & c, const ZR & a, const bn_t order)
 // Begin ZR-specific classes
 ZR::ZR(int x)
 {
+	error_if_relic_not_init();
 	bn_inits(z);
 	bn_inits(order);
 	g1_get_ord(order);
@@ -36,6 +44,7 @@ ZR::ZR(int x)
 
 ZR::ZR(char *str)
 {
+	error_if_relic_not_init();
 	bn_inits(z);
 	bn_inits(order);
 	g1_get_ord(order);
@@ -500,6 +509,7 @@ bool relicResourceHandle::isInitalized(){
 }
 PairingGroup::PairingGroup()
 {
+	error_if_relic_not_init();
 	bn_inits(grp_order);
 	g1_get_ord(grp_order);
 	isInit = true ; // user needs to call setCurve after construction
