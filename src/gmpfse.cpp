@@ -11,7 +11,9 @@ using namespace std;
 #else
 #define libforwardsec_DBG(x)
 #endif
-
+PfseKeyStore::PfseKeyStore(const GmppkePrivateKey & unpuncturedKey){
+	this->unpucturedPPKEKey = unpuncturedKey;
+}
 PfsePuncturedPrivateKey PfseKeyStore::getKey(unsigned int i)  const{
 	PfsePuncturedPrivateKey p;
 	auto x = puncturedKeys.find(i);
@@ -99,7 +101,7 @@ void Pfse::keygen(){
     ppke.keygenPartial(gamma,pk,ppkeSK);
 
 
-    this->privatekeys.unpucturedPPKEKey = ppkeSK;
+    this->privatekeys = PfseKeyStore(ppkeSK);
     this->privatekeys.addkey(l,sklefthibe);
     this->privatekeys.addkey(r,skrighthibe);
     nextParentInterval = 1;

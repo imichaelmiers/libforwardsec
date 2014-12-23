@@ -16,7 +16,8 @@
 #include "BBGHibe.h"
 
 
-
+class Pfse;
+class PfseKeyStore;
 class pfsepubkey: public BbhHIBEPublicKey,  public GmppkePublicKey{
 	friend bool operator==(const pfsepubkey& x, const pfsepubkey& y){
 		return (BbhHIBEPublicKey)x == (BbhHIBEPublicKey)y && (GmppkePublicKey)x == (GmppkePublicKey)y;
@@ -40,8 +41,6 @@ namespace cereal
 }
 class PfsePuncturedPrivateKey{
 public:
-	BbghPrivatekey hibeSK;
-	GmppkePrivateKey ppkeSK;
 	 bool punctured() const{
 		return ppkeSK.punctured();
 	}
@@ -51,22 +50,21 @@ public:
 	friend bool operator!=(const PfsePuncturedPrivateKey& x, const PfsePuncturedPrivateKey& y){
 		return !(x==y);
 	}
+protected:
+	BbghPrivatekey hibeSK;
+	GmppkePrivateKey ppkeSK;
 	template <class Archive>
 	  void serialize( Archive & ar )
 	{
 		ar(hibeSK,ppkeSK);
 	}
 	friend class cereal::access;
+	friend class Pfse;
+	friend class PfseKeyStore;
 };
 
 class PseCipherText{
 public:
-	PairingGroup group;
-	GT ct0;
-	PartialBbghCT hibeCT;
-	PartialGmmppkeCT ppkeCT;
-	unsigned int interval;
-	bitset256 xorct;
 	friend class cereal::access;
 	friend bool operator==(const PseCipherText& l,const PseCipherText& r){
 		return l.ct0 == r.ct0 && l.hibeCT == r.hibeCT && l.ppkeCT == r.ppkeCT
@@ -75,12 +73,19 @@ public:
 	friend bool operator!=(const PseCipherText& l,const PseCipherText& r){
 		return !(l==r);
 	}
-
+protected:
+	PairingGroup group;
+	GT ct0;
+	PartialBbghCT hibeCT;
+	PartialGmmppkeCT ppkeCT;
+	unsigned int interval;
+	bitset256 xorct;
 	template <class Archive>
 	void serialize( Archive & ar )
 	{
 		ar(ct0,hibeCT,ppkeCT,interval,xorct);
 	}
+	friend class Pfse;
 };
 //template <class Archive>
 //void serialize( Archive & ar, PseCipherText & b ){
@@ -89,9 +94,8 @@ public:
 
 class PfseKeyStore{
 public:
-	std::map<unsigned int,PfsePuncturedPrivateKey> puncturedKeys;
-	std::map<unsigned int,BbghPrivatekey> unpucturedHIBEKeys;
-	GmppkePrivateKey unpucturedPPKEKey;
+	PfseKeyStore(){};
+	PfseKeyStore(const GmppkePrivateKey & unpuncturedKey);
 	PfsePuncturedPrivateKey getKey(unsigned int i) const;
 	void updateKey(unsigned int i, const PfsePuncturedPrivateKey & p);
 	void addkey(unsigned int i, const BbghPrivatekey & h);
@@ -106,6 +110,10 @@ public:
 	friend bool operator!=(const PfseKeyStore& l,const PfseKeyStore& r){
 		return !(l==r);
 	}
+private:
+	std::map<unsigned int,PfsePuncturedPrivateKey> puncturedKeys;
+	std::map<unsigned int,BbghPrivatekey> unpucturedHIBEKeys;
+	GmppkePrivateKey unpucturedPPKEKey;
 	template <class Archive>
 	  void serialize( Archive & ar )
 	{
