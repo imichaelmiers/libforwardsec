@@ -1,16 +1,24 @@
 Libforwardsec. A library for forward secure encryption.
 
-This depends on relic (https://github.com/relic-toolkit/relic) and assuming relic is configured to use it, GMP. Install both. 
-It also usees cereal(https://github.com/USCiLab/cereal) for serialization.
+This project depends on: 
 
+	* For math: 
+		relic (https://github.com/relic-toolkit/relic) 
+		* gmp (assuming relic is configured to use it) 
+	* For serialization:
+		*  cereal(https://github.com/USCiLab/cereal) 
+	
 
-Known to build on OSX  with Apple LLVM version 6.0 (clang-600.0.54) (based on LLVM 3.5svn).
 
 This project builds with cmake.
-cd build/ 
-cmake ../
-make 
-make check # builds and runs tests.
+
+	cd build/ 
+	cmake ../
+	make 
+	make check # builds and runs tests.
+
+It is known to build and pass all tests on OSX 10.9.5  with Apple LLVM version 6.0 (clang-600.0.54) (based on LLVM 3.5svn) and Ubuntu 14.04 with gcc version 4.8.2 (Ubuntu 4.8.2-19ubuntu1) 
+
 
 Note, Cmake supports a bunch of other build systems via "cmake -G 'generator name' ../"
 Among them Ninja (which is possibly faster than make) and project files for your favorite/
@@ -22,10 +30,12 @@ cmake --help
 
 
 Recommendation  for building relic (note, depends on gmp)
-#from a suitable directory
-git clone https://github.com/relic-toolkit/relic.git
-cd relic
-git checkout relic-toolkit-0.4.0 
-cmake -G "Unix Makefiles" -DCOMP="-O2 -funroll-loops -fomit-frame-pointer" -DARCH="X64"  -DWITH="BN;DV;FP;FPX;EP;EPX;PP;PC;MD" -DCHECK=off -DVERBS=off -DDEBUG=on -DBENCH=0 -DTESTS=1 -DARITH=gmp -DFP_PRIME=256 -DFP_QNRES=off -DFP_METHD="BASIC;COMBA;COMBA;MONTY;LOWER;SLIDE" -DFPX_METHD="INTEG;INTEG;LAZYR" -DPP_METHD="LAZYR;OATEP"
-make 
-make install 
+
+
+	#from a suitable directory
+	git clone https://github.com/relic-toolkit/relic.git
+	cd relic
+	git checkout relic-toolkit-0.4.0 
+	cmake -G "Unix Makefiles" -DCOMP="-O2 -funroll-loops -fomit-frame-pointer" -DARCH="X64"  -DRAND="UDEV" -DWITH="BN;DV;FP;FPX;EP;EPX;PP;PC;MD" -DCHECK=off -DVERBS=off -DDEBUG=on -DBENCH=0 -DTESTS=1 -DARITH=gmp -DFP_PRIME=256 -DFP_QNRES=off -DFP_METHD="BASIC;COMBA;COMBA;MONTY;LOWER;SLIDE" -DFPX_METHD="INTEG;INTEG;LAZYR" -DPP_METHD="LAZYR;OATEP"
+	make 
+	make install 
