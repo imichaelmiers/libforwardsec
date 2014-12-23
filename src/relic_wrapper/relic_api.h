@@ -77,7 +77,22 @@ public:
 	ZR(char*);
 	ZR(const bn_t y) { bn_inits(z); bn_inits(order); g1_get_ord(order); isInit = true; bn_copy(z, y); }
 	ZR(const ZR& w) { bn_inits(z); bn_inits(order); bn_copy(z, w.z); bn_copy(order, w.order); isInit = true; }
-	~ZR() { bn_free(z); bn_free(order); }
+//	ZR&&  operator=(ZR && rhs){
+//		if(this !=&rhs){
+//			if(isInit){
+//				bn_free(z); bn_free(order);
+//			}
+//			rhs.isInit = false;
+//			z[0] = rhs.z[0];
+//			order[0] = rhs.order[0];
+//		}
+//		return * this;
+//	}
+	~ZR() {
+		if(isInit){
+			bn_free(z); bn_free(order);
+		}
+	}
 	ZR& operator=(const ZR& w)
 	{
 		if (isInit == true) { bn_copy(z, w.z); bn_copy(order, w.order); }
@@ -134,7 +149,11 @@ public:
 	bool isInit;
     G1()   { g1_inits(g); isInit = true; g1_set_infty(g); }
 	G1(const G1& w) { g1_inits(g); g1_copy(g, w.g); isInit = true; }
-	~G1()  { g1_free(g);  }
+	~G1()  {
+		if(isInit) {
+			g1_free(g);
+		}
+	}
 
 	G1& operator=(const G1& w)
 	{
@@ -179,7 +198,11 @@ public:
 	bool isInit;
     G2()   { g2_inits(g); isInit = true; g2_set_infty(g); }
 	G2(const G2& w) { g2_inits(g); g2_copy(g, const_cast<G2&>(w).g); isInit = true; }
-	~G2()  { g2_free(g);  }
+	~G2()  {
+		if(isInit){
+			g2_free(g);
+		}
+	}
 
 	G2& operator=(const G2& w)
 	{
@@ -227,7 +250,11 @@ public:
 	bool isInit;
     GT()   { gt_inits(g); isInit = true; gt_set_unity(g); }
     GT(const GT& x) { gt_inits(g); isInit = true; gt_copy(g, const_cast<GT&>(x).g); }
-    ~GT()  { gt_free(g); }
+    ~GT()  {
+    	if(isInit) {
+    		gt_free(g);
+    	}
+    }
 
 	GT& operator=(const GT& x)
 	{
