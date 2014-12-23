@@ -24,13 +24,18 @@ class RelicEnvironment: public ::testing::Environment{
   virtual ~RelicEnvironment() {}
   // Override this to define how to set up the environment.
   virtual void SetUp() {
-	  cout << "Attempting to initalize relic" <<endl;
+	  cout << "Attempting to initialize relict..." <<endl << endl <<
+			  "\tIf this takes a very long time  you may have ran out of entropy." << endl <<
+			  "\tThis sometimes happens on VMs. If you have this issue, either fix " << endl <<
+			  "\tyour vm entropy (if possible) or recompile relic with -DRAND=\"UDEV\"" << endl <<
+			  "\tor some other option hat that\tis not DEV (i.e. /dev/random)" << endl <<
+			  "\t(WARNING many of these may not be cryptographically safe) ."  << endl << endl;
 	  handle = std::unique_ptr<relicResourceHandle>(new relicResourceHandle);
 	  if(!handle){
 		  cerr << "Error. Cannot initialze relic. new relicResourceHandle failed." << endl;
 		  throw runtime_error("Error. Cannot initialze relic. new relicResourceHandle failed.");
 	  }
-	  cout << "relic intialized:\t" << std::boolalpha << handle->isInitalized() << std::noboolalpha << endl;
+	  cout << "Relic intialized"<<endl;
 	  cout << "relic curve security level:\t" << pc_param_level();
 	  pc_param_print();
   }
