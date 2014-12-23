@@ -69,7 +69,6 @@ public:
 		return !(l==r);
 	}
 protected:
-	PairingGroup group;
 	GT ct0;
 	PartialBbghCT hibeCT;
 	PartialGmmppkeCT ppkeCT;

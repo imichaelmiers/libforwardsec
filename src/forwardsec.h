@@ -12,7 +12,7 @@
 #include <cereal/types/base_class.hpp>
 #include <cereal/access.hpp>
 
-
+namespace forwardsec{
 class BadCiphertext : public std::invalid_argument
 {
 public:
@@ -33,7 +33,6 @@ public:
 
 class baseKey{
 public:
-	PairingGroup group;
 	G1 gG1;
 	G2 gG2;
 	G1 g2G1;
@@ -53,5 +52,5 @@ template <class Archive>
 void serialize( Archive & ar, baseKey & b )
 { ar( b.gG1,b.gG2,b.g2G1,b.g2G2 ); }
 
-
+}
 #endif /* SRC_FORWARDSEC_H_ */

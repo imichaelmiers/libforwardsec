@@ -29,7 +29,6 @@ public:
 		return !(x==y);
 	}
 protected:
-	PairingGroup group;
 	G2 a0;
 	G2 a1;
 	std::vector<G1> b;
@@ -85,7 +84,6 @@ public:
 		return !(x==y);
 	}
 protected:
-	PairingGroup group;
 	G1 B;
 	G1 C;
 	template <class Archive>

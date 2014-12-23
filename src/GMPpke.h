@@ -55,7 +55,6 @@ public:
 	}
 
 protected:
-	PairingGroup group;
 	G2 sk1;
 	G2 sk2;
 	G2 sk3;
@@ -114,7 +113,6 @@ public:
 		friend bool canDecrypt(const GmppkePrivateKey & sk,const PartialGmmppkeCT & ct);
 
 protected:
-	PairingGroup group;
 	G1 ct2;
 	std::vector<G1> ct3;
     std::vector<ZR> tags;
