@@ -96,8 +96,6 @@ TYPED_TEST(AlgTest,serialization){
 		cereal::BinaryOutputArchive oarchive(ss);
 		oarchive(a);
 	}
-	int size = ss.tellp();
-	cout << "size " << size << endl;
 	ss.seekg(0);
 	{
 	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
