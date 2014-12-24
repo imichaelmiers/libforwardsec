@@ -298,7 +298,13 @@ public:
 
 class relicResourceHandle{
 public:
-	relicResourceHandle();
+	/**
+	 * Tries to initialize relic.  If allowAlreadyInitilazed, will
+	 * simply become a no op if someone has already initialized the
+	 * code.
+	 * @param allowAlreadyInitilazed
+	 */
+	relicResourceHandle(const bool & allowAlreadyInitilazed = false);
 	~relicResourceHandle();
 
 	// you cannot meaningfully copy this resource

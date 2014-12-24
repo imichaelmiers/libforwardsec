@@ -486,15 +486,21 @@ ostream& operator<<(ostream& s, const GT& gt)
 	return s;
 }
 
-relicResourceHandle::relicResourceHandle(){
+relicResourceHandle::relicResourceHandle(const bool & allowAlreadyInitilazed){
+	isInit = false;
+	if(nullptr!=core_get()){
+		if(allowAlreadyInitilazed){
+			isInit=false; // someone else is holding the resource;
+			return;
+		}
+		throw std::runtime_error("ERROR Relic already initialized.");
+	}
 	const int err_code = core_init();
 	if(err_code != STS_OK){
-			isInit = false;
 			throw std::runtime_error("ERROR cannot initialize  relic: core_init returned: " +std::to_string(err_code)+".");
 	}
 	const int err_code_2 = pc_param_set_any();
 	if(err_code_2 != STS_OK){
-		isInit = false;
 		throw std::runtime_error("ERROR cannot initialize  relic: pc_param_set_any returned: " +std::to_string(err_code_2)+".");
 	}
 	isInit =true;
