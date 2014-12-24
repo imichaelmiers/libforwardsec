@@ -303,7 +303,7 @@ ostream& operator<<(ostream& s, const G1& g1)
 	g1_write_bin(&data[0], data.size(), g1.g,POINT_COMPRESS);
 	s << "0x";
 	for(auto i : data){
-	s << std::hex << data[i];
+	s << std::hex << (unsigned int)data[i];
 	}
 	s<< std::endl;
 	return s;
@@ -385,7 +385,7 @@ ostream& operator<<(ostream& s, const G2& g2)
 	g2_write_bin(&data[0], data.size(), gg.g,POINT_COMPRESS);
 	s << "0x";
 	for(auto i : data){
-	s<< std::hex << data[i];
+	s<< std::hex << (unsigned int)data[i];
 	}
 	s << std::endl;
 	return s;
@@ -480,7 +480,7 @@ ostream& operator<<(ostream& s, const GT& gt)
 	gt_write_bin(&data[0], data.size(), gg.g,POINT_COMPRESS);
 	s << "0x";
 	for(auto i : data){
-	s << std::hex << data[i];
+	s << std::hex << (unsigned int)data[i];
 	}
 	s << std::endl;
 	return s;
