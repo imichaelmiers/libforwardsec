@@ -24,11 +24,11 @@ class RelicEnvironment: public ::testing::Environment{
   virtual ~RelicEnvironment() {}
   // Override this to define how to set up the environment.
   virtual void SetUp() {
-	  cout << "Attempting to initialize relict..." <<endl << endl <<
+	  cout << "Attempting to initialize relic..." <<endl << endl <<
 			  "\tIf this takes a very long time  you may have ran out of entropy." << endl <<
 			  "\tThis sometimes happens on VMs. If you have this issue, either fix " << endl <<
 			  "\tyour vm entropy (if possible) or recompile relic with -DRAND=\"UDEV\"" << endl <<
-			  "\tor some other option hat that\tis not DEV (i.e. /dev/random)" << endl <<
+			  "\tor some other option that that is not DEV (i.e. /dev/random)" << endl <<
 			  "\t(WARNING many of these may not be cryptographically safe) ."  << endl << endl;
 	  handle = std::unique_ptr<relicResourceHandle>(new relicResourceHandle);
 	  if(!handle){
@@ -101,7 +101,6 @@ TYPED_TEST(AlgTest,serialization){
 		cereal::BinaryOutputArchive oarchive(ss);
 		oarchive(a);
 	}
-	ss.seekg(0);
 	{
 	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
 	    iarchive(b);
