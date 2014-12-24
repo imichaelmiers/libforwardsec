@@ -49,9 +49,9 @@ void Bbghibe::keygen(const BbhHIBEPublicKey & pk, const G2 & msk, const std::vec
     sk.bG2.resize(pk.l);
     for (unsigned int i =  k;i < pk.l; i++)
     {
-        sk.b[i] = group.exp(pk.hG1[i], r);
+        sk.b[i-(k-1)] = group.exp(pk.hG1[i], r);
 
-        sk.bG2[i] = group.exp(pk.hG2[i], r);
+        sk.bG2[i-(k-1)] = group.exp(pk.hG2[i], r);
     }
     return;
 }
@@ -69,15 +69,14 @@ void Bbghibe::keygen(const BbhHIBEPublicKey & pk,const  BbghPrivatekey & sk, con
     hprod = group.mul(hprod,group.exp(sk.bG2[k-1],(id[k-1])));
     skout.a0 = group.mul(hprod,sk.a0);
     skout.a1 = group.mul(sk.a1,group.exp(pk.gG2,t));
-    skout.b.resize(pk.l);
-    skout.bG2.resize(pk.l);
-    assert(skout.b.size() == sk.b.size());
-    assert(skout.bG2.size() == sk.bG2.size());
 
+    const unsigned int  kk = k-2;
+    skout.b.resize(pk.l-kk);
+    skout.bG2.resize(pk.l-kk);
     for (unsigned int i = k ; i < pk.l; i++)
     {
-        skout.b[i] = group.mul(sk.b[i],group.exp(pk.hG1[i],t));
-        skout.bG2[i] = group.mul(sk.bG2[i],group.exp(pk.hG2[i],t));
+        skout.b[i-kk] = group.mul(sk.b[i-kk],group.exp(pk.hG1[i],t));
+        skout.bG2[i-kk] = group.mul(sk.bG2[i-kk],group.exp(pk.hG2[i],t));
 
     }
     return;
