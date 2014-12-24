@@ -392,7 +392,6 @@ public:
 	std::string aes_key(const GT & g);
 
 private:
-	int pairingType; // defined by above #defines SYMMETRIC or ASYMMETRIC (for now)
 	bool isInit;
 	bn_t grp_order;
 };
