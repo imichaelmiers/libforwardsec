@@ -5,10 +5,10 @@ Libforwardsec. A library for forward secure encryption.
 Dependencies
 -----------------------------
 * For math: 
-  *relic (https://github.com/relic-toolkit/relic) 
-  * gmp (assuming relic is configured to use it) 
+	* relic (https://github.com/relic-toolkit/relic) 
+	* gmp (assuming relic is configured to use it) 
 * For serialization:
-  *  cereal(https://github.com/USCiLab/cereal) 
+	*  cereal(https://github.com/USCiLab/cereal) 
 	
 
 Build
@@ -47,4 +47,9 @@ cmake --help
 	make 
 	make install 
 # Cereal
-  Cereal is a header only library.
+  Cereal is a header only library.  Try your local package manager or 
+  
+ 	git clone https://github.com/USCiLab/cereal.git
+ 	cd cereal
+ 	git checkout v1.0.0
+ 	cp -R ./include/* /usr/local/include/
