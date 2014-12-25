@@ -789,16 +789,36 @@ G2 PairingGroup::hashListToG2(string str) const
 	return l;
 }
 
-byte256 intToBits(const ZR &id){
-	byte256 zrlist;
-	int l=256;
-    int intval;
-    int j = l-1;
-
-    for(int i = 0; i < l; i++) {
-    	intval = bn_get_bit(id.z,i);
-    	/* store in reverse */
-    	zrlist[j-i] = intval;
-    }
-    return zrlist;
-}
+//byte256 intToBits(const ZR &id){
+//	byte256 zrlist;
+//	int l=256;
+//    int intval;
+//    int j = l-1;
+//
+//    for(int i = 0; i < l; i++) {
+//    	intval = bn_get_bit(id.z,i);
+//    	/* store in reverse */
+//    	zrlist[j-i] = intval;
+//    }
+//    return zrlist;
+//}
+//void setbit(std::vector<uint8_t> t,unsigned int i, bool b){
+//	if(b){
+//		t[i/sizeof(uint8_t)] |= 1 << (i%sizeof(uint8_t));
+//	}else{
+//		t[i/sizeof(uint8_t)] &= ~( 1 << (i%sizeof(uint8_t)));
+//	}
+//}
+//
+//std::vector<uint8_t> intToBits(const ZR &id){
+//	std::vector<uint8_t> t(32);
+//	int l=256;
+//    int j = l-1;
+//
+//    for(int i = 0; i < l; i++) {
+//    	bool bit =  bn_get_bit(id.z,i);
+//    	/* store in reverse */
+//    	setbit(t,j-i,bit);
+//    }
+//    return t;
+//}

@@ -206,16 +206,15 @@ PseCipherText Pfse::encryptFO(const pfsepubkey & pk,  const byte256  & msg,const
     	ss << a;
     }
     ZR s = group.hashListToZR(ss.str());
-   
+
     PseCipherText ct = encrypt(pk,x,s,interval,tags);
 
     // since we don't have a different hash function, we simply prefix it
     std::stringstream sss;
     sss << "0xDEADBEEF";
     sss << x;
-    ZR xorash = group.hashListToZR(sss.str());
-    byte256 bits = intToBits(xorash);
-
+    byte256 bits(32);
+	SHA_FUNC(&bits[0], (unsigned char *) sss.str().c_str(), (int) sss.str().size());
     ct.xorct = xorarray(msg, bits);
     return ct;
 
@@ -258,14 +257,13 @@ byte256 Pfse::decrypt(const PseCipherText &ct) const{
 
 byte256 Pfse::decryptFO(const PfsePuncturedPrivateKey & sk,const PseCipherText &ct) const{
     GT x = decryptGT(sk,ct);
-
     // since we don't have a different hash function, we simply prefix it
     std::stringstream sss;
     sss << "0xDEADBEEF";
     sss << x;
-    ZR xorash = group.hashListToZR(sss.str());
+    byte256 bits(32);
+	SHA_FUNC(&bits[0], (unsigned char *) sss.str().c_str(), (int) sss.str().size());
 
-    byte256 bits = intToBits(xorash);
     byte256 aes_key = xorarray(ct.xorct, bits);
     PseCipherText cttest = encryptFO(pk,aes_key,x,ct.interval,ct.ppkeCT.tags);
     if(ct == cttest ){

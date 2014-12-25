@@ -7,7 +7,7 @@ byte256 xorarray(const byte256 & l,const byte256 & r){
 	if(l.size()!=r.size()){
 		throw invalid_argument("Arrays must be be same size. Instead  l:" +std::to_string(l.size()) +  " r:" +std::to_string(r.size()));
 	}
-	byte256 result;
+	byte256 result(32);
 	for(unsigned int i=0;i<l.size();i++){
 		result[i] = l[i] ^ r[i];
 	}

@@ -55,9 +55,6 @@ extern "C" {
 void ro_error(void);
 
 
-typedef  std::array<uint8_t,256> byte256;
-
-
 class RelicDividByZero : public std::logic_error
 {
 public:
@@ -390,6 +387,6 @@ private:
 
 //template<> 
 //ZR PairingGroup::random12<ZR>(){return this->random(ZR_t);}
-byte256 intToBits(const ZR & id);
+//byte256 intToBits(const ZR & id);
 
 #endif
