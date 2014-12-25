@@ -147,7 +147,7 @@ PartialGmmppkeCT Gmppke::blind(const GmppkePublicKey & pk, const ZR & s, const s
 		throw invalid_argument("Tags must be unique. You have provided at least one duplicate tag.");
 	}
 	if(tags.size() != pk.d){
-		throw invalid_argument("You must provide exactly " +std::to_string(pk.d) + " tags. You provided" +std::to_string(tags.size())+" tags.");
+		throw invalid_argument("You must provide exactly " +std::to_string(pk.d) + " tags. You provided " +std::to_string(tags.size())+" tag.");
 	}
     PartialGmmppkeCT  ct;
     ct.ct2 = group.exp(pk.gG1, s);
