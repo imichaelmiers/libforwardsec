@@ -134,13 +134,6 @@ void Gmppke::puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const s
 
 
 GmmppkeCT Gmppke::encrypt(const GmppkePublicKey & pk,const GT & M,const std::vector<std::string> & tags) const{
-	//simple duplicate check without modifying  tags by sorting
-	if(	unordered_set<string>(tags.begin(),tags.end()).size() != tags.size()){
-		throw invalid_argument("Tags must be unique. You have provided at least one duplicate tag.");
-	}
-	if(tags.size() != pk.d){
-		throw invalid_argument("You must provide exactly " +std::to_string(pk.d) + " tags. You provided" +std::to_string(tags.size())+" tags.");
-	}
 	const ZR s = group.randomZR();
 	GmmppkeCT ct = blind(pk,s,tags);
 	ct.ct1 = group.mul(group.exp(group.pair(pk.g2G1, pk.ppkeg1), s), M);
@@ -149,7 +142,13 @@ GmmppkeCT Gmppke::encrypt(const GmppkePublicKey & pk,const GT & M,const std::vec
 }
 PartialGmmppkeCT Gmppke::blind(const GmppkePublicKey & pk, const ZR & s, const std::vector<string> & tags ) const
 {
-    assert(tags.size()==pk.d);
+	//simple duplicate check without modifying  tags by sorting
+	if(	unordered_set<string>(tags.begin(),tags.end()).size() != tags.size()){
+		throw invalid_argument("Tags must be unique. You have provided at least one duplicate tag.");
+	}
+	if(tags.size() != pk.d){
+		throw invalid_argument("You must provide exactly " +std::to_string(pk.d) + " tags. You provided" +std::to_string(tags.size())+" tags.");
+	}
     PartialGmmppkeCT  ct;
     ct.ct2 = group.exp(pk.gG1, s);
 
