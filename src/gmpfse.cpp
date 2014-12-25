@@ -191,6 +191,9 @@ void Pfse::puncture(unsigned int interval, string tag){
 
 }
 PseCipherText Pfse::encrypt(const pfsepubkey & pk, const bytes msg, const unsigned int interval,const vector<std::string> tags) const {
+	if(msg.size()>32){
+		throw invalid_argument("msg must be at most 32 bytes.");
+	}
     return encryptFO(pk,msg,group.randomGT(),interval,tags);
 }
 
@@ -199,8 +202,11 @@ PseCipherText Pfse::encrypt(const pfsepubkey & pk, const bytes msg, const unsign
  */
 PseCipherText Pfse::encryptFO(const pfsepubkey & pk,  const bytes  & msg,const  GT & x,
 		const unsigned int interval, const vector<std::string>  & tags ) const {
-    std::stringstream ss; //FIXME the << operator returns "BROKEN"
-    ss << x;
+    std::stringstream ss;
+    bytes b = x.getBytes();
+    for(auto a: b){
+    	ss << a;
+    }
     for(auto a : msg){
     	ss << a;
     }
