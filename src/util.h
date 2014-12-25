@@ -7,8 +7,8 @@ namespace forwardsec{
 std::vector<ZR>  indexToPath(const unsigned int &index,const unsigned int & treeDepth);
 unsigned int pathToIndex(const std::vector<ZR> & path, const unsigned int & treeDepth);
 
-typedef  std::vector<uint8_t> byte256;
-byte256 xorarray(const byte256 & l,const byte256 & r);
+typedef  std::vector<uint8_t> bytes;
+bytes xorarray(const bytes & l,const bytes & r);
 
 
 ZR LagrangeBasisCoefficients(const PairingGroup & group, const unsigned int & j,const ZR &x , const std::vector<ZR> & polynomial_xcordinates);

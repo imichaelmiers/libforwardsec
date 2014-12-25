@@ -12,6 +12,7 @@ using namespace std;
 #define libforwardsec_DBG(x)
 #endif
 namespace forwardsec{
+const static string THE_HASH_CONSTANT = "Do not meddle in the affairs of dragons for you are crunchy and taste good with ketchup.";
 PfseKeyStore::PfseKeyStore(const GmppkePrivateKey & unpuncturedKey){
 	this->unpucturedPPKEKey = unpuncturedKey;
 }
@@ -189,16 +190,16 @@ void Pfse::puncture(unsigned int interval, string tag){
 //privatekeys[interval] = sk;
 
 }
-PseCipherText Pfse::encrypt(const pfsepubkey & pk, const byte256 msg, const unsigned int interval,const vector<std::string> tags) const {
+PseCipherText Pfse::encrypt(const pfsepubkey & pk, const bytes msg, const unsigned int interval,const vector<std::string> tags) const {
     return encryptFO(pk,msg,interval,tags);
 }
-PseCipherText Pfse::encryptFO(const pfsepubkey & pk,const byte256  & msg
+PseCipherText Pfse::encryptFO(const pfsepubkey & pk,const bytes  & msg
 		, const unsigned int interval, const vector<std::string>  & tags ) const {
     GT x = group.randomGT();
     return encryptFO(pk,msg,x,interval,tags);
 
 }
-PseCipherText Pfse::encryptFO(const pfsepubkey & pk,  const byte256  & msg,const  GT & x,
+PseCipherText Pfse::encryptFO(const pfsepubkey & pk,  const bytes  & msg,const  GT & x,
 		const unsigned int interval, const vector<std::string>  & tags ) const {
     std::stringstream ss; //FIXME the << operator returns "BROKEN"
     ss << x;
@@ -208,13 +209,11 @@ PseCipherText Pfse::encryptFO(const pfsepubkey & pk,  const byte256  & msg,const
     ZR s = group.hashListToZR(ss.str());
 
     PseCipherText ct = encrypt(pk,x,s,interval,tags);
-
-    // since we don't have a different hash function, we simply prefix it
-    std::stringstream sss;
-    sss << "0xDEADBEEF";
-    sss << x;
-    byte256 bits(32);
-	SHA_FUNC(&bits[0], (unsigned char *) sss.str().c_str(), (int) sss.str().size());
+    bytes bytestohash = x.getBytes();
+    // since we don't have a different hash function, we simply postfix it with a magic constant;
+    bytestohash.insert(bytestohash.begin(),THE_HASH_CONSTANT.begin(),THE_HASH_CONSTANT.end());
+    bytes bits(32);
+	SHA_FUNC(&bits[0], &bytestohash[0], bytestohash.size());
     ct.xorct = xorarray(msg, bits);
     return ct;
 
@@ -237,7 +236,7 @@ PseCipherText Pfse::encrypt(const pfsepubkey & pk, const GT & M,  const ZR & s, 
 
     return ct;
 }
-byte256 Pfse::decrypt(const PseCipherText &ct) const{
+bytes Pfse::decrypt(const PseCipherText &ct) const{
     const PfsePuncturedPrivateKey & sk = privatekeys.getKey(ct.interval);
 	vector<string> intersect =sk.ppkeSK.puncturedIntersect(ct.ppkeCT.tags);
     if(intersect.size()>0){
@@ -255,16 +254,15 @@ byte256 Pfse::decrypt(const PseCipherText &ct) const{
     return decryptFO(sk,ct);
 }
 
-byte256 Pfse::decryptFO(const PfsePuncturedPrivateKey & sk,const PseCipherText &ct) const{
+bytes Pfse::decryptFO(const PfsePuncturedPrivateKey & sk,const PseCipherText &ct) const{
     GT x = decryptGT(sk,ct);
-    // since we don't have a different hash function, we simply prefix it
-    std::stringstream sss;
-    sss << "0xDEADBEEF";
-    sss << x;
-    byte256 bits(32);
-	SHA_FUNC(&bits[0], (unsigned char *) sss.str().c_str(), (int) sss.str().size());
+    bytes bytestohash = x.getBytes();
+    // since we don't have a different hash function, we simply postfix it with a magic constant;
+    bytestohash.insert(bytestohash.begin(),THE_HASH_CONSTANT.begin(),THE_HASH_CONSTANT.end());
+    bytes bits(32);
+	SHA_FUNC(&bits[0], &bytestohash[0], bytestohash.size());
 
-    byte256 aes_key = xorarray(ct.xorct, bits);
+    bytes aes_key = xorarray(ct.xorct, bits);
     PseCipherText cttest = encryptFO(pk,aes_key,x,ct.interval,ct.ppkeCT.tags);
     if(ct == cttest ){
         return aes_key;
