@@ -191,14 +191,12 @@ void Pfse::puncture(unsigned int interval, string tag){
 
 }
 PseCipherText Pfse::encrypt(const pfsepubkey & pk, const bytes msg, const unsigned int interval,const vector<std::string> tags) const {
-    return encryptFO(pk,msg,interval,tags);
+    return encryptFO(pk,msg,group.randomGT(),interval,tags);
 }
-PseCipherText Pfse::encryptFO(const pfsepubkey & pk,const bytes  & msg
-		, const unsigned int interval, const vector<std::string>  & tags ) const {
-    GT x = group.randomGT();
-    return encryptFO(pk,msg,x,interval,tags);
 
-}
+/** Fujisaki Okomoto CCA2 secure encryption
+ *
+ */
 PseCipherText Pfse::encryptFO(const pfsepubkey & pk,  const bytes  & msg,const  GT & x,
 		const unsigned int interval, const vector<std::string>  & tags ) const {
     std::stringstream ss; //FIXME the << operator returns "BROKEN"
@@ -208,7 +206,7 @@ PseCipherText Pfse::encryptFO(const pfsepubkey & pk,  const bytes  & msg,const  
     }
     ZR s = group.hashListToZR(ss.str());
 
-    PseCipherText ct = encrypt(pk,x,s,interval,tags);
+    PseCipherText ct = encryptGT(pk,x,s,interval,tags);
     bytes bytestohash = x.getBytes();
     // since we don't have a different hash function, we simply postfix it with a magic constant;
     bytestohash.insert(bytestohash.begin(),THE_HASH_CONSTANT.begin(),THE_HASH_CONSTANT.end());
@@ -218,14 +216,13 @@ PseCipherText Pfse::encryptFO(const pfsepubkey & pk,  const bytes  & msg,const  
     return ct;
 
 }
-PseCipherText Pfse::encrypt(const pfsepubkey & pk,const  GT & M, const unsigned int interval, const vector<std::string>  & tags) const{
-        ZR s = group.randomZR();
-        return Pfse::encrypt(pk,M,s,interval,tags);
-}
 
-PseCipherText Pfse::encrypt(const pfsepubkey & pk, const GT & M,  const ZR & s, const unsigned int interval, const vector<std::string>  & tags) const{
+/** Encryption of group elements. used by encryptFO
+ *
+ */
+PseCipherText Pfse::encryptGT(const pfsepubkey & pk, const GT & M,  const ZR & s, const unsigned int interval, const vector<std::string>  & tags) const{
     PseCipherText ct;
-    
+
     ct.interval = interval;
 
     std::vector<ZR> id= indexToPath(interval,depth);

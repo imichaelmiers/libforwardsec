@@ -129,7 +129,7 @@ public:
 	 */
 	void keygen();
 
-	/** Encrypts a message. Messages are limited to 256 bits. (e.g. an AES key).
+	/** Encrypts a message. Messages are limited to 32 bytes. (e.g. an AES key).
 	 *
 	 * @param pk the public key of the recipient
 	 * @param msg the message
@@ -177,10 +177,7 @@ private:
 	PseCipherText encryptFO( const pfsepubkey & pk, const bytes & bitmsg,
 			              const unsigned int interval, const std::vector<std::string>  & tags) const;
 	PseCipherText encryptFO( const pfsepubkey & pk, const bytes & bitmsg,
-			const GT & x, const unsigned int interval, const std::vector<std::string>  & tags) const;
-
-	PseCipherText encrypt( const pfsepubkey & pk, const GT & M,              const unsigned int interval, const std::vector<std::string>  & tags) const;
-	PseCipherText encrypt( const pfsepubkey & pk, const GT & M,const ZR & s, const unsigned int interval, const std::vector<std::string>  & tags) const;
+			const GT & x, const unsigned int interval, const std::vector<std::string>  & tags) const;	PseCipherText encryptGT( const pfsepubkey & pk, const GT & M,const ZR & s, const unsigned int interval, const std::vector<std::string>  & tags) const;
 
 
 	bytes decryptFO(const PfsePuncturedPrivateKey &sk, const PseCipherText &ct) const;
