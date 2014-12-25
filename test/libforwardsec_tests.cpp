@@ -20,7 +20,7 @@ using namespace forwardsec;
 class Gmmppketest : public ::testing::Test {
 protected:
 	 virtual void SetUp(){
-	 	test.keygen(pk,sk);
+	 	test.keygen(pk,sk,3);
 	 }
      PairingGroup group;
 	 Gmppke test;
@@ -439,22 +439,22 @@ TEST_F(Gmmppketest,basic){
     GT m = group.randomGT();
 
 
-    GmmppkeCT ct = test.encrypt(pk,m,{{"2"}});
+    GmmppkeCT ct = test.encrypt(pk,m,{{"1","2","3"}});
     EXPECT_EQ(m,test.decrypt(pk,sk,ct));
 
 }
 TEST_F(Gmmppketest,puncture){
     GT m = group.randomGT();
-    GmmppkeCT ct = test.encrypt(pk,m,{{"2"}});
-    test.puncture(pk,sk,"3");
-    EXPECT_EQ(m,test.decrypt(pk,sk,ct));
+    GmmppkeCT ct = test.encrypt(pk,m,{{"1","2","3"}});
     test.puncture(pk,sk,"4");
+    EXPECT_EQ(m,test.decrypt(pk,sk,ct));
     test.puncture(pk,sk,"5");
+    test.puncture(pk,sk,"6");
     EXPECT_EQ(m,test.decrypt(pk,sk,ct));
 }
 TEST_F(Gmmppketest,punctureFailWithPuncturedCiphertext){
     GT m = group.randomGT();
-    GmmppkeCT ct = test.encrypt(pk,m,{{"2"}});
+    GmmppkeCT ct = test.encrypt(pk,m,{{"1","2","3"}});
     test.puncture(pk,sk,"2");
     EXPECT_THROW(test.decrypt_unchecked(pk,sk,ct),std::logic_error);
     EXPECT_THROW(test.decrypt(pk,sk,ct),PuncturedCiphertext);
@@ -468,7 +468,7 @@ TEST_F(Gmmppketest,punctureFailWithPuncturedCiphertext){
 // checks tha the system actually fails when handed a
 TEST_F(Gmmppketest,punctureFail){
     GT m = group.randomGT();
-    GmmppkeCT ct = test.encrypt(pk,m,{{"2"}});
+    GmmppkeCT ct = test.encrypt(pk,m,{{"1","2","3"}});
     test.puncture(pk,sk,"2");
     EXPECT_THROW(test.decrypt_unchecked(pk,sk,ct),std::logic_error);
     test.puncture(pk,sk,"5");
@@ -480,7 +480,7 @@ TEST_F(Gmmppketest,serializeGmmppkeCT){
 	std::stringstream ss;
     GT m = group.randomGT();
 
-    GmmppkeCT ctnew, ct = test.encrypt(pk,m,{{"2"}});
+    GmmppkeCT ctnew, ct = test.encrypt(pk,m,{{"1","2","3"}});
 	EXPECT_NE(ct,ctnew);
 	{
 		cereal::BinaryOutputArchive oarchive(ss);
@@ -545,7 +545,7 @@ TEST_F(Gmmppketest,testSeperateDecryptandSerialize){
 
     GT m = group.randomGT();
 
-    GmmppkeCT ctnew,ct = testsender.encrypt(pksender,m,{{"2"}});
+    GmmppkeCT ctnew,ct = testsender.encrypt(pk,m,{{"1","2","3"}});
 	{
 		cereal::BinaryOutputArchive oarchive(ss);
 		oarchive(ct);
