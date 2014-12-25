@@ -52,7 +52,7 @@ ZR::ZR(char *str)
 	bn_read_str(z, (const char *) str, strlen(str), DECIMAL);
 	// bn_mod(z, z, order);
 }
-const ZR ZR::inverse() const{
+ ZR ZR::inverse() const{
 	ZR i;
 	invertZR(i,z,i.order);
 	return i;
@@ -156,6 +156,12 @@ bool ZR::ismember(void) const
 	else
 		result = false;
 	return result;
+}
+
+std::vector<uint8_t> ZR::getBytes() const {
+	std::vector<uint8_t>data(BN_BYTES);
+	bn_write_bin(&data[0], BN_BYTES, z);
+	return data;
 }
 
 ostream& operator<<(ostream& s, const ZR& zr)
@@ -296,11 +302,16 @@ bool G1::ismember(const bn_t order) const
 	return result;
 }
 
+std::vector<uint8_t> G1::getBytes(bool compress) const {
+	unsigned int l  = g1_size_bin(g,compress);
+	std::vector<uint8_t>data(l);
+	g1_write_bin(&data[0], data.size(), g,compress);
+	return data;
+}
+
 ostream& operator<<(ostream& s, const G1& g1)
 {
-	unsigned int l  = g1_size_bin(g1.g,POINT_COMPRESS);
-	std::vector<uint8_t>data(l);
-	g1_write_bin(&data[0], data.size(), g1.g,POINT_COMPRESS);
+	auto data = g1.getBytes();
 	s << "0x";
 	for(auto i : data){
 	s << std::hex << (unsigned int)data[i];
@@ -377,12 +388,19 @@ bool G2::ismember(bn_t order)
 	return result;
 }
 
+std::vector<uint8_t> G2::getBytes(bool compress) const {
+	lfrowdsec_G2unconst(*this,gg);
+	unsigned int l  = g2_size_bin(gg.g,compress);
+
+	std::vector<uint8_t>data(l);
+	g2_write_bin(&data[0], l,gg.g,compress);
+	return data;
+}
+
+
 ostream& operator<<(ostream& s, const G2& g2)
 {
-	lfrowdsec_G2unconst(g2,gg);
-	unsigned int l  = g2_size_bin(gg.g,POINT_COMPRESS);
-	std::vector<uint8_t>data(l);
-	g2_write_bin(&data[0], data.size(), gg.g,POINT_COMPRESS);
+	auto data= g2.getBytes();
 	s << "0x";
 	for(auto i : data){
 	s<< std::hex << (unsigned int)data[i];
@@ -472,12 +490,18 @@ bool GT::ismember(bn_t order)
 	return result;
 }
 
+std::vector<uint8_t> GT::getBytes(bool compress) const {
+	lfrowdsec_GTunconst(*this,gg);
+	unsigned int l  = gt_size_bin(gg.g,compress);
+
+	std::vector<uint8_t>data(l);
+	gt_write_bin(&data[0], l, gg.g,compress);
+	return data;
+}
+
 ostream& operator<<(ostream& s, const GT& gt)
 {
-	lfrowdsec_GTunconst(gt,gg);
-	unsigned int l  = gt_size_bin(gg.g,POINT_COMPRESS);
-	std::vector<uint8_t>data(l);
-	gt_write_bin(&data[0], data.size(), gg.g,POINT_COMPRESS);
+	auto data = gt.getBytes();
 	s << "0x";
 	for(auto i : data){
 	s << std::hex << (unsigned int)data[i];

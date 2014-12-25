@@ -102,14 +102,13 @@ public:
 		return *this;
 	}
 		bool ismember() const;
-		const ZR inverse() const;
-
+		ZR inverse() const;
+		std::vector<uint8_t> getBytes() const;
 		friend class cereal::access;
 		template <class Archive>
 		void save( Archive & ar) const
 		{
-			std::vector<uint8_t>data(BN_BYTES);
-			bn_write_bin(&data[0], BN_BYTES, z);
+			auto data = getBytes();
 			ar(data);
 		}
 		template <class Archive>
@@ -163,13 +162,12 @@ public:
 		else ro_error();
 		return *this;
 	}
-		bool ismember(const bn_t) const;
+	bool ismember(const bn_t) const;
+	std::vector<uint8_t> getBytes(bool compress = 0) const;
     template<class Archive>
     void save(Archive & ar) const
     {
-    	unsigned int l  = g1_size_bin(g,POINT_COMPRESS);
-    	std::vector<uint8_t>data(l);
-		g1_write_bin(&data[0], data.size(), g,POINT_COMPRESS);
+    	auto data = getBytes(POINT_COMPRESS);
 		ar(data);
     }
     template<class Archive>
@@ -213,16 +211,12 @@ public:
 		return *this;
 	}
 	bool ismember(bn_t);
+	std::vector<uint8_t> getBytes( bool compress = 0) const;
 
     template<class Archive>
     void save(Archive & ar) const
     {
-
-		G2 gg(*this);
-    	unsigned int l  = g2_size_bin(gg.g,POINT_COMPRESS);
-
-    	std::vector<uint8_t>data(l);
-		g2_write_bin(&data[0], l,gg.g,POINT_COMPRESS);
+    	auto data = getBytes(POINT_COMPRESS);
 		ar(data);
     }
     template<class Archive>
@@ -265,14 +259,12 @@ public:
 		return *this;
 	}
 	bool ismember(bn_t);
+	std::vector<uint8_t> getBytes( bool compress = 0) const;
+
     template<class Archive>
     void save(Archive & ar) const
     {
-		GT gg(*this);
-    	unsigned int l  = gt_size_bin(gg.g,POINT_COMPRESS);
-
-    	std::vector<uint8_t>data(l);
-		gt_write_bin(&data[0], l, gg.g,POINT_COMPRESS);
+    	auto data = getBytes(POINT_COMPRESS);
 		ar(data);
     }
     template<class Archive>
