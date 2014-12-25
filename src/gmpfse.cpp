@@ -240,8 +240,18 @@ PseCipherText Pfse::encrypt(const pfsepubkey & pk, const GT & M,  const ZR & s, 
 }
 byte256 Pfse::decrypt(const PseCipherText &ct) const{
     const PfsePuncturedPrivateKey & sk = privatekeys.getKey(ct.interval);
-    if(!canDecrypt(sk.ppkeSK,ct.ppkeCT)){
-    	throw PuncturedCiphertext("cannot decrypt. Duplicate tags");
+	vector<string> intersect =sk.ppkeSK.puncturedIntersect(ct.ppkeCT.tags);
+    if(intersect.size()>0){
+    	string duplicates = "";
+    	bool first = true;
+    	for(auto e: intersect){
+    		if(!first){
+    			duplicates +=", ";
+    		}
+    		duplicates += e;
+    		first = false;
+    	}
+    	throw PuncturedCiphertext("cannot decrypt. The key is punctured on the following tags in the ciphertext: " + duplicates + ".");
     }
     return decryptFO(sk,ct);
 }

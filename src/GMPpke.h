@@ -55,7 +55,6 @@ public:
 	friend bool operator!=(const GmppkePrivateKeyShare& x, const GmppkePrivateKeyShare& y){
 		return !(x==y);
 	}
-
 protected:
 	G2 sk1;
 	G2 sk2;
@@ -69,7 +68,7 @@ protected:
 	friend class cereal::access;
 	friend class Gmppke;
 	friend class Pfse;
-	friend bool canDecrypt(const GmppkePrivateKey & sk,const PartialGmmppkeCT & ct);
+	friend class GmppkePrivateKey;
 };
 
  class GmppkePrivateKey{
@@ -83,6 +82,12 @@ public:
 	bool punctured() const{
 		return shares.size() > 1;
 	}
+	/** Returns the tags, if any, that the key is punctured on.
+	 *
+	 * @param tags the tags
+	 * @return the intersection
+	 */
+	std::vector<std::string> puncturedIntersect(const std::vector<std::string> & tags)const ;
 protected:
 	std::vector<GmppkePrivateKeyShare> shares;
 	template <class Archive>
@@ -93,7 +98,6 @@ protected:
 	friend class cereal::access;
 	friend class Gmppke;
 	friend class Pfse;
-	friend bool canDecrypt(const GmppkePrivateKey & sk,const PartialGmmppkeCT & ct);
  };
 
 class PartialGmmppkeCT{

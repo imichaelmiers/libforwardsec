@@ -9,20 +9,16 @@ using namespace std;
 static const string  NULLTAG = "42"; // the reserved tag
 
 using namespace std;
-
-bool canDecrypt(const GmppkePrivateKey & sk,const PartialGmmppkeCT & ct){ // FIXME
-	unordered_set<std::string> tags(ct.tags.begin(),ct.tags.end());
+std::vector<std::string> GmppkePrivateKey::puncturedIntersect(const std::vector<std::string> & tags)const {
+	unordered_set<std::string> tagset(tags.begin(),tags.end());
 	vector<string> duplicates;
-	for(auto share : sk.shares){
-		if(tags.count(share.sk4) >0){
+	for(auto share : shares){
+		if(tagset.count(share.sk4) >0){
 			duplicates.push_back(share.sk4);
 		}
 	}
-    return duplicates.size()==0;
+    return duplicates;
 }
-
-
-
 //G1  Gmppke::vG1(const std::vector<G1> & gqofxG1, const std::string & x) const{
 //    vector<ZR> xcords;
 //    int size = gqofxG1.size() ;
@@ -110,6 +106,9 @@ GmppkePrivateKeyShare Gmppke::skgen(const GmppkePublicKey &pk,const ZR & alpha  
 
 void Gmppke::puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const string & tag) const{
 
+	if(tag == NULLTAG){
+		throw invalid_argument("Invalid tag "+tag +". The tag " + NULLTAG + " is reserved and cannot be used.");
+	}
     GmppkePrivateKeyShare skentryn;
     GmppkePrivateKeyShare & skentry0 = sk.shares[0];
 
@@ -135,25 +134,16 @@ void Gmppke::puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const s
 
 
 GmmppkeCT Gmppke::encrypt(const GmppkePublicKey & pk,const GT & M,const std::vector<std::string> & tags) const{
+	//simple duplicate check without modifying  tags by sorting
+	if(	unordered_set<string>(tags.begin(),tags.end()).size() != tags.size()){
+		throw invalid_argument("Tags must be unique. You have provided at least one duplicate tag.");
+	}
+	if(tags.size() != pk.d){
+		throw invalid_argument("You must provide exactly " +std::to_string(pk.d) + " tags. You provided" +std::to_string(tags.size())+" tags.");
+	}
 	const ZR s = group.randomZR();
-//	const ZR alpha(42);
-//	const ZR beta = ZR(747);//group.randomZR();
-
 	GmmppkeCT ct = blind(pk,s,tags);
-//    assert(pk.ppkeg1 ==  group.exp(pk.gG2,alpha));
-//    assert(pk.g2G1 == group.exp(pk.gG1, beta));
-//    GT p = group.pair(pk.g2G1, pk.ppkeg1);
-//
-//    GT t = group.exp(group.pair(pk.gG1,pk.gG2),group.mul(alpha,beta));
-//    assert(p== t);
-
 	ct.ct1 = group.mul(group.exp(group.pair(pk.g2G1, pk.ppkeg1), s), M);
-//	assert(ct.ct2==group.exp(pk.gG1, s));
-//	GT b = group.pair(ct.ct2, group.exp(pk.gG2,alpha)  );
-//	//GT bb  = group.exp(p,group.mul(alpha,group.mul(beta,s)));
-//	GT bb = group.exp(t,s);
-//	//assert(b==group.exp(group.pair(pk.g2G1, pk.ppkeg1), s));
-//	assert(M==group.div(ct.ct1,bb));
 	return ct;
 
 }
@@ -175,8 +165,18 @@ PartialGmmppkeCT Gmppke::blind(const GmppkePublicKey & pk, const ZR & s, const s
 
 
 GT Gmppke::decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct ) const{
-    if(!canDecrypt(sk,ct)){
-    	throw PuncturedCiphertext("cannot decrypt. Duplicate tags");
+	vector<string> intersect =sk.puncturedIntersect(ct.tags);
+    if(intersect.size()>0){
+    	string duplicates = "";
+    	bool first = true;
+    	for(auto e: intersect){
+    		if(!first){
+    			duplicates +=", ";
+    		}
+    		duplicates += e;
+    		first = false;
+    	}
+    	throw PuncturedCiphertext("cannot decrypt. The key is punctured on the following tags in the ciphertext: " + duplicates + ".");
     }
     return decrypt_unchecked(pk,sk,ct);
 }
