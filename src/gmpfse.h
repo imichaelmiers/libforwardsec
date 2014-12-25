@@ -175,12 +175,12 @@ private:
 	unsigned int depth;
 	void bindKey(PfsePuncturedPrivateKey & k);
 	PseCipherText encryptFO( const pfsepubkey & pk, const byte256 & bitmsg,
-			              const unsigned int interval, const std::vector<ZR>  & tags) const;
+			              const unsigned int interval, const std::vector<std::string>  & tags) const;
 	PseCipherText encryptFO( const pfsepubkey & pk, const byte256 & bitmsg,
-			const GT & x, const unsigned int interval, const std::vector<ZR>  & tags) const;
+			const GT & x, const unsigned int interval, const std::vector<std::string>  & tags) const;
 
-	PseCipherText encrypt( const pfsepubkey & pk, const GT & M,              const unsigned int interval, const std::vector<ZR>  & tags) const;
-	PseCipherText encrypt( const pfsepubkey & pk, const GT & M,const ZR & s, const unsigned int interval, const std::vector<ZR>  & tags) const;
+	PseCipherText encrypt( const pfsepubkey & pk, const GT & M,              const unsigned int interval, const std::vector<std::string>  & tags) const;
+	PseCipherText encrypt( const pfsepubkey & pk, const GT & M,const ZR & s, const unsigned int interval, const std::vector<std::string>  & tags) const;
 
 
 	byte256 decryptFO(const PfsePuncturedPrivateKey &sk, const PseCipherText &ct) const;

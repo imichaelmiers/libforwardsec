@@ -10,8 +10,10 @@
 #include <cereal/types/base_class.hpp>
 #include <cereal/access.hpp>
 #include <cereal/types/vector.hpp>
+#include <cereal/types/string.hpp>
 
 #include "forwardsec.h"
+#include "util.h"
 namespace forwardsec{
 class Gmppke;
 class Pfse;
@@ -58,7 +60,7 @@ protected:
 	G2 sk1;
 	G2 sk2;
 	G2 sk3;
-	ZR sk4;
+	std::string sk4;
 	template <class Archive>
 	  void serialize( Archive & ar )
 	{
@@ -115,7 +117,7 @@ public:
 protected:
 	G1 ct2;
 	std::vector<G1> ct3;
-    std::vector<ZR> tags;
+    std::vector<std::string> tags;
 	template <class Archive>
 	void serialize( Archive & ar ){
 		ar(ct2,ct3,tags);
@@ -155,19 +157,34 @@ public:
 	~Gmppke() {};
 
 	void keygen(GmppkePublicKey & pk, GmppkePrivateKey & sk,const unsigned int & d = 1) const;
-	void puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const ZR & tag) const;
-	GmmppkeCT encrypt(const GmppkePublicKey & pk,const GT & M,const std::vector<ZR> & tags) const;
-	PartialGmmppkeCT blind(const GmppkePublicKey & pk, const ZR & s,  const std::vector<ZR> & tags) const;
+
+	void puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const std::string & tag) const;
+
+	PartialGmmppkeCT blind(const GmppkePublicKey & pk, const ZR & s,  const std::vector<std::string> & tags) const;
+
+	GmmppkeCT encrypt(const GmppkePublicKey & pk,const GT & M,const std::vector<std::string> & tags) const;
+
 
 	GT recoverBlind(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const PartialGmmppkeCT & ct ) const;
 	GT decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct ) const;
 	//For testing purposes only
 	GT decrypt_unchecked(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct ) const;
 
-protected:
+private:
 	PairingGroup group;
-	G1 vG1(const std::vector<G1> & gqofxG1, const ZR & x) const;
-	G2 vG2(const std::vector<G2> & gqofxG2, const ZR & x) const;
+//	G1 vG1(const std::vector<G1> & gqofxG1, const ZR & x) const;
+//	G2 vG2(const std::vector<G2> & gqofxG2, const ZR & x) const;
+	template <class T>
+	T  vx(const std::vector<T> & gqofxG1, const std::string & x) const{
+	    std::vector<ZR> xcords;
+	    int size = gqofxG1.size();
+	    for(int i=0;i<size;i++){
+	        ZR xcord = i;
+	        xcords.push_back(xcord);
+	    }
+	    return LagrangeInterpInExponent(group,group.hashListToZR(x),xcords,gqofxG1);
+
+	}
 
 	void keygenPartial(const ZR & gamma,GmppkePublicKey & pk, GmppkePrivateKey & sk,const unsigned int & d=1) const;
 	GmppkePrivateKeyShare skgen(const GmppkePublicKey &pk,const ZR & alpha ) const;

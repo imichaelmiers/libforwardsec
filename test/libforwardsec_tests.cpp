@@ -437,48 +437,50 @@ TEST_F(BbghhibeTests,testSeperateDecryptandSerialize){
 
 TEST_F(Gmmppketest,basic){
     GT m = group.randomGT();
-    vector<ZR> tags;
-    tags.push_back(ZR(2));
 
-    GmmppkeCT ct = test.encrypt(pk,m,tags);
+
+    GmmppkeCT ct = test.encrypt(pk,m,{{"2"}});
     EXPECT_EQ(m,test.decrypt(pk,sk,ct));
 
 }
 TEST_F(Gmmppketest,puncture){
     GT m = group.randomGT();
-    vector<ZR> tags;
-    tags.push_back(ZR(2));
-
-    GmmppkeCT ct = test.encrypt(pk,m,tags);
-    test.puncture(pk,sk,ZR(3));
+    GmmppkeCT ct = test.encrypt(pk,m,{{"2"}});
+    test.puncture(pk,sk,"3");
     EXPECT_EQ(m,test.decrypt(pk,sk,ct));
-    test.puncture(pk,sk,ZR(5));
-    test.puncture(pk,sk,ZR(6));
+    test.puncture(pk,sk,"4");
+    test.puncture(pk,sk,"5");
     EXPECT_EQ(m,test.decrypt(pk,sk,ct));
 }
+TEST_F(Gmmppketest,punctureFailWithPuncturedCiphertext){
+    GT m = group.randomGT();
+    GmmppkeCT ct = test.encrypt(pk,m,{{"2"}});
+    test.puncture(pk,sk,"2");
+    EXPECT_THROW(test.decrypt_unchecked(pk,sk,ct),std::logic_error);
+    EXPECT_THROW(test.decrypt(pk,sk,ct),PuncturedCiphertext);
+
+    test.puncture(pk,sk,"5");
+    test.puncture(pk,sk,"6");
+    EXPECT_THROW(test.decrypt_unchecked(pk,sk,ct),std::logic_error);
+    EXPECT_THROW(test.decrypt(pk,sk,ct),PuncturedCiphertext);
+}
+
+// checks tha the system actually fails when handed a
 TEST_F(Gmmppketest,punctureFail){
     GT m = group.randomGT();
-    vector<ZR> tags;
-    tags.push_back(ZR(2));
-
-    GmmppkeCT ct = test.encrypt(pk,m,tags);
-    test.puncture(pk,sk,ZR(2));
+    GmmppkeCT ct = test.encrypt(pk,m,{{"2"}});
+    test.puncture(pk,sk,"2");
     EXPECT_THROW(test.decrypt_unchecked(pk,sk,ct),std::logic_error);
-    EXPECT_THROW(test.decrypt(pk,sk,ct),PuncturedCiphertext);
-
-    test.puncture(pk,sk,ZR(5));
-    test.puncture(pk,sk,ZR(6));
+    test.puncture(pk,sk,"5");
+    test.puncture(pk,sk,"6");
     EXPECT_THROW(test.decrypt_unchecked(pk,sk,ct),std::logic_error);
-    EXPECT_THROW(test.decrypt(pk,sk,ct),PuncturedCiphertext);
 }
 
 TEST_F(Gmmppketest,serializeGmmppkeCT){
 	std::stringstream ss;
-    vector<ZR> tags;
-    tags.push_back(ZR(2));
     GT m = group.randomGT();
 
-    GmmppkeCT ctnew, ct = test.encrypt(pk,m,tags);
+    GmmppkeCT ctnew, ct = test.encrypt(pk,m,{{"2"}});
 	EXPECT_NE(ct,ctnew);
 	{
 		cereal::BinaryOutputArchive oarchive(ss);
@@ -526,8 +528,6 @@ TEST_F(Gmmppketest,serializeGmppkePrivateKey){
 }
 
 TEST_F(Gmmppketest,testSeperateDecryptandSerialize){
-    vector<ZR> tags;
-    tags.push_back(ZR(2));
 	std::stringstream ss;
 	GmppkePublicKey pksender;
 
@@ -545,7 +545,7 @@ TEST_F(Gmmppketest,testSeperateDecryptandSerialize){
 
     GT m = group.randomGT();
 
-    GmmppkeCT ctnew,ct = testsender.encrypt(pksender,m,tags);
+    GmmppkeCT ctnew,ct = testsender.encrypt(pksender,m,{{"2"}});
 	{
 		cereal::BinaryOutputArchive oarchive(ss);
 		oarchive(ct);

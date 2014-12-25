@@ -1,59 +1,48 @@
 
 #include <assert.h>
-#include <set>
+#include <unordered_set>
 #include "GMPpke.h"
 #include "util.h"
 namespace forwardsec{
 
 using namespace std;
-static const unsigned int NULLTAG = 42; // the reserved tag
+static const string  NULLTAG = "42"; // the reserved tag
 
 using namespace std;
 
 bool canDecrypt(const GmppkePrivateKey & sk,const PartialGmmppkeCT & ct){ // FIXME
-
-	if(sk.shares.size()< ct.tags.size()){
-		std::set<ZR> tags;
-		for(auto t : sk.shares){
-			tags.insert(t.sk4);
+	unordered_set<std::string> tags(ct.tags.begin(),ct.tags.end());
+	vector<string> duplicates;
+	for(auto share : sk.shares){
+		if(tags.count(share.sk4) >0){
+			duplicates.push_back(share.sk4);
 		}
-		for(auto t: ct.tags){
-			if(tags.count(t)>0){
-				return false;
-			}
-		}
-	}else{
-		std::set<ZR> tags(ct.tags.begin(),ct.tags.end());
-		for(auto t : sk.shares){
-			if(tags.count(t.sk4)>0){
-		    	 return false;
-			}
-		}
-    }
-    return true;
+	}
+    return duplicates.size()==0;
 }
 
 
-G1  Gmppke::vG1(const std::vector<G1> & gqofxG1, const ZR & x) const{
-    vector<ZR> xcords;
-    int size = gqofxG1.size() ;
-    for(int i=0;i<size;i++){
-        ZR xcord = i;
-        xcords.push_back(xcord);
-    }
-    return LagrangeInterpInExponent(group,x,xcords,gqofxG1);
 
-}
-G2 Gmppke::vG2(const std::vector<G2> & gqofxG2,const ZR & x) const{
-    vector<ZR> xcords;
-        int size = gqofxG2.size() ;
-
-    for(int i=0; i <size; i++){
-        ZR xcord = i;
-        xcords.push_back(xcord);
-    }
-    return LagrangeInterpInExponent(group,x,xcords,gqofxG2);
-}
+//G1  Gmppke::vG1(const std::vector<G1> & gqofxG1, const std::string & x) const{
+//    vector<ZR> xcords;
+//    int size = gqofxG1.size() ;
+//    for(int i=0;i<size;i++){
+//        ZR xcord = i;
+//        xcords.push_back(xcord);
+//    }
+//    return LagrangeInterpInExponent(group,group.hashListToZR(x),xcords,gqofxG1);
+//
+//}
+//G2 Gmppke::vG2(const std::vector<G2> & gqofxG2,const std::string  & x) const{
+//    vector<ZR> xcords;
+//        int size = gqofxG2.size() ;
+//
+//    for(int i=0; i <size; i++){
+//        ZR xcord = i;
+//        xcords.push_back(xcord);
+//    }
+//    return LagrangeInterpInExponent(group,group.hashListToZR(x),xcords,gqofxG2);
+//}
 void Gmppke::keygen(GmppkePublicKey & pk, GmppkePrivateKey & sk,const unsigned int & d) const
 {
    GmppkePublicKey bpk;
@@ -110,16 +99,16 @@ void Gmppke::keygenPartial(const ZR & alpha, GmppkePublicKey & pk, GmppkePrivate
 }
 GmppkePrivateKeyShare Gmppke::skgen(const GmppkePublicKey &pk,const ZR & alpha  ) const{
 	GmppkePrivateKeyShare share;
-    share.sk4 = ZR(NULLTAG);
+    share.sk4 = NULLTAG;
     const ZR r = group.randomZR();
     share.sk1 = group.exp(pk.g2G2, group.add(r,alpha));
-    G2 vofx = vG2(pk.gqofxG2,share.sk4); // calculate v(t0).
+    G2 vofx = vx(pk.gqofxG2,NULLTAG); // calculate v(t0).
     share.sk2 = group.exp(vofx, r);// v(t0)^r
     share.sk3 = group.exp(pk.gG2, r);
     return share;
 }
 
-void Gmppke::puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const ZR & tag) const{
+void Gmppke::puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const string & tag) const{
 
     GmppkePrivateKeyShare skentryn;
     GmppkePrivateKeyShare & skentry0 = sk.shares[0];
@@ -128,15 +117,15 @@ void Gmppke::puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const Z
     const ZR r1 = group.randomZR();
     const ZR lambda = group.randomZR();
 
-    assert(skentry0.sk4 == ZR(NULLTAG));
+    assert(skentry0.sk4 == NULLTAG);
 
     skentry0.sk1 = group.mul(skentry0.sk1,group.exp(pk.g2G2,group.sub(r0,lambda))); // sk1 * g2g2^{r0- lambda}
-    const G2 vofx = vG2(pk.gqofxG2,skentry0.sk4);
+    const G2 vofx = vx(pk.gqofxG2,NULLTAG);
     skentry0.sk2 = group.mul(skentry0.sk2,group.exp(vofx,r0));  // sk2 * V(t0)^r0
     skentry0.sk3 = group.mul(skentry0.sk3,group.exp(pk.gG2,r0));  // sk3 * g2G2^r0
 
     skentryn.sk1=group.exp(pk.g2G2,group.add(r1,lambda));  // gG2 ^ (r1+lambda)
-    const G2 vofx2 = vG2(pk.gqofxG2,tag);
+    const G2 vofx2 = vx(pk.gqofxG2,tag);
     skentryn.sk2 = group.exp(vofx2,r1); // V(tag) ^ r1
     skentryn.sk3 = group.exp(pk.gG2,r1);  // G^ r1
     skentryn.sk4 = tag;
@@ -144,7 +133,8 @@ void Gmppke::puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const Z
     sk.shares.push_back(skentryn);
 }
 
-GmmppkeCT Gmppke::encrypt(const GmppkePublicKey & pk,const GT & M,const std::vector<ZR> & tags) const{
+
+GmmppkeCT Gmppke::encrypt(const GmppkePublicKey & pk,const GT & M,const std::vector<std::string> & tags) const{
 	const ZR s = group.randomZR();
 //	const ZR alpha(42);
 //	const ZR beta = ZR(747);//group.randomZR();
@@ -167,7 +157,7 @@ GmmppkeCT Gmppke::encrypt(const GmppkePublicKey & pk,const GT & M,const std::vec
 	return ct;
 
 }
-PartialGmmppkeCT Gmppke::blind(const GmppkePublicKey & pk, const ZR & s, const std::vector<ZR> & tags ) const
+PartialGmmppkeCT Gmppke::blind(const GmppkePublicKey & pk, const ZR & s, const std::vector<string> & tags ) const
 {
     assert(tags.size()==pk.d);
     PartialGmmppkeCT  ct;
@@ -175,7 +165,7 @@ PartialGmmppkeCT Gmppke::blind(const GmppkePublicKey & pk, const ZR & s, const s
 
     for (unsigned int i = 0; i < pk.d; i++)
     {
-        G1 vofx = vG1(pk.gqofxG1,tags[i]);
+        G1 vofx = vx(pk.gqofxG1,tags[i]);
         ct.ct3.push_back(group.exp(vofx, s));
     }
     ct.tags = tags;
@@ -197,7 +187,10 @@ GT Gmppke::decrypt_unchecked(const GmppkePublicKey & pk, const GmppkePrivateKey 
 GT Gmppke::recoverBlind(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const PartialGmmppkeCT & ct) const
 {
     assert(ct.tags.size()==pk.d);
-    vector<ZR> shareTags(ct.tags);
+    vector<ZR> shareTags(ct.tags.size());
+    for(unsigned int i=0;i<ct.tags.size();i++){
+    	shareTags[i] = group.hashListToZR(ct.tags[i]);
+    }
     const unsigned int numshares = sk.shares.size();
 
     shareTags.resize( ct.tags.size()+1);// allow one more tag for share the private key holds
@@ -213,7 +206,7 @@ GT Gmppke::recoverBlind(const GmppkePublicKey & pk, const GmppkePrivateKey & sk,
 
         // FIXME DO NOT COPY an entire  vector  if possible.
 
-        shareTags[shareTags.size()-1] = s0.sk4;
+        shareTags[shareTags.size()-1] = group.hashListToZR(s0.sk4);
 
         vector<ZR> w;
 

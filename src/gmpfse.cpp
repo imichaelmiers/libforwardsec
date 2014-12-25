@@ -183,30 +183,23 @@ void Pfse::puncture(unsigned int interval, string tag){
     	libforwardsec_DBG(cout << interval << "not already punctured" << endl;)
 		bindKey(k);
     }
-    ppke.puncture(pk,k.ppkeSK,group.hashListToZR(tag));
+    ppke.puncture(pk,k.ppkeSK,tag);
 	privatekeys.updateKey(interval,k);
 
 //privatekeys[interval] = sk;
 
 }
-PseCipherText Pfse::encrypt(const pfsepubkey & pk, const byte256 msg, const unsigned int interval,const vector<string> tags) const {
-    vector<ZR> tagsZR;
-
-    for(unsigned int i=0;i<tags.size();i++){
-
-        ZR tag =  group.hashListToZR(tags[i]);
-        tagsZR.push_back(tag);
-    }
-    return encryptFO(pk,msg,interval,tagsZR);
+PseCipherText Pfse::encrypt(const pfsepubkey & pk, const byte256 msg, const unsigned int interval,const vector<std::string> tags) const {
+    return encryptFO(pk,msg,interval,tags);
 }
 PseCipherText Pfse::encryptFO(const pfsepubkey & pk,const byte256  & msg
-		, const unsigned int interval, const vector<ZR>  & tags ) const {
+		, const unsigned int interval, const vector<std::string>  & tags ) const {
     GT x = group.randomGT();
     return encryptFO(pk,msg,x,interval,tags);
 
 }
 PseCipherText Pfse::encryptFO(const pfsepubkey & pk,  const byte256  & msg,const  GT & x,
-		const unsigned int interval, const vector<ZR>  & tags ) const {
+		const unsigned int interval, const vector<std::string>  & tags ) const {
     std::stringstream ss; //FIXME the << operator returns "BROKEN"
     ss << x;
     for(auto a : msg){
@@ -227,12 +220,12 @@ PseCipherText Pfse::encryptFO(const pfsepubkey & pk,  const byte256  & msg,const
     return ct;
 
 }
-PseCipherText Pfse::encrypt(const pfsepubkey & pk,const  GT & M, const unsigned int interval, const vector<ZR>  & tags) const{
+PseCipherText Pfse::encrypt(const pfsepubkey & pk,const  GT & M, const unsigned int interval, const vector<std::string>  & tags) const{
         ZR s = group.randomZR();
         return Pfse::encrypt(pk,M,s,interval,tags);
 }
 
-PseCipherText Pfse::encrypt(const pfsepubkey & pk, const GT & M,  const ZR & s, const unsigned int interval, const vector<ZR>  & tags) const{
+PseCipherText Pfse::encrypt(const pfsepubkey & pk, const GT & M,  const ZR & s, const unsigned int interval, const vector<std::string>  & tags) const{
     PseCipherText ct;
     
     ct.interval = interval;
