@@ -44,9 +44,14 @@ ENDIF(NOT CEREAL_HEADER)
 
 
 # Configuration options 
+
+
+option(RELICXX_UNCONST "Cast const values to non-const when passing to relic functions which are const but not marked as such. (e.g read_bin,mul,etc)." ON)
 option(USE_OPEN_MP "Use OpenMP for parallelizing decrypt." OFF)
+
+
 if(USE_OPENMP)
-	find_package(OpenMP)
+	find_package(OpenMP REQUIRED)
 	if (OPENMP_FOUND)
 	    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 	    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
@@ -55,6 +60,11 @@ if(USE_OPENMP)
 	 	message(WARNING "Cannot find OpenMP. OpenMP now dissalbled and  USE_OPENMP = Off")
 	endif(OPENMPFOUND)
 endif(USE_OPENMP)
+
+if(RELICXX_UNCONST)
+	add_definitions(-DRELICXX_UNCONST)
+endif(RELICXX_UNCONST)
+
 
 INCLUDE_DIRECTORIES(include/forwardsec)
 

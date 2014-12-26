@@ -38,7 +38,6 @@ extern "C" {
 }
 // this exists to deal with a const issue with relic. we can either copy (guaranteed  to be safe) or just
 // cast away the const under the assumption that the underlying methods are ocnst (which they are supposed to be already)
-#define RELICXX_UNCONST
 #ifdef RELICXX_UNCONST
 #define RELICXX_G1unconst(x,y) G1 & y = const_cast<G1&>(x)
 #define RELICXX_G2unconst(x,y) G2 & y = const_cast<G2&>(x)
@@ -57,7 +56,7 @@ extern "C" {
 //  MULTI may not be defined , so we hav two asserts. One if it isn't, one it it is.
 #ifdef RELICXX_USE_OPENMP
 #ifndef MULTI
-static_assert(0, "Error. Relicxx is compiled to use OPENMP. But Relic is not configured to use any threading");
+static_assert(0, "Error. Relicxx is compiled to use OPENMP. But Relic is not configured to use any threading.");
 #else
 static_assert(MULTI == OPENMP, "Error. Relicxx compiled to use OPENMP. But Relic is not.");
 #endif
@@ -398,15 +397,7 @@ public:
 	G1 randomG1() const;
 	G2 randomG2() const;
 	GT randomGT() const;
-//	bool ismember(CharmMetaListZR&);
-//	bool ismember(CharmMetaListG1&);
-//	bool ismember(CharmMetaListG2&);
-//	bool ismember(CharmMetaListGT&);
-//	bool ismember(CharmListStr&);
-//	bool ismember(CharmListZR&);
-//	bool ismember(CharmListG1&);
-//	bool ismember(CharmListG2&);
-//	bool ismember(CharmListGT&);
+
 	bool ismember(ZR&);
 	bool ismember(G1&);
 	bool ismember(GT&);
