@@ -133,6 +133,44 @@ template <class T>
 void sizes(const unsigned int d =32,const unsigned int n = 1){
 	Pfse test(d,n);
     test.keygen();
+    PairingGroup group;
+    {
+    		ZR z = group.randomZR();
+    		stringstream ss;
+    		{
+    			T oarchive(ss);
+    			oarchive(z);
+    		}
+    		cout << "\tZR size:\t" << ss.tellp() <<" bytes " << endl;
+	}
+    {
+    		G1 g = group.randomG1();
+    		stringstream ss;
+    		{
+    			T oarchive(ss);
+    			oarchive(g);
+    		}
+    		cout << "\tG1 size:\t" << ss.tellp() <<" bytes " << endl;
+	}
+
+    {
+    		G2 g = group.randomG2();
+    		stringstream ss;
+    		{
+    			T oarchive(ss);
+    			oarchive(g);
+    		}
+    		cout << "\tG2 size:\t" << ss.tellp() <<" bytes " << endl;
+	}
+    {
+    		GT g = group.randomGT();
+    		stringstream ss;
+    		{
+    			T oarchive(ss);
+    			oarchive(g);
+    		}
+    		cout << "\tGT size:\t" << ss.tellp() <<" bytes " << endl;
+	}
 	{
 		stringstream ss;
 		{
