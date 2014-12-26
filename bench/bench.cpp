@@ -1,6 +1,10 @@
 #include <iostream>
 #include <vector>
 #include <tuple>
+#include <cereal/archives/portable_binary.hpp>
+#include <cereal/archives/binary.hpp>
+#include <cereal/archives/json.hpp>
+#include "locale"
 #include "gmpfse.h"
 #include "Benchmark.h"
 using namespace forwardsec;
@@ -105,6 +109,8 @@ std::vector<std::tuple<unsigned int ,Benchmark>> benchDecPunctured(const unsigne
 		const unsigned int n = 1){
 	std::vector<std::tuple<unsigned int ,Benchmark>>  b;
 	for(unsigned int p = 0; p < punctures;p+=puncture_steps){
+		cout << ".";
+		cout.flush();
         Benchmark benchDP;
     	Pfse test(d,n);
         test.keygen();
@@ -118,9 +124,41 @@ std::vector<std::tuple<unsigned int ,Benchmark>> benchDecPunctured(const unsigne
 		   benchDP.stop();
 		   benchDP.computeTimeInMilliseconds();
         }
-        b.push_back(std::make_tuple (punctures,benchDP));
+        b.push_back(std::make_tuple (p,benchDP));
 	}
+	cout <<endl;
 	return b;
+}
+template <class T>
+void sizes(const unsigned int d =32,const unsigned int n = 1){
+	Pfse test(d,n);
+    test.keygen();
+	{
+		stringstream ss;
+		{
+			T oarchive(ss);
+			oarchive(test.pk);
+		}
+		cout << "\tPK size:\t" << ss.tellp() <<" bytes " << endl;
+	}
+	{
+		stringstream ss;
+		{
+			T oarchive(ss);
+			oarchive(test.privatekeys);
+		}
+		cout << "\tSK size:\t" << ss.tellp() <<" bytes " << endl;
+	}
+
+    PseCipherText ct = test.encrypt(test.pk,testVector,1,makeTags(n));;
+	{
+		stringstream ss;
+		{
+			T oarchive(ss);
+			oarchive(ct);
+		}
+		cout << "\tCT size:\t" << ss.tellp() <<" bytes " << endl;
+	}
 }
 int main()
 {
@@ -131,20 +169,35 @@ int main()
     Benchmark K,E,D,PF,PS,N,DP;
     cout << "Benchmarking " << i << " iterations of Puncturable forward secure encryption with depth " <<
     		d << " and " << n << " tags" << endl;
+    std::locale::global(std::locale(""));
+    std::cout.imbue(std::locale());
+    cout <<"Sizes(BinaryOutputArchive) POINT_COMPRESSION=" << POINT_COMPRESS << ":"<< endl;
+    sizes<cereal::BinaryOutputArchive>();
+    cout <<"Sizes(PortableBinaryOutputArchive) POINT_COMPRESSION=" << POINT_COMPRESS << ":"<< endl;
+    sizes<cereal::PortableBinaryOutputArchive>();
+    cout <<"Sizes(JSONOutputArchive) POINT_COMPRESSION=" << POINT_COMPRESS << ":"<< endl;
+    sizes<cereal::JSONOutputArchive>();
+    cout <<"Performance:" << endl;
+
     K = benchKeygen(i,d,n);
-    cout << "keygen:\t\t\t" << K << endl;
+    cout << "\tkeygen:\t\t\t" << K << endl;
 
     E = benchEnc(i,d,n);
-    cout << "Enc:\t\t\t" << E << endl;
+    cout << "\tEnc:\t\t\t" << E << endl;
 
     D = benchDec(i,d,n);
-    cout << "Dec:\t\t\t" << D << endl;
+    cout << "\tDec(unpunctured):\t" << D << endl;
 
     PF = benchPuncFirst(i,d,n);
-    cout << "Initial Puncture:\t" << PF << endl;
+    cout << "\tInitial Puncture:\t" << PF << endl;
     PS = benchPunc(i,d,n);
-    cout << "Subsequent Puncture:\t" << PS << endl;
+    cout << "\tSubsequent Puncture:\t" << PS << endl;
 
     N = benchNextInterval(i,d,n);
-    cout << "NextInterval:\t\t" << N << endl;
+    cout << "\tNextInterval:\t\t" << N << endl;
+	cout << "\tDec(punctured):" << endl;
+    auto marks = benchDecPunctured(i,100,20,d,n);
+    for(auto m:marks){
+    	cout <<"\t\t" << std::get<0>(m) <<"\t" << std::get<1>(m) << endl;
+    }
 }
