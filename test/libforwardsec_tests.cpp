@@ -468,7 +468,7 @@ TEST_F(Gmmppketest,punctureFailWithPuncturedCiphertext){
 // catch mechanism appears to not work across threads.
 #ifndef RELICXX_USE_OPENMP
 // checks tha the system actually fails when handed a
-TEST_F(Gmmppketest,DISABLED_punctureFail){
+TEST_F(Gmmppketest,punctureFail){
     GT m = group.randomGT();
     GmmppkeCT ct = test.encrypt(pk,m,{{"1","2","3"}});
     test.puncture(pk,sk,"2");
