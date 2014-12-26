@@ -54,7 +54,7 @@ if(USE_OPENMP)
 	 else()
 	 	message(WARNING "Cannot find OpenMP. OpenMP now dissalbled and  USE_OPENMP = Off")
 	endif(OPENMPFOUND)
-endif(USE_OPEN_MP)
+endif(USE_OPENMP)
 
 INCLUDE_DIRECTORIES(include/forwardsec)
 
