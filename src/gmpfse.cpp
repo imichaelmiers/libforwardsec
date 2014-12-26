@@ -204,13 +204,9 @@ PseCipherText Pfse::encryptFO(const pfsepubkey & pk,  const bytes  & msg,const  
 		const unsigned int interval, const vector<std::string>  & tags ) const {
     std::stringstream ss;
     bytes b = x.getBytes();
-    for(auto a: b){
-    	ss << a;
-    }
-    for(auto a : msg){
-    	ss << a;
-    }
-    ZR s = group.hashListToZR(ss.str());
+    b.reserve(msg.size());
+    b.insert(b.begin(),msg.begin(),msg.end());
+    ZR s = group.hashListToZR(b);
 
     PseCipherText ct = encryptGT(pk,x,s,interval,tags);
     bytes bytestohash = x.getBytes();

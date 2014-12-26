@@ -134,15 +134,17 @@ ZR power(const ZR& x, const ZR& r)
 	return zr;
 }
 
-ZR hashToZR(string str)
+ZR hashToZR(const bytes & b)
 {
+	bytes data(b);
+	data.reserve(HASH_FUNCTION_BYTES_TO_Zr_CRH.size());
+	data.insert(data.begin(),HASH_FUNCTION_BYTES_TO_Zr_CRH.begin(),HASH_FUNCTION_BYTES_TO_Zr_CRH.end());
+
 	ZR zr;
 	unsigned int digest_len = SHA_LEN;
 	unsigned char digest[digest_len + 1];
 	memset(digest, 0, digest_len);
-	string str2 = string(HASH_FUNCTION_STR_TO_Zr_CRH) + str;
-	SHA_FUNC(digest, (unsigned char *) str2.c_str(), (int) str2.size());
-
+	SHA_FUNC(digest,&data[0],data.size());
 	bn_read_bin(zr.z, digest, digest_len);
 	if(bn_cmp(zr.z, zr.order) == CMP_GT) bn_mod(zr.z, zr.z, zr.order);
 	return zr;
@@ -166,7 +168,7 @@ std::vector<uint8_t> ZR::getBytes() const {
 
 ostream& operator<<(ostream& s, const ZR& zr)
 {
-	int length = (compute_length(ZR_t) * 4);
+	int length =BN_BYTES;
 	char data[length + 1];
 	memset(data, 0, length);
 	bn_write_str(data, length, zr.z, DECIMAL);
@@ -274,16 +276,13 @@ G1 power(const G1& g, const ZR& zr)
 	return g1;
 }
 
-G1 hashToG1(string str)
-{
+G1 hashToG1(const bytes & b){
 	G1 g1;
-	int digest_len = SHA_LEN;
-	unsigned char digest[digest_len + 1];
-	memset(digest, 0, digest_len);
-	string str2 = string(HASH_FUNCTION_Zr_TO_G1_ROM) + str;
-	SHA_FUNC(digest, (unsigned char *) str2.c_str(), (int) str2.size());
-
-	g1_map(g1.g, digest, digest_len);
+	bytes data(b);
+	data.reserve(HASH_FUNCTION_BYTES_TO_G1_ROM.size());
+	data.insert(data.begin(),HASH_FUNCTION_BYTES_TO_G1_ROM.begin(),HASH_FUNCTION_BYTES_TO_G1_ROM.end());
+	// map internally already hashes.
+	g1_map(g1.g, &data[0], data.size());
 	return g1;
 }
 
@@ -361,16 +360,14 @@ G2 power(const G2& g, const ZR& zr)
 	return g2;
 }
 
-G2 hashToG2(string str)
+G2 hashToG2(const bytes & b)
 {
 	G2 g2;
-	int digest_len = SHA_LEN;
-	unsigned char digest[digest_len + 1];
-	memset(digest, 0, digest_len);
-	string str2 = string(HASH_FUNCTION_Zr_TO_G2_ROM) + str;
-	SHA_FUNC(digest, (unsigned char *) str2.c_str(), (int) str2.size());
-
-	g2_map(g2.g, digest, digest_len);
+	bytes data(b);
+	data.reserve(HASH_FUNCTION_BYTES_TO_G2_ROM.size());
+	data.insert(data.begin(),HASH_FUNCTION_BYTES_TO_G2_ROM.begin(),HASH_FUNCTION_BYTES_TO_G2_ROM.end());
+	// map internally already hashes.
+	g2_map(g2.g, &data[0], data.size());
 	return g2;
 }
 
@@ -771,21 +768,28 @@ GT PairingGroup::exp(const GT & g, const int & r) const
 	return power(g, ZR(r));
 }
 
-ZR PairingGroup::hashListToZR(string str) const
+ZR PairingGroup::hashListToZR(const std::string &str) const{
+	bytes b(str.begin(),str.end());
+	return hashToZR(b);
+}
+ZR PairingGroup::hashListToZR(const bytes & b) const
 {
-	ZR r = hashToZR(str);
+	ZR r = hashToZR(b);
 	return r;
 }
-
-G1 PairingGroup::hashListToG1(string str) const
+G1 PairingGroup::hashListToG1(const std::string & str) const{
+	bytes b(str.begin(),str.end());
+	return hashToG1(b);
+}
+G1 PairingGroup::hashListToG1(const bytes & b) const
 {
-	G1 l = hashToG1(str);
+	G1 l = hashToG1(b);
 	return l;
 }
 
-G2 PairingGroup::hashListToG2(string str) const
+G2 PairingGroup::hashListToG2(const bytes & b) const
 {
-	G2 l = hashToG2(str);
+	G2 l = hashToG2(b);
 	return l;
 }
 

@@ -51,9 +51,14 @@ extern "C" {
 
 #endif
 
+typedef  std::vector<uint8_t> bytes;
 #define convert_str(a)  a /* nothing */
 void ro_error(void);
 
+const static std::string HASH_FUNCTION_STRINGS       = "0";
+const static std::string HASH_FUNCTION_BYTES_TO_Zr_CRH = "1";
+const static std::string HASH_FUNCTION_BYTES_TO_G1_ROM = "2";
+const static std::string HASH_FUNCTION_BYTES_TO_G2_ROM = "3";
 
 class RelicDividByZero : public std::logic_error
 {
@@ -115,7 +120,7 @@ public:
 			ar(data);
 			bn_read_bin(z,&data[0],BN_BYTES);
 		}
-	friend ZR hashToZR(std::string);
+	friend ZR hashToZR(const bytes &);
 	friend ZR power(const ZR&, int);
 	friend ZR power(const ZR&, const ZR&);
 	friend ZR operator-(const ZR&);
@@ -176,7 +181,7 @@ public:
     friend class cereal::access;
 
 
-	friend G1 hashToG1(std::string);
+	friend G1 hashToG1(const bytes &);
 	friend G1 power(const G1&, const ZR&);
 	friend G1 operator-(const G1&);
 	friend G1 operator-(const G1&, const G1&);
@@ -224,7 +229,7 @@ public:
     }
     friend class cereal::access;
 
-	friend G2 hashToG2(std::string);
+	friend G2 hashToG2(const bytes &);
 	friend G2 power(const G2&, const ZR&);
 	friend G2 operator-(const G2&);
 	friend G2 operator-(const G2&, const G2&);
@@ -345,10 +350,11 @@ public:
 	GT pair(const G2 &, const G1 &) const;
 	ZR order() const; // returns the order of the group
 
-	// hash -- not done
-	ZR hashListToZR(std::string) const;
-	G1 hashListToG1(std::string) const;
-	G2 hashListToG2(std::string) const;
+	ZR hashListToZR(const std::string & str) const;
+	ZR hashListToZR(const bytes &) const;
+	G1 hashListToG1(const std::string & str) const;
+	G1 hashListToG1(const bytes &) const;
+	G2 hashListToG2(const bytes &) const;
 
 	GT pair(const G1 &, const G1 &) const;
 	int mul(const int &, const int &) const;

@@ -3,7 +3,7 @@
 #ifdef __cplusplus
 	// gmp.h uses __cplusplus to decide if it's right to include c++ headers.
 	// At last on osx  causes error: conflicting types for 'operator<<'.
-	// including gmpxx.h prevents this issue. 
+	// including gmpxx.h prevents this issue.
 	//#include <gmpxx.h>
 	#define ___cplusplus __cplusplus
 	#undef __cplusplus
@@ -23,10 +23,6 @@
 #define MAX_BUF	1024
 #define SHA_LEN  	32
 #define SHA_FUNC	md_map_sh256
-#define HASH_FUNCTION_STRINGS			"0"
-#define HASH_FUNCTION_STR_TO_Zr_CRH		"1"
-#define HASH_FUNCTION_Zr_TO_G1_ROM		"2"
-#define HASH_FUNCTION_Zr_TO_G2_ROM		"3"
 
 typedef enum _status_t { ELEMENT_OK = 2,
 	   ELEMENT_INVALID_ARG,
@@ -80,6 +76,5 @@ enum Other_type { Str_t = 8, listStr_t = 9, int_t = 10, listInt_t = 11, list_t =
 // status_t gt_read_bin(gt_t g, uint8_t *data, int data_len);
 // status_t gt_write_bin(gt_t g, uint8_t *data, int data_len);
 // status_t gt_write_str(gt_t g, uint8_t *data, int data_len);
-int compute_length(int type);
 
 #endif
