@@ -358,7 +358,7 @@ public:
 	 * code.
 	 * @param allowAlreadyInitilazed
 	 */
-	relicResourceHandle(const bool & allowAlreadyInitilazed = false);
+	relicResourceHandle(const bool & allowAlreadyInitilazed = true);
 	~relicResourceHandle();
 
 	// you cannot meaningfully copy this resource
