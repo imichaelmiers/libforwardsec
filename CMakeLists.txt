@@ -41,7 +41,7 @@ IF(NOT CEREAL_HEADER)
 	message(FATAL_ERROR "cereal/types/vector.hpp headers not found in system. Did you install cereal(https://github.com/USCiLab/cereal)?")
 ENDIF(NOT CEREAL_HEADER)
 
-
+INCLUDE_DIRECTORIES(include/forwardsec)
 
 # emulating gnu autoconf check command c/o http://www.cmake.org/Wiki/CMakeEmulateMakeCheck
 add_custom_target(check COMMAND ${CMAKE_BINARY_DIR}/test/tests PROPERTIES DEPENDS)
@@ -50,3 +50,4 @@ enable_testing()
 add_subdirectory(src)
 add_subdirectory(googletest EXCLUDE_FROM_ALL)
 add_subdirectory(test)
+add_subdirectory(bench EXCLUDE_FROM_ALL)
