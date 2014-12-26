@@ -41,7 +41,16 @@ IF(NOT CEREAL_HEADER)
 	message(FATAL_ERROR "cereal/types/vector.hpp headers not found in system. Did you install cereal(https://github.com/USCiLab/cereal)?")
 ENDIF(NOT CEREAL_HEADER)
 
+
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
+
 INCLUDE_DIRECTORIES(include/forwardsec)
+
+
 
 # emulating gnu autoconf check command c/o http://www.cmake.org/Wiki/CMakeEmulateMakeCheck
 add_custom_target(check COMMAND ${CMAKE_BINARY_DIR}/test/tests PROPERTIES DEPENDS)

@@ -199,6 +199,9 @@ GT Gmppke::recoverBlind(const GmppkePublicKey & pk, const GmppkePrivateKey & sk,
     // Compute w_i coefficients for recovery
     vector<GT> z(numshares);
 
+
+    relicResourceHandle h(true);
+    #pragma omp parallel for private(h) firstprivate(shareTags)
     for (unsigned int i = 0; i < numshares; i++)
     {
         const GmppkePrivateKeyShare & s0 = sk.shares[i];
