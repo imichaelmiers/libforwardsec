@@ -326,8 +326,8 @@ ostream& operator<<(ostream& s, const G1& g1)
 G2 operator+(const G2& x, const G2& y)
 {
 	G2 z;
-	lfrowdsec_G2unconst(x,x1);
-	lfrowdsec_G2unconst(y,y1);
+	RELICXX_G2unconst(x,x1);
+	RELICXX_G2unconst(y,y1);
 	g2_add(z.g, x1.g, y1.g);
 	g2_norm(z.g,z.g);
 	return z;
@@ -336,8 +336,8 @@ G2 operator+(const G2& x, const G2& y)
 G2 operator-(const G2& x, const G2& y)
 {
 	G2 z;
-	lfrowdsec_G2unconst(x,x1);
-	lfrowdsec_G2unconst(y,y1);
+	RELICXX_G2unconst(x,x1);
+	RELICXX_G2unconst(y,y1);
 	g2_sub(z.g,x1.g, y1.g);
 	g2_norm(z.g,z.g);
 	return z;
@@ -346,7 +346,7 @@ G2 operator-(const G2& x, const G2& y)
 G2 operator-(const G2& x)
 {
 	G2 z;
-	lfrowdsec_G2unconst(x,x1);
+	RELICXX_G2unconst(x,x1);
 	g2_neg(z.g, x1.g);
 	return z;
 }
@@ -354,8 +354,8 @@ G2 operator-(const G2& x)
 G2 power(const G2& g, const ZR& zr)
 {
 	G2 g2;
-	lfrowdsec_G2unconst(g,g1);
-	lfrowdsec_ZRunconst(zr,zr1);
+	RELICXX_G2unconst(g,g1);
+	RELICXX_ZRunconst(zr,zr1);
 	g2_mul(g2.g,g1.g, zr1.z);
 	return g2;
 }
@@ -386,7 +386,7 @@ bool G2::ismember(bn_t order)
 }
 
 std::vector<uint8_t> G2::getBytes(bool compress) const {
-	lfrowdsec_G2unconst(*this,gg);
+	RELICXX_G2unconst(*this,gg);
 	unsigned int l  = g2_size_bin(gg.g,compress);
 
 	std::vector<uint8_t>data(l);
@@ -420,8 +420,8 @@ GT operator*(const GT& x, const GT& y)
 GT operator/(const GT& x, const GT& y)
 {
 	GT z;
-	lfrowdsec_GTunconst(x,x1);
-	lfrowdsec_GTunconst(y,y1);
+	RELICXX_GTunconst(x,x1);
+	RELICXX_GTunconst(y,y1);
 	// z = x * y^-1
 	gt_t t;
 	gt_inits(t);
@@ -434,8 +434,8 @@ GT operator/(const GT& x, const GT& y)
 GT power(const GT& g, const ZR& zr)
 {
 	GT gt;
-	lfrowdsec_GTunconst(g,gg);
-	lfrowdsec_ZRunconst(zr,zr1);
+	RELICXX_GTunconst(g,gg);
+	RELICXX_ZRunconst(zr,zr1);
 	if(zr == ZR(-1)) { // find efficient way for comparing bn_t to ints
 		// compute inverse
 		return -g;
@@ -449,7 +449,7 @@ GT power(const GT& g, const ZR& zr)
 GT operator-(const GT& g)
 {
 	GT gt;
-	lfrowdsec_GTunconst(g,gg);
+	RELICXX_GTunconst(g,gg);
 	gt_inv(gt.g, gg.g);
 	return gt;
 }
@@ -457,8 +457,8 @@ GT operator-(const GT& g)
 GT pairing(const G1& g1, const G2& g2)
 {
 	GT gt;
-	lfrowdsec_G1unconst(g1,g11);
-	lfrowdsec_G2unconst(g2,g22);
+	RELICXX_G1unconst(g1,g11);
+	RELICXX_G2unconst(g2,g22);
 	/* compute optimal ate pairing */
 	pp_map_oatep_k12(gt.g, g11.g, g22.g);
 	//pp_map_k12(gt.g, g11.g, g22.g);
@@ -488,7 +488,7 @@ bool GT::ismember(bn_t order)
 }
 
 std::vector<uint8_t> GT::getBytes(bool compress) const {
-	lfrowdsec_GTunconst(*this,gg);
+	RELICXX_GTunconst(*this,gg);
 	unsigned int l  = gt_size_bin(gg.g,compress);
 
 	std::vector<uint8_t>data(l);

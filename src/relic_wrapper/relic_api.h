@@ -38,18 +38,18 @@ extern "C" {
 }
 // this exists to deal with a const issue with relic. we can either copy (guaranteed  to be safe) or just
 // cast away the const under the assumption that the underlying methods are ocnst (which they are supposed to be already)
-#define LFORWARDSEC_UNCONST
-#ifdef LFORWARDSEC_UNCONST
-#define lfrowdsec_G1unconst(x,y) G1 & y = const_cast<G1&>(x)
-#define lfrowdsec_G2unconst(x,y) G2 & y = const_cast<G2&>(x)
-#define lfrowdsec_GTunconst(x,y) GT & y = const_cast<GT&>(x)
-#define lfrowdsec_ZRunconst(x,y) ZR & y = const_cast<ZR&>(x)
+#define RELICXX_UNCONST
+#ifdef RELICXX_UNCONST
+#define RELICXX_G1unconst(x,y) G1 & y = const_cast<G1&>(x)
+#define RELICXX_G2unconst(x,y) G2 & y = const_cast<G2&>(x)
+#define RELICXX_GTunconst(x,y) GT & y = const_cast<GT&>(x)
+#define RELICXX_ZRunconst(x,y) ZR & y = const_cast<ZR&>(x)
 #else
-#define lfrowdsec_G1unconst(x,y) G1 y(x)
-#define lfrowdsec_G2unconst(x,y) G2 y(x)
-#define lfrowdsec_GTunconst(x,y) GT y(x)
+#define RELICXX_G1unconst(x,y) G1 y(x)
+#define RELICXX_G2unconst(x,y) G2 y(x)
+#define RELICXX_GTunconst(x,y) GT y(x)
 
-#define lfrowdsec_ZRunconst(x,y) ZR y(x)
+#define RELICXX_ZRunconst(x,y) ZR y(x)
 
 #endif
 
