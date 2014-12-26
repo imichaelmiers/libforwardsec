@@ -456,12 +456,10 @@ TEST_F(Gmmppketest,punctureFailWithPuncturedCiphertext){
     GT m = group.randomGT();
     GmmppkeCT ct = test.encrypt(pk,m,{{"1","2","3"}});
     test.puncture(pk,sk,"2");
-    EXPECT_THROW(test.decrypt_unchecked(pk,sk,ct),std::logic_error);
     EXPECT_THROW(test.decrypt(pk,sk,ct),PuncturedCiphertext);
 
     test.puncture(pk,sk,"5");
     test.puncture(pk,sk,"6");
-    EXPECT_THROW(test.decrypt_unchecked(pk,sk,ct),std::logic_error);
     EXPECT_THROW(test.decrypt(pk,sk,ct),PuncturedCiphertext);
 }
 
