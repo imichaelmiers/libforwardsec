@@ -11,6 +11,7 @@ elseif(COMPILER_SUPPORTS_CXX0X)
 else()
         message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
+
 CHECK_CXX_COMPILER_FLAG("-Wall"  COMPILER_SUPPORTS_WALL)
 CHECK_CXX_COMPILER_FLAG("-Wextra"  COMPILER_SUPPORTS_WEXTRA)
 if(COMPILER_SUPPORTS_WALL)
@@ -42,11 +43,18 @@ IF(NOT CEREAL_HEADER)
 ENDIF(NOT CEREAL_HEADER)
 
 
-find_package(OpenMP)
-if (OPENMP_FOUND)
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-endif()
+# Configuration options 
+option(USE_OPEN_MP "Use OpenMP for parallelizing decrypt." OFF)
+if(USE_OPENMP)
+	find_package(OpenMP)
+	if (OPENMP_FOUND)
+	    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+	    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+	    add_definitions(-DRELICXX_USE_OPENMP)
+	 else()
+	 	message(WARNING "Cannot find OpenMP. OpenMP now dissalbled and  USE_OPENMP = Off")
+	endif(OPENMPFOUND)
+endif(USE_OPEN_MP)
 
 INCLUDE_DIRECTORIES(include/forwardsec)
 

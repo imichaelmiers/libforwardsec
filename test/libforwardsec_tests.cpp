@@ -453,7 +453,6 @@ TEST_F(Gmmppketest,puncture){
     EXPECT_EQ(m,test.decrypt(pk,sk,ct));
 }
 
-// disabled b/c google's expection catching mechanism breaks with openmp
 TEST_F(Gmmppketest,punctureFailWithPuncturedCiphertext){
     GT m = group.randomGT();
     GmmppkeCT ct = test.encrypt(pk,m,{{"1","2","3"}});
@@ -465,6 +464,9 @@ TEST_F(Gmmppketest,punctureFailWithPuncturedCiphertext){
     EXPECT_THROW(test.decrypt(pk,sk,ct),PuncturedCiphertext);
 }
 
+// we disable this test when using OPENMP b/c googls
+// catch mechanism appears to not work across threads.
+#ifndef RELICXX_USE_OPENMP
 // checks tha the system actually fails when handed a
 TEST_F(Gmmppketest,DISABLED_punctureFail){
     GT m = group.randomGT();
@@ -475,7 +477,7 @@ TEST_F(Gmmppketest,DISABLED_punctureFail){
     test.puncture(pk,sk,"6");
     EXPECT_THROW(test.decrypt_unchecked(pk,sk,ct),std::logic_error);
 }
-
+#endif
 TEST_F(Gmmppketest,serializeGmmppkeCT){
 	std::stringstream ss;
     GT m = group.randomGT();

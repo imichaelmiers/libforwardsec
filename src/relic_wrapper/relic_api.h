@@ -11,6 +11,8 @@
 #include <bitset> 
 #include <cereal/types/vector.hpp>
 #include <array>
+#include <type_traits> // for static assert
+
 
 // define classes
 #ifdef __cplusplus
@@ -49,6 +51,16 @@ extern "C" {
 
 #define lfrowdsec_ZRunconst(x,y) ZR y(x)
 
+#endif
+
+// ensures that if we try to enable OpenMP support , it's enabled in relic or fails .
+//  MULTI may not be defined , so we hav two asserts. One if it isn't, one it it is.
+#ifdef RELICXX_USE_OPENMP
+#ifndef MULTI
+static_assert(0, "Error. Relicxx is compiled to use OPENMP. But Relic is not configured to use any threading");
+#else
+static_assert(MULTI == OPENMP, "Error. Relicxx compiled to use OPENMP. But Relic is not.");
+#endif
 #endif
 
 typedef  std::vector<uint8_t> bytes;
