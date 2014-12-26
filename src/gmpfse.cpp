@@ -72,8 +72,9 @@ bool PfseKeyStore::needsChildKeys(const unsigned int i, const unsigned int d) co
 	return !(hasKey(pathToIndex(lpath,d)) && hasKey(pathToIndex(rpath,d)));
 }
 
-Pfse::Pfse(unsigned int d):hibe(),ppke(),depth(d){
+Pfse::Pfse(unsigned int d, unsigned int numtags):hibe(),ppke(),depth(d){
 	this->nextParentInterval = 1 ;
+	this->numtags = numtags;
     // group.setCurve(BN256);
     // cout << "depth" << depth << endl;
 }
@@ -100,7 +101,7 @@ void Pfse::keygen(){
     sklefthibe.a0 = group.mul(sklefthibe.a0,group.exp(this->pk.g2G2,group.neg(gamma)));
     skrighthibe.a0 = group.mul(skrighthibe.a0,group.exp(this->pk.g2G2,group.neg(gamma1)));
 
-    ppke.keygenPartial(gamma,pk,ppkeSK);
+    ppke.keygenPartial(gamma,pk,ppkeSK,numtags);
 
 
     this->privatekeys = PfseKeyStore(ppkeSK);

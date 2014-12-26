@@ -123,7 +123,7 @@ public:
 	PfseKeyStore privatekeys;
 
 
-	Pfse(unsigned int d);
+	Pfse(unsigned int d,unsigned int numtags = 1);
 	/**Generates the public and private key. These are stored in  the object.
 	 *
 	 */
@@ -173,6 +173,7 @@ private:
 	Bbghibe hibe;
 	Gmppke ppke;
 	unsigned int depth;
+	unsigned int numtags;
 	void bindKey(PfsePuncturedPrivateKey & k);
 	PseCipherText encryptFO( const pfsepubkey & pk, const bytes & bitmsg,
 			              const unsigned int interval, const std::vector<std::string>  & tags) const;
