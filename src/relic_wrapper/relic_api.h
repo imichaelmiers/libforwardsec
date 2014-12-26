@@ -77,21 +77,30 @@ public:
 	bn_t order;
 	bool isInit;
 	ZR() 	 {error_if_relic_not_init(); bn_inits(z); bn_inits(order); g1_get_ord(order); isInit = true;bn_set_dig(z,1); }
+	ZR(ZR&& other){
+		*this=std::move(other);
+	}
 	ZR(int);
 	ZR(char*);
 	ZR(const bn_t y) {error_if_relic_not_init(); bn_inits(z); bn_inits(order); g1_get_ord(order); isInit = true; bn_copy(z, y); }
 	ZR(const ZR& w) { error_if_relic_not_init();bn_inits(z); bn_inits(order); bn_copy(z, w.z); bn_copy(order, w.order); isInit = true; }
-//	ZR&&  operator=(ZR && rhs){
-//		if(this !=&rhs){
-//			if(isInit){
-//				bn_free(z); bn_free(order);
-//			}
-//			rhs.isInit = false;
-//			z[0] = rhs.z[0];
-//			order[0] = rhs.order[0];
-//		}
-//		return * this;
-//	}
+	ZR&  operator=(ZR && rhs){
+		if(this !=&rhs){
+			rhs.isInit = false;
+			if(isInit){
+				bn_free(z); bn_free(order);
+			}
+#if ALLOC == AUTO
+			z[0] = rhs.z[0];
+			order[0] = rhs.order[0];
+#else
+			z=rhs.z;
+			order=rhs.order;
+#endif
+			isInit = rhs.isInit;
+		}
+		return * this;
+	}
 	~ZR() {
 		if(isInit){
 			bn_free(z); bn_free(order);
@@ -152,6 +161,9 @@ public:
 	bool isInit;
     G1()   {error_if_relic_not_init(); g1_inits(g); isInit = true; g1_set_infty(g); }
 	G1(const G1& w) { g1_inits(g); g1_copy(g, w.g); isInit = true; }
+	G1(G1 && other){
+		*this=std::move(other);
+	}
 	~G1()  {
 		if(isInit) {
 			g1_free(g);
@@ -163,6 +175,21 @@ public:
 		if (isInit == true) g1_copy(g, w.g);
 		else ro_error();
 		return *this;
+	}
+	G1&  operator=(G1 && rhs){
+		if(this !=&rhs){
+			rhs.isInit = false;
+			if(isInit){
+				g1_free(g);
+			}
+#if ALLOC == AUTO
+			g[0] = rhs.g[0];
+#else
+			g=rhs.g;
+#endif
+			isInit =rhs.isInit;
+		}
+		return * this;
 	}
 	bool ismember(const bn_t) const;
 	std::vector<uint8_t> getBytes(bool compress = 0) const;
@@ -200,6 +227,9 @@ public:
 	bool isInit;
     G2()   {error_if_relic_not_init(); g2_inits(g); isInit = true; g2_set_infty(g); }
 	G2(const G2& w) { g2_inits(g); g2_copy(g, const_cast<G2&>(w).g); isInit = true; }
+	G2(G2 && other){
+		*this=std::move(other);
+	}
 	~G2()  {
 		if(isInit){
 			g2_free(g);
@@ -211,6 +241,21 @@ public:
 		if (isInit == true) g2_copy(g,  const_cast<G2&>(w).g);
 		else ro_error();
 		return *this;
+	}
+	G2&  operator=(G2 && rhs){
+		if(this !=&rhs){
+			rhs.isInit = false;
+			if(isInit){
+				g2_free(g);
+			}
+#if ALLOC == AUTO
+			g[0] = rhs.g[0];
+#else
+			g=rhs.g;
+#endif
+			isInit = rhs.isInit;
+		}
+		return * this;
 	}
 	bool ismember(bn_t);
 	std::vector<uint8_t> getBytes( bool compress = 0) const;
@@ -260,6 +305,21 @@ public:
 		else ro_error();
 		return *this;
 	}
+//	GT&  operator=(GT && rhs){
+//		if(this !=&rhs){
+//			rhs.isInit = false;
+//			if(isInit){
+//				gt_free(g);
+//			}
+//#if ALLOC == AUTO
+//			memcopy(&g[0].&(rhs.g[0]),sizeof(g));
+//#else
+//			g=rhs.g;
+//#endif
+//			isInit = rhs.isInit;
+//		}
+//		return * this;
+//	}
 	bool ismember(bn_t);
 	std::vector<uint8_t> getBytes( bool compress = 0) const;
 
