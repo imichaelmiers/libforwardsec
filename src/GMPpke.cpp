@@ -7,7 +7,7 @@ namespace forwardsec{
 
 using namespace std;
 using namespace relicxx;
-static const string  NULLTAG = "42"; // the reserved tag
+static const string  NULLTAG = "whoever wishes to keep a secret, must hide from us that he possesses one.-- Johann Wolfgang von Goethe"; // the reserved tag
 
 using namespace std;
 std::vector<std::string> GmppkePrivateKey::puncturedIntersect(const std::vector<std::string> & tags)const {
