@@ -144,6 +144,24 @@ std::vector<std::tuple<unsigned int ,Benchmark>> benchDecPunctured(const unsigne
 	cout <<endl;
 	return b;
 }
+
+void relicSizes(){
+	PairingGroup group;
+	ZR z = group.randomZR();
+	G1 g1 = group.randomG1();
+	G2 g2 = group.randomG2();
+	GT gt = group.randomGT();
+	cout << " Relic byte array sizes  non point compressed:" << endl;
+	cout << "\t ZR: " << z.getBytes().size() << endl;
+	cout << "\t G1: " << g1.getBytes().size() << endl;
+	cout << "\t G2: " << g2.getBytes().size() << endl;
+	cout << "\t GT: " << gt.getBytes().size() << endl;
+	cout << " Relic byte array sizes   point compressed:" << endl;
+	cout << "\t ZR: " << z.getBytes().size() << endl;
+	cout << "\t G1: " << g1.getBytes(true).size() << endl;
+	cout << "\t G2: " << g2.getBytes(true).size() << endl;
+	cout << "\t GT: " << gt.getBytes(true).size() << endl;
+}
 template <class T>
 void sizes(const unsigned int d =31,const unsigned int n = 1){
 	Pfse test(d,n);
@@ -226,6 +244,7 @@ int main()
     		d << " and " << n << " tags" << endl;
     std::locale::global(std::locale(""));
     std::cout.imbue(std::locale());
+    relicSizes();
     cout <<"Sizes(BinaryOutputArchive) POINT_COMPRESSION=" << POINT_COMPRESS << ":"<< endl;
     sizes<cereal::BinaryOutputArchive>();
     cout <<"Sizes(PortableBinaryOutputArchive) POINT_COMPRESSION=" << POINT_COMPRESS << ":"<< endl;

@@ -10,6 +10,8 @@
 #include <math.h>
 #include <bitset> 
 #include <cereal/types/vector.hpp>
+#include <cereal/archives/json.hpp>
+
 #include <array>
 #include <type_traits> // for static assert
 #include <cstring> // for memcpy
@@ -152,6 +154,19 @@ public:
 			ar(data);
 			bn_read_bin(z,&data[0],BN_BYTES);
 		}
+//		template <>
+//		void save<cereal::JSONOutputArchive>(cereal::JSONOutputArchive & ar) const{
+//			std::cout <<"binarysave" << std::endl;
+//			auto data = getBytes();
+//			ar.saveBinaryValue(&data[0],data.size());
+//		}
+//		template <>
+//		void load<cereal::JSONInputArchive>(cereal::JSONInputArchive & ar)
+//		{
+//			std::vector<uint8_t>data(BN_BYTES);
+//			ar.loadBinaryValue(&data[0],data.size());
+//			bn_read_bin(z,&data[0],BN_BYTES);
+//		}
 	friend ZR hashToZR(const bytes &);
 	friend ZR power(const ZR&, int);
 	friend ZR power(const ZR&, const ZR&);
