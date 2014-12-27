@@ -88,13 +88,17 @@ public:
 	bn_t order;
 	bool isInit;
 	ZR() 	 {error_if_relic_not_init(); bn_inits(z); bn_inits(order); g1_get_ord(order); isInit = true;bn_set_dig(z,1); }
-	ZR(ZR&& other){
-		*this=std::move(other);
-	}
+
 	ZR(int);
 	ZR(char*);
 	ZR(const bn_t y) {error_if_relic_not_init(); bn_inits(z); bn_inits(order); g1_get_ord(order); isInit = true; bn_copy(z, y); }
 	ZR(const ZR& w) { error_if_relic_not_init();bn_inits(z); bn_inits(order); bn_copy(z, w.z); bn_copy(order, w.order); isInit = true; }
+
+#ifdef RELICXX_MOVEZR
+	ZR(ZR&& other){
+		*this=std::move(other);
+	}
+
 	ZR&  operator=(ZR && rhs){
 		if(this !=&rhs){
 			rhs.isInit = false;
@@ -112,6 +116,7 @@ public:
 		}
 		return * this;
 	}
+#endif
 	~ZR() {
 		if(isInit){
 			bn_free(z); bn_free(order);
@@ -172,20 +177,15 @@ public:
 	bool isInit;
     G1()   {error_if_relic_not_init(); g1_inits(g); isInit = true; g1_set_infty(g); }
 	G1(const G1& w) { g1_inits(g); g1_copy(g, w.g); isInit = true; }
-	G1(G1 && other){
-		*this=std::move(other);
-	}
+
 	~G1()  {
 		if(isInit) {
 			g1_free(g);
 		}
 	}
-
-	G1& operator=(const G1& w)
-	{
-		if (isInit == true) g1_copy(g, w.g);
-		else ro_error();
-		return *this;
+#ifdef RELICXX_MOVEG1
+	G1(G1 && other){
+		*this=std::move(other);
 	}
 	G1&  operator=(G1 && rhs){
 		if(this !=&rhs){
@@ -202,6 +202,15 @@ public:
 		}
 		return * this;
 	}
+
+#endif
+	G1& operator=(const G1& w)
+	{
+		if (isInit == true) g1_copy(g, w.g);
+		else ro_error();
+		return *this;
+	}
+
 	bool ismember(const bn_t) const;
 	std::vector<uint8_t> getBytes(bool compress = 0) const;
     template<class Archive>
@@ -238,20 +247,15 @@ public:
 	bool isInit;
     G2()   {error_if_relic_not_init(); g2_inits(g); isInit = true; g2_set_infty(g); }
 	G2(const G2& w) { g2_inits(g); g2_copy(g, const_cast<G2&>(w).g); isInit = true; }
-	G2(G2 && other){
-		*this=std::move(other);
-	}
+
 	~G2()  {
 		if(isInit){
 			g2_free(g);
 		}
 	}
-
-	G2& operator=(const G2& w)
-	{
-		if (isInit == true) g2_copy(g,  const_cast<G2&>(w).g);
-		else ro_error();
-		return *this;
+#ifdef RELICXX_MOVEG2
+	G2(G2 && other){
+		*this=std::move(other);
 	}
 	G2&  operator=(G2 && rhs){
 		if(this !=&rhs){
@@ -267,6 +271,14 @@ public:
 			isInit = rhs.isInit;
 		}
 		return * this;
+	}
+#endif
+
+	G2& operator=(const G2& w)
+	{
+		if (isInit == true) g2_copy(g,  const_cast<G2&>(w).g);
+		else ro_error();
+		return *this;
 	}
 	bool ismember(bn_t);
 	std::vector<uint8_t> getBytes( bool compress = 0) const;
@@ -316,6 +328,7 @@ public:
 		else ro_error();
 		return *this;
 	}
+#ifdef RELICXX_MOVEGT
 //	GT&  operator=(GT && rhs){
 //		if(this !=&rhs){
 //			rhs.isInit = false;
@@ -331,6 +344,8 @@ public:
 //		}
 //		return * this;
 //	}
+#endif
+
 	bool ismember(bn_t);
 	std::vector<uint8_t> getBytes( bool compress = 0) const;
 

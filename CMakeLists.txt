@@ -48,6 +48,13 @@ ENDIF(NOT CEREAL_HEADER)
 
 option(RELICXX_UNCONST "Cast const values to non-const when passing to relic functions which are const but not marked as such. (e.g read_bin,mul,etc)." ON)
 option(USE_OPEN_MP "Use OpenMP for parallelizing decrypt." OFF)
+option(RELICXX_MOVE "Use C++11 move semantics for  ZR,G1,G2" ON)
+include(CMakeDependentOption)
+CMAKE_DEPENDENT_OPTION(RELICXX_MOVEZR "Use C++11 move semantics for ZR" OFF "NOT RELICXX_MOVE" ON)
+CMAKE_DEPENDENT_OPTION(RELICXX_MOVEG1 "Use C++11 move semantics for G1" OFF "NOT RELICXX_MOVE" ON)
+CMAKE_DEPENDENT_OPTION(RELICXX_MOVEG2 "Use C++11 move semantics for G2" OFF "NOT RELICXX_MOVE" ON)
+CMAKE_DEPENDENT_OPTION(RELICXX_MOVEGT "Use C++11 move semantics for GT" OFF "NOT RELICXX_MOVE" ON)
+
 
 
 if(USE_OPENMP)
@@ -65,6 +72,18 @@ if(RELICXX_UNCONST)
 	add_definitions(-DRELICXX_UNCONST)
 endif(RELICXX_UNCONST)
 
+if(RELICXX_MOVEZR)
+	add_definitions(-DRELICXX_MOVEZR)
+endif(RELICXX_MOVEZR)
+if(RELICXX_MOVEG1)
+	add_definitions(-DRELICXX_MOVEG1)
+endif(RELICXX_MOVEG1)
+if(RELICXX_MOVEG2)
+	add_definitions(-DRELICXX_MOVEG2)
+endif(RELICXX_MOVEG2)
+if(RELICXX_MOVEGT)
+	add_definitions(-DRELICXX_MOVEGT)
+endif(RELICXX_MOVEGT)
 
 INCLUDE_DIRECTORIES(include/forwardsec)
 
