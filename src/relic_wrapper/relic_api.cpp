@@ -11,8 +11,8 @@ void ro_error(void)
 void error_if_relic_not_init(){
 	if(nullptr==core_get()){
 		throw::runtime_error("\n\nERROR. relic core_get() returned null. Relic is probably not initialized.\n ??? DID YOU INITIALIZE LIBFORWARDSEC ???\n"
-				"You need to initialize the library once per thread by grabbing an instance of relicResourceHandle\n"
-				"and holding it until you are done with the library/thread.\n\n"); //FIXME add namespace for relicResourceHandle
+				"You need to initialize the library once per thread by grabbing an instance of relicxx::relicResourceHandle\n"
+				"and holding it until you are done with the library/thread.\n");
 	}
 }
 
