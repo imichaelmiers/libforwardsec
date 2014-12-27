@@ -105,6 +105,7 @@ public:
 
 	ZR&  operator=(ZR && rhs){
 		if(this !=&rhs){
+			isInit = rhs.isInit;
 			rhs.isInit = false;
 			if(isInit){
 				bn_free(z); bn_free(order);
@@ -119,8 +120,6 @@ public:
 			rhs.z=nullptr;
 			rhs.order=nulltpr;
 #endif
-
-			isInit = rhs.isInit;
 		}
 		return * this;
 	}
@@ -197,6 +196,7 @@ public:
 	}
 	G1&  operator=(G1 && rhs){
 		if(this !=&rhs){
+			isInit =rhs.isInit;
 			rhs.isInit = false;
 			if(isInit){
 				g1_free(g);
@@ -208,7 +208,6 @@ public:
 			g=rhs.g;
 			rhs.g=nullptr;
 #endif
-			isInit =rhs.isInit;
 		}
 		return * this;
 	}
@@ -269,6 +268,7 @@ public:
 	}
 	G2&  operator=(G2 && rhs){
 		if(this !=&rhs){
+			isInit = rhs.isInit;
 			rhs.isInit = false;
 			if(isInit){
 				g2_free(g);
@@ -280,7 +280,6 @@ public:
 			g=rhs.g;
 			rhs.g=nulltpr;
 #endif
-			isInit = rhs.isInit;
 		}
 		return * this;
 	}
@@ -343,6 +342,7 @@ public:
 #ifdef RELICXX_MOVEGT
 	GT&  operator=(GT && rhs){
 		if(this !=&rhs){
+			isInit = rhs.isInit;
 			rhs.isInit = false;
 			if(isInit){
 				gt_free(g);
@@ -354,7 +354,6 @@ public:
 			g=rhs.g;
 			rhs.g=nullptr;
 #endif
-			isInit = rhs.isInit;
 		}
 		return * this;
 	}
