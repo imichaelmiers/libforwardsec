@@ -14,7 +14,7 @@
 #include "gmpfse.h"
 #include "GMPpke.h"
 #include "BBGHibe.h"
-
+#include "Util.h"
 using namespace std;
 using namespace forwardsec;
 using namespace relicxx;
@@ -168,7 +168,7 @@ TEST_F(PFSETests,PassOnPunctureNextInterval){
 TEST_F(PFSETests,PunctureAndDeriveAll){
 	// there are 2^d =1 nodes in a tree of depth d.
 	// we don't have the root, so we subtrct one more.
-	unsigned int intervals = std::pow(2,d)-2;
+	unsigned int intervals = std::pow(2,d+1)-1;
 	for(unsigned int i =1;i< intervals; i++){
 	    vector<string> tags;
 	    tags.push_back("9");
@@ -179,8 +179,16 @@ TEST_F(PFSETests,PunctureAndDeriveAll){
 	    PseCipherText ct1 = test.encrypt(pk,testkey,i,tags);
 	    bytes result = test.decrypt(ct1);
 	    EXPECT_EQ(testkey,result);
-		test.prepareNextInterval();
+	    if(i+1 < intervals){
+			test.prepareNextInterval();
+	    }
 	}
+}
+TEST(Util,IndexToPath){
+	EXPECT_EQ(pathToIndex(indexToPath(13,3),3),(unsigned int)13);
+	EXPECT_EQ(pathToIndex(indexToPath(14,3),3),(unsigned int)14);
+
+	EXPECT_THROW(indexToPath(15,3),invalid_argument);
 }
 
 TEST_F(PFSETests,Delete){
@@ -201,6 +209,23 @@ TEST_F(PFSETests,Delete){
 }
 TEST_F(PFSETests,PunctureWrongInterval){
     EXPECT_THROW( test.puncture(2,"8");,invalid_argument); // can't puncture key we don't have children for.
+}
+TEST_F(PFSETests,DeriveKeyInFuture){
+    PseCipherText ct1 = test.encrypt(pk,testkey,11,{"1"});
+    test.deriveKeyFor(11);
+    bytes result = test.decrypt(ct1);
+    ASSERT_EQ(testkey,result);
+}
+TEST_F(PFSETests,DeriveAllKeyInFuture){
+	unsigned int intervals = std::pow(2,d+1)-1;
+	for(unsigned int i =1;i<intervals;i++){
+	Pfse test1(d);
+	test1.keygen();
+    PseCipherText ct1 = test1.encrypt(test1.pk,testkey,i,{"1"});
+    test1.deriveKeyFor(i);
+    bytes result = test1.decrypt(ct1);
+    ASSERT_EQ(testkey,result);
+	}
 }
 
 TEST_F(PFSETests,serializePseCipherText){

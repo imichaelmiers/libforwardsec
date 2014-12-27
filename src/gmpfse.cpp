@@ -97,10 +97,8 @@ void Pfse::keygen(){
     int l = pathToIndex(left,depth);
     int r = pathToIndex(right,depth);
     ZR gamma = group.randomZR();
-    ZR gamma1 = group.randomZR(); // XXX FIXME . this should break. we are randomizing the left key w/ the wrong alpha
-    assert(!(gamma1 == gamma));
     sklefthibe.a0 = group.mul(sklefthibe.a0,group.exp(this->pk.g2G2,group.neg(gamma)));
-    skrighthibe.a0 = group.mul(skrighthibe.a0,group.exp(this->pk.g2G2,group.neg(gamma1)));
+    skrighthibe.a0 = group.mul(skrighthibe.a0,group.exp(this->pk.g2G2,group.neg(gamma)));
 
     ppke.keygenPartial(gamma,pk,ppkeSK,numtags);
 
@@ -114,13 +112,21 @@ void Pfse::keygen(){
 
 void Pfse::prepareNextInterval(){
 
-    std::vector<ZR> path = indexToPath(nextParentInterval,depth);
-    unsigned int pathlength = path.size();
-    const PfsePuncturedPrivateKey & k = privatekeys.getKey(nextParentInterval); //FIXME refrence could be deleted
-    if(k.punctured()){
-         throw logic_error("The parent tag is already punctured. You must call prepareNextInterval before starting");
-    }
+	prepareIntervalAfter(nextParentInterval);
+   	nextParentInterval ++;
+}
 
+void Pfse::prepareIntervalAfter(const unsigned int& i) {
+    std::vector<ZR> path = indexToPath(i,depth);
+    unsigned int pathlength = path.size();
+    const PfsePuncturedPrivateKey & k = privatekeys.getKey(i); //FIXME refrence could be deleted
+    if(k.punctured()){
+         throw logic_error("The parent tag is already punctured. The software should never allow this to happen"
+        		 " You must call prepareNextInterval before starting");
+    }
+    if(!privatekeys.needsChildKeys(i,depth)){
+    	return;
+    }
     if (pathlength  < depth){ // Not a leaf node, so derive new hibe keys.
     	BbghPrivatekey sklefthibe, skrighthibe;
 
@@ -138,8 +144,32 @@ void Pfse::prepareNextInterval(){
         privatekeys.addkey(leftChildIndex,sklefthibe);
         privatekeys.addkey(rightChildIndex,skrighthibe);
     }
-   	nextParentInterval ++;
 }
+
+void Pfse::deriveKeyFor(const unsigned int& i,
+		const bool& storeIntermediateKeys) {
+	std::vector<ZR> path = indexToPath(i,depth);
+	std::vector<ZR> ancestor;
+	while(ancestor.size()<path.size() && privatekeys.hasKey(pathToIndex(ancestor,depth)+1)){
+		ancestor = std::vector<ZR>(path.begin(),path.begin()+ancestor.size()+1);
+
+	}
+    const PfsePuncturedPrivateKey & k = privatekeys.getKey(pathToIndex(ancestor,depth));
+    if(k.punctured()){
+         throw logic_error("The parent tag is already punctured. The software should never allow this to happen");
+    }
+
+    BbghPrivatekey  curk= k.hibeSK;
+    while(ancestor.size()<path.size()){
+		ancestor = std::vector<ZR>(path.begin(),path.begin()+ancestor.size()+1);
+		hibe.keygen(pk,curk,ancestor,curk);
+		if(storeIntermediateKeys || ancestor.size()==path.size()){
+			 privatekeys.addkey(pathToIndex(ancestor,depth),curk);
+		}
+	}
+
+}
+
 
 void Pfse::bindKey(PfsePuncturedPrivateKey & k) {
     const ZR gamma = group.randomZR();

@@ -22,8 +22,11 @@ unsigned int treeSize(unsigned int k){
 std::vector<ZR>  indexToPath(const unsigned int &index,const unsigned int & treeDepth){
     std::vector<ZR> path;
     unsigned int nodesSoFar = 0;
-    ZR zero = 0;
-    for(unsigned int level =0 ; level < treeDepth ; level++){
+    unsigned int level;
+    if(index >= treeSize(treeDepth)){
+        throw invalid_argument ("index out of bounds of tree");
+    }
+    for(level =0 ; level < treeDepth ; level++){
         unsigned int subtree_height = treeSize(treeDepth-level-1);
         if (nodesSoFar == index){
             return path;
@@ -36,9 +39,7 @@ std::vector<ZR>  indexToPath(const unsigned int &index,const unsigned int & tree
         }
 
     }
-    if(nodesSoFar < index){
-        throw invalid_argument ("index out of bounds of tree");
-    }
+
     return path;
 }
 

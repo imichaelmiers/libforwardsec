@@ -68,11 +68,11 @@ public:
 	friend bool operator!=(const PseCipherText& l,const PseCipherText& r){
 		return !(l==r);
 	}
+	unsigned int interval;
 protected:
 	relicxx::GT ct0;
 	PartialBbghCT hibeCT;
 	PartialGmmppkeCT ppkeCT;
-	unsigned int interval;
 	bytes xorct;
 	template <class Archive>
 	void serialize( Archive & ar )
@@ -150,6 +150,20 @@ public:
 	 *
 	 */
 	void prepareNextInterval();
+
+	/**Derives keys from the specified interval.
+	 *  Must be done before puncturing on i
+	 * @param i the interval
+	 */
+	void prepareIntervalAfter(const unsigned int &i);
+
+	/** Derives the key for the given interval
+	 *
+	 * @param i the interval
+	 * @param storeIntermediateKeys store keys derived along the way
+	 */
+	void deriveKeyFor(const unsigned int &i, const bool & storeIntermediateKeys = true);
+
 	/** Erases the key for a given interval.
 	 *
 	 * @param interval the interval to erase.
