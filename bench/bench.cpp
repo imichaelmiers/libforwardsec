@@ -7,8 +7,9 @@
 #include "locale"
 #include "gmpfse.h"
 #include "Benchmark.h"
-using namespace forwardsec;
 using namespace std;
+using namespace forwardsec;
+using namespace relicxx;
 bytes testVector = {{0x3a, 0x5d, 0x7a, 0x42, 0x44, 0xd3, 0xd8, 0xaf, 0xf5, 0xf3, 0xf1, 0x87, 0x81, 0x82, 0xb2,
 						  0x53, 0x57, 0x30, 0x59, 0x75, 0x8d, 0xe6, 0x18, 0x17, 0x14, 0xdf, 0xa5, 0xa4, 0x0b,0x43,0xAD,0xBC}};
 std::vector<string>makeTags(unsigned int n){
@@ -18,7 +19,7 @@ std::vector<string>makeTags(unsigned int n){
 	}
 	return tags;
 }
-Benchmark benchKeygen(const unsigned int iterations, const unsigned int d =32,
+Benchmark benchKeygen(const unsigned int iterations, const unsigned int d =31,
 		const unsigned int n = 1){
 	Benchmark b;
     for(unsigned int i=0;i < iterations;i++){
@@ -30,7 +31,7 @@ Benchmark benchKeygen(const unsigned int iterations, const unsigned int d =32,
 	}
 	return b;
 }
-Benchmark benchEnc(const unsigned int iterations, const unsigned int d =32,
+Benchmark benchEnc(const unsigned int iterations, const unsigned int d =31,
 		const unsigned int n = 1){
 	Pfse test(d,n);
     test.keygen();
@@ -43,7 +44,7 @@ Benchmark benchEnc(const unsigned int iterations, const unsigned int d =32,
     }
 	   return benchE;
 }
-Benchmark benchDec(const unsigned int iterations, const unsigned int d =32,
+Benchmark benchDec(const unsigned int iterations, const unsigned int d =31,
 		const unsigned int n = 1){
 	Pfse test(d,n);
     test.keygen();
@@ -57,7 +58,7 @@ Benchmark benchDec(const unsigned int iterations, const unsigned int d =32,
     }
 	   return benchD;
 }
-Benchmark benchPuncFirst(const unsigned int iterations, const unsigned int d =32,
+Benchmark benchPuncFirst(const unsigned int iterations, const unsigned int d =31,
 		const unsigned int n = 1){
 
     Benchmark benchP;
@@ -72,7 +73,7 @@ Benchmark benchPuncFirst(const unsigned int iterations, const unsigned int d =32
 	   return benchP;
 }
 
-Benchmark benchPunc(const unsigned int iterations, const unsigned int d =32,
+Benchmark benchPunc(const unsigned int iterations, const unsigned int d =31,
 		const unsigned int n = 1){
 
     Benchmark benchP;
@@ -88,7 +89,7 @@ Benchmark benchPunc(const unsigned int iterations, const unsigned int d =32,
 	   return benchP;
 }
 
-Benchmark benchNextInterval(const unsigned int iterations, const unsigned int d =32,
+Benchmark benchNextInterval(const unsigned int iterations, const unsigned int d =31,
 		const unsigned int n = 1){
 
     Benchmark benchN;
@@ -105,7 +106,7 @@ Benchmark benchNextInterval(const unsigned int iterations, const unsigned int d 
 }
 std::vector<std::tuple<unsigned int ,Benchmark>> benchDecPunctured(const unsigned int iterations,
 		const unsigned int punctures, const unsigned int puncture_steps,
-		const unsigned int d =32,
+		const unsigned int d =31,
 		const unsigned int n = 1){
 	std::vector<std::tuple<unsigned int ,Benchmark>>  b;
 	for(unsigned int p = 0; p < punctures;p+=puncture_steps){
@@ -116,9 +117,11 @@ std::vector<std::tuple<unsigned int ,Benchmark>> benchDecPunctured(const unsigne
         test.keygen();
         PseCipherText ct = test.encrypt(test.pk,testVector,1,makeTags(n));;
         for(unsigned int i =0;i<p;i++){
+        	if(i%10 == 0) cout << ".";
             test.puncture("punc"+std::to_string(i));
         }
         for(unsigned int i=0;i < iterations;i++){
+        	if(i%10 == 0) cout << ".";
            benchDP.start();
 		   test.decrypt(ct);
 		   benchDP.stop();
@@ -130,7 +133,7 @@ std::vector<std::tuple<unsigned int ,Benchmark>> benchDecPunctured(const unsigne
 	return b;
 }
 template <class T>
-void sizes(const unsigned int d =32,const unsigned int n = 1){
+void sizes(const unsigned int d =31,const unsigned int n = 1){
 	Pfse test(d,n);
     test.keygen();
     PairingGroup group;
@@ -202,7 +205,7 @@ int main()
 {
 	relicResourceHandle h;
 	unsigned int i = 10;
-	unsigned int d = 32;
+	unsigned int d = 31;
 	unsigned int n = 1;
     Benchmark K,E,D,PF,PS,N,DP;
     cout << "Benchmarking " << i << " iterations of Puncturable forward secure encryption with depth " <<

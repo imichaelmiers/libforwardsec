@@ -12,6 +12,9 @@ using namespace std;
 using namespace relicxx;
 void Bbghibe::setup(const unsigned int & l, BbhHIBEPublicKey & pk, G2 & msk) const
 {
+	if(l>31){
+		throw invalid_argument("max id length must be less than 32.");
+	}
     ZR alpha = group.randomZR();
     pk.gG1 = group.randomG1();
     pk.gG2 = group.randomG2();
