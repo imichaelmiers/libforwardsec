@@ -12,6 +12,7 @@
 #include <cereal/types/vector.hpp>
 #include <array>
 #include <type_traits> // for static assert
+#include <cstring> // for memcpy
 
 
 // define classes
@@ -329,21 +330,21 @@ public:
 		return *this;
 	}
 #ifdef RELICXX_MOVEGT
-//	GT&  operator=(GT && rhs){
-//		if(this !=&rhs){
-//			rhs.isInit = false;
-//			if(isInit){
-//				gt_free(g);
-//			}
-//#if ALLOC == AUTO
-//			memcopy(&g[0].&(rhs.g[0]),sizeof(g));
-//#else
-//			g=rhs.g;
-//#endif
-//			isInit = rhs.isInit;
-//		}
-//		return * this;
-//	}
+	GT&  operator=(GT && rhs){
+		if(this !=&rhs){
+			rhs.isInit = false;
+			if(isInit){
+				gt_free(g);
+			}
+#if ALLOC == AUTO
+			std::memcpy(*g,*(rhs.g),sizeof(g));
+#else
+			g=rhs.g;
+#endif
+			isInit = rhs.isInit;
+		}
+		return * this;
+	}
 #endif
 
 	bool ismember(bn_t);

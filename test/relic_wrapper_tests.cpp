@@ -71,25 +71,7 @@ T d = group.random##T(); \
 T e = group.random##T(); \
 T i;
 
-//TEST(Foo,serialization){
-//	std::stringstream ss;
-//	PairingGroup g;
-//
-//	ZR a,b;
-//	rand(a,g);
-//	EXPECT_NE(a,b);
-//	{
-//		cereal::BinaryOutputArchive oarchive(ss);
-//		oarchive(a);
-//	}
-//	int size = ss.tellp();
-//	cout << "size " << size << endl;
-//	{
-//	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
-//	    iarchive(b);
-//	}
-//	EXPECT_EQ(a,b);
-//}
+
 TYPED_TEST(AlgTest,serialization){
 	std::stringstream ss;
 	PairingGroup g;
@@ -107,7 +89,7 @@ TYPED_TEST(AlgTest,serialization){
 	}
 	EXPECT_EQ(a,b);
 }
-TYPED_TEST(AlgTest,cmp){
+TYPED_TEST(AlgTest,eq){
 	PairingGroup g;
 	TypeParam a,b,c,d;
 	rand(a,g);rand(b,g);rand(c,g);
@@ -169,34 +151,20 @@ TYPED_TEST(AlgTest,copy){
 	EXPECT_EQ(b,a);
 	EXPECT_EQ(c,a);
 }
-
-TEST_F(pg,G1Comp){
-	G1 a = group.randomG1();
-	G1 b = group.randomG1();
-	G1 c = group.randomG1();
-	EXPECT_NE(a,b);
-	ASSERT_EQ(a,a);
-	ASSERT_EQ(b,b);
-
+#ifdef RELICXX_MOVE
+TYPED_TEST(AlgTest,stdmove){
+	PairingGroup g;
+	for(unsigned int i=0;i<100;i++){
+		TypeParam a;
+		rand(a,g);
+		TypeParam aa = a;
+		ASSERT_EQ(aa,a);
+		TypeParam c = std::move(a);
+		ASSERT_EQ(c,aa);
+	}
 }
+#endif
 
-TEST_F(pg,G2Comp){
-	G2 a = group.randomG2();
-	G2 b = group.randomG2();
-	G2 c = group.randomG2();
-	EXPECT_NE(a,b);
-	ASSERT_EQ(a,a);
-	ASSERT_EQ(b,b);
-
-}
-TEST_F(pg,GTComp){
-	GT a = group.randomGT();
-	GT b = group.randomGT();
-	GT c = group.randomGT();
-	EXPECT_NE(a,b);
-	ASSERT_EQ(a,a);
-	ASSERT_EQ(b,b);
-}
 
 TEST_F(pg,G1Identity){
 	G1 a,b,c;
@@ -226,23 +194,6 @@ TEST_F(pg,GTIdentity){
 	EXPECT_NE(a,d);
 	EXPECT_EQ(a*d,d);
 	EXPECT_EQ(d,d);
-}
-TEST_F(pg,ZRrandom){
-	randabcd(ZR)
-	EXPECT_NE(a,b);
-}
-
-TEST_F(pg,G1random){
-	randabcd(G1)
-	EXPECT_NE(a,b);
-}
-TEST_F(pg,G2random){
-	randabcd(G2)
-	EXPECT_NE(a,b);
-}
-TEST_F(pg,GTrandom){
-	randabcd(GT)
-	EXPECT_NE(a,b);
 }
 
 TEST_F(pg,G1Add){
