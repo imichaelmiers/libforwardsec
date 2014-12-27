@@ -122,9 +122,12 @@ class Pfse
 {
 public:
 	Pfse(unsigned int d,unsigned int numtags = 1);
-	/**Generates the public and private key. These are stored in  the object.
-	 *
-	 */
+	 /**Generates the public and private key. These are stored in  the object.
+	  *
+	  *
+	  * @param pk the public key
+	  * @param sk the private key
+	  */
 	void keygen(pfsepubkey & pk, PfseKeyStore & sk) const;
 
 	/** Encrypts a message. Messages are limited to 32 bytes. (e.g. an AES key).
@@ -137,39 +140,56 @@ public:
 	 */
 	PseCipherText encrypt(const pfsepubkey & pk, const bytes msg, const unsigned int interval, const std::vector<std::string> tags) const;
 
-	/**Decrypt a message using the private key stored in the object.
+	/**Decrypt a message using the provided public and private keys.
 	 *
+	 * @param pk the public key
+	 * @param sk the private key
 	 * @param ct the ciphertext
-	 * @return the decrypted message.
+	 * @return the message
 	 */
 	bytes decrypt(const pfsepubkey & pk, const PfseKeyStore &sk, const PseCipherText &ct) const;
 	
-	/**Derives the keys needed to decrypt the next interval.
+	/**Derives keys from the current interval and updates the provided
+	 * secret key to store them.
 	 *
+	 * @param pk the public key
+	 * @param sk the private key.
 	 */
 	void prepareNextInterval(const pfsepubkey & pk, PfseKeyStore &sk) const;
 
-	/**Derives keys from the specified interval.
-	 *  Must be done before puncturing on i
-	 * @param i the interval
+	/** Derives  keys from the specified interval  and updates the provided
+	 * secret key to store them. This or prepareNextInterval must be run
+	 * to allow interval i to be punctured.
+	 *
+	 *
+	 * @param pk the public key
+	 * @param sk the private key
+	 * @param i the interval to derive the keys from.
 	 */
 	void prepareIntervalAfter(const pfsepubkey & pk, PfseKeyStore &sk,const unsigned int &i) const;
 
-	/** Derives the key for the given interval
+	/** Derives the key for the given interval and updates sk to store it
 	 *
+	 * @param pk the public key
+	 * @param sk the private ky
 	 * @param i the interval
-	 * @param storeIntermediateKeys store keys derived along the way
+	 * @param storeIntermediateKeys (defaults to true) whether the intermediate keys derived along the way are stored
 	 */
 	void deriveKeyFor(const pfsepubkey & pk, PfseKeyStore &sk,const unsigned int &i, const bool & storeIntermediateKeys = true)const;
 
-	/** Erases the key for a given interval.
+	/**Puncture the key in the specified interval
 	 *
-	 * @param interval the interval to erase.
+	 * @param pk the public key
+	 * @param sk the private ky
+	 * @param i the interval
+	 * @param str the string to puncture the key with.
 	 */
 	void puncture(const pfsepubkey & pk, PfseKeyStore &sk,unsigned int interval, std::string str) const;
-	/**Punctures the key for the current interval.
+	/**Puncture the key for the current interval
 	 *
-	 * @param str the tag to puncture on.
+	 * @param pk the public key
+	 * @param sk the private ky
+	 * @param str the string to puncture the key with.
 	 */
 	void puncture(const pfsepubkey & pk, PfseKeyStore &sk, std::string str) const;
 
@@ -199,7 +219,6 @@ namespace cereal
 {
  template <class Archive>
  struct specialize<Archive, forwardsec::pfsepubkey, cereal::specialization::member_serialize> {};
- // cereal no longer has any ambiguity when serializing MyDerived
 }
 #endif
 
