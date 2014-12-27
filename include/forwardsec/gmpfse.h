@@ -89,13 +89,13 @@ protected:
 class PfseKeyStore{
 public:
 	PfseKeyStore(){};
-	PfseKeyStore(const GmppkePrivateKey & unpuncturedKey);
+	PfseKeyStore(const GmppkePrivateKey & unpuncturedKey,unsigned int depth);
 	PfsePuncturedPrivateKey getKey(unsigned int i) const;
 	void updateKey(unsigned int i, const PfsePuncturedPrivateKey & p);
 	void addkey(unsigned int i, const BbghPrivatekey & h);
 	void erase(unsigned int i);
 	bool hasKey(const unsigned int i) const;
-	bool needsChildKeys(const unsigned int i,const unsigned int d) const;
+	bool needsChildKeys(const unsigned int i) const;
 
 	friend bool operator==(const PfseKeyStore& l,const PfseKeyStore& r){
 		return l.puncturedKeys == r.puncturedKeys && l.unpucturedHIBEKeys == r.unpucturedHIBEKeys &&
@@ -104,14 +104,16 @@ public:
 	friend bool operator!=(const PfseKeyStore& l,const PfseKeyStore& r){
 		return !(l==r);
 	}
+	unsigned int nextParentInterval=0;
 private:
+	unsigned int depth;
 	std::map<unsigned int,PfsePuncturedPrivateKey> puncturedKeys;
 	std::map<unsigned int,BbghPrivatekey> unpucturedHIBEKeys;
 	GmppkePrivateKey unpucturedPPKEKey;
 	template <class Archive>
 	  void serialize( Archive & ar )
 	{
-		ar(puncturedKeys,unpucturedHIBEKeys,unpucturedPPKEKey);
+		ar(nextParentInterval,depth,puncturedKeys,unpucturedHIBEKeys,unpucturedPPKEKey);
 	}
 	friend class ::cereal::access;
 };
@@ -119,15 +121,11 @@ private:
 class Pfse
 {
 public:
-	pfsepubkey pk;
-	PfseKeyStore privatekeys;
-
-
 	Pfse(unsigned int d,unsigned int numtags = 1);
 	/**Generates the public and private key. These are stored in  the object.
 	 *
 	 */
-	void keygen();
+	void keygen(pfsepubkey & pk, PfseKeyStore & sk) const;
 
 	/** Encrypts a message. Messages are limited to 32 bytes. (e.g. an AES key).
 	 *
@@ -144,42 +142,36 @@ public:
 	 * @param ct the ciphertext
 	 * @return the decrypted message.
 	 */
-	bytes decrypt( const PseCipherText &ct) const;
+	bytes decrypt(const pfsepubkey & pk, const PfseKeyStore &sk, const PseCipherText &ct) const;
 	
 	/**Derives the keys needed to decrypt the next interval.
 	 *
 	 */
-	void prepareNextInterval();
+	void prepareNextInterval(const pfsepubkey & pk, PfseKeyStore &sk) const;
 
 	/**Derives keys from the specified interval.
 	 *  Must be done before puncturing on i
 	 * @param i the interval
 	 */
-	void prepareIntervalAfter(const unsigned int &i);
+	void prepareIntervalAfter(const pfsepubkey & pk, PfseKeyStore &sk,const unsigned int &i) const;
 
 	/** Derives the key for the given interval
 	 *
 	 * @param i the interval
 	 * @param storeIntermediateKeys store keys derived along the way
 	 */
-	void deriveKeyFor(const unsigned int &i, const bool & storeIntermediateKeys = true);
+	void deriveKeyFor(const pfsepubkey & pk, PfseKeyStore &sk,const unsigned int &i, const bool & storeIntermediateKeys = true)const;
 
 	/** Erases the key for a given interval.
 	 *
 	 * @param interval the interval to erase.
 	 */
-	void eraseKey(unsigned int interval);
-    /** Punctures the key for the given time period.
-     *
-     * @param interval the time period
-     * @param str the tag to puncture on
-     */
-	void puncture(unsigned int interval, std::string str);
+	void puncture(const pfsepubkey & pk, PfseKeyStore &sk,unsigned int interval, std::string str) const;
 	/**Punctures the key for the current interval.
 	 *
 	 * @param str the tag to puncture on.
 	 */
-	void puncture( std::string str);
+	void puncture(const pfsepubkey & pk, PfseKeyStore &sk, std::string str) const;
 
 
 private:
@@ -188,11 +180,10 @@ private:
 	Gmppke ppke;
 	unsigned int depth;
 	unsigned int numtags;
-	unsigned int nextParentInterval;
 
-	void bindKey(PfsePuncturedPrivateKey & k);
+	void bindKey(const pfsepubkey & pk,PfsePuncturedPrivateKey & k) const;
 
-	PseCipherText encryptFO( const pfsepubkey & pk, const bytes & bitmsg,
+	PseCipherText encryptFO(const pfsepubkey & pk, const bytes & bitmsg,
 			              const unsigned int interval, const std::vector<std::string>  & tags) const;
 	PseCipherText encryptFO( const pfsepubkey & pk, const bytes & bitmsg,
 			const relicxx::GT & x, const unsigned int interval, const std::vector<std::string>  & tags) const;
@@ -200,8 +191,8 @@ private:
 			const unsigned int interval, const std::vector<std::string>  & tags) const;
 
 
-	bytes decryptFO(const PfsePuncturedPrivateKey &sk, const PseCipherText &ct) const;
-	relicxx::GT decryptGT(const PfsePuncturedPrivateKey & sk, const PseCipherText &ct) const;
+	bytes decryptFO(const pfsepubkey & pk, const PfsePuncturedPrivateKey &ski, const PseCipherText &ct) const;
+	relicxx::GT decryptGT(const pfsepubkey & pk, const PfsePuncturedPrivateKey & ski, const PseCipherText &ct) const;
 };
 }
 namespace cereal

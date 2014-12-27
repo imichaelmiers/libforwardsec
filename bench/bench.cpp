@@ -25,7 +25,9 @@ Benchmark benchKeygen(const unsigned int iterations, const unsigned int d =31,
     for(unsigned int i=0;i < iterations;i++){
 		Pfse test(d,n);
 		b.start();
-		test.keygen();
+		pfsepubkey pk;
+		PfseKeyStore sk;
+		test.keygen(pk,sk);
 		b.stop();
 		b.computeTimeInMilliseconds();
 	}
@@ -34,11 +36,12 @@ Benchmark benchKeygen(const unsigned int iterations, const unsigned int d =31,
 Benchmark benchEnc(const unsigned int iterations, const unsigned int d =31,
 		const unsigned int n = 1){
 	Pfse test(d,n);
-    test.keygen();
-    Benchmark benchE;
+	pfsepubkey pk;
+	PfseKeyStore sk;
+	test.keygen(pk,sk);    Benchmark benchE;
     for(unsigned int i=0;i < iterations;i++){
         benchE.start();
-        test.encrypt(test.pk,testVector,1,makeTags(n));
+        test.encrypt(pk,testVector,1,makeTags(n));
         benchE.stop();
         benchE.computeTimeInMilliseconds();
     }
@@ -47,12 +50,13 @@ Benchmark benchEnc(const unsigned int iterations, const unsigned int d =31,
 Benchmark benchDec(const unsigned int iterations, const unsigned int d =31,
 		const unsigned int n = 1){
 	Pfse test(d,n);
-    test.keygen();
-    Benchmark benchD;
-    PseCipherText ct = test.encrypt(test.pk,testVector,1,makeTags(n));;
+	pfsepubkey pk;
+	PfseKeyStore sk;
+	test.keygen(pk,sk);    Benchmark benchD;
+    PseCipherText ct = test.encrypt(pk,testVector,1,makeTags(n));;
     for(unsigned int i=0;i < iterations;i++){
         benchD.start();
-        test.decrypt(ct);
+        test.decrypt(pk,sk,ct);
         benchD.stop();
         benchD.computeTimeInMilliseconds();
     }
@@ -64,9 +68,11 @@ Benchmark benchPuncFirst(const unsigned int iterations, const unsigned int d =31
     Benchmark benchP;
     for(unsigned int i=0;i < iterations;i++){
     	Pfse test(d,n);
-        test.keygen();
+		pfsepubkey pk;
+		PfseKeyStore sk;
+		test.keygen(pk,sk);
         benchP.start();
-        test.puncture("punc"+std::to_string(i));
+        test.puncture(pk,sk,"punc"+std::to_string(i));
         benchP.stop();
         benchP.computeTimeInMilliseconds();
     }
@@ -79,10 +85,12 @@ Benchmark benchPunc(const unsigned int iterations, const unsigned int d =31,
     Benchmark benchP;
     for(unsigned int i=0;i < iterations;i++){
     	Pfse test(d,n);
-        test.keygen();
-        test.puncture("punc");
+		pfsepubkey pk;
+		PfseKeyStore sk;
+		test.keygen(pk,sk);
+        test.puncture(pk,sk,"punc");
         benchP.start();
-        test.puncture("punc"+std::to_string(i));
+        test.puncture(pk,sk,"punc"+std::to_string(i));
         benchP.stop();
         benchP.computeTimeInMilliseconds();
     }
@@ -95,9 +103,11 @@ Benchmark benchNextInterval(const unsigned int iterations, const unsigned int d 
     Benchmark benchN;
     for(unsigned int i=0;i < iterations;i++){
     	Pfse test(d,n);
-        test.keygen();
-        benchN.start();
-        test.prepareNextInterval();
+		pfsepubkey pk;
+		PfseKeyStore sk;
+		test.keygen(pk,sk);
+		benchN.start();
+        test.prepareNextInterval(pk,sk);
         benchN.stop();
         benchN.computeTimeInMilliseconds();
     }
@@ -114,16 +124,18 @@ std::vector<std::tuple<unsigned int ,Benchmark>> benchDecPunctured(const unsigne
 		cout.flush();
         Benchmark benchDP;
     	Pfse test(d,n);
-        test.keygen();
-        PseCipherText ct = test.encrypt(test.pk,testVector,1,makeTags(n));;
+		pfsepubkey pk;
+		PfseKeyStore sk;
+		test.keygen(pk,sk);
+		PseCipherText ct = test.encrypt(pk,testVector,1,makeTags(n));;
         for(unsigned int i =0;i<p;i++){
         	if(i%10 == 0) cout << ".";
-            test.puncture("punc"+std::to_string(i));
+            test.puncture(pk,sk,"punc"+std::to_string(i));
         }
         for(unsigned int i=0;i < iterations;i++){
         	if(i%10 == 0) cout << ".";
            benchDP.start();
-		   test.decrypt(ct);
+		   test.decrypt(pk,sk,ct);
 		   benchDP.stop();
 		   benchDP.computeTimeInMilliseconds();
         }
@@ -135,8 +147,10 @@ std::vector<std::tuple<unsigned int ,Benchmark>> benchDecPunctured(const unsigne
 template <class T>
 void sizes(const unsigned int d =31,const unsigned int n = 1){
 	Pfse test(d,n);
-    test.keygen();
-    PairingGroup group;
+	pfsepubkey pk;
+	PfseKeyStore sk;
+	test.keygen(pk,sk);
+	PairingGroup group;
     {
     		ZR z = group.randomZR();
     		stringstream ss;
@@ -178,7 +192,7 @@ void sizes(const unsigned int d =31,const unsigned int n = 1){
 		stringstream ss;
 		{
 			T oarchive(ss);
-			oarchive(test.pk);
+			oarchive(pk);
 		}
 		cout << "\tPK size:\t" << ss.tellp() <<" bytes " << endl;
 	}
@@ -186,12 +200,12 @@ void sizes(const unsigned int d =31,const unsigned int n = 1){
 		stringstream ss;
 		{
 			T oarchive(ss);
-			oarchive(test.privatekeys);
+			oarchive(sk);
 		}
 		cout << "\tSK size:\t" << ss.tellp() <<" bytes " << endl;
 	}
 
-    PseCipherText ct = test.encrypt(test.pk,testVector,1,makeTags(n));;
+    PseCipherText ct = test.encrypt(pk,testVector,1,makeTags(n));;
 	{
 		stringstream ss;
 		{

@@ -32,14 +32,14 @@ protected:
 class PFSETests : public ::testing::Test {
 protected: 
 	 virtual void SetUp(){
-	 	test.keygen();
-	 	pk = test.pk;
+	 	test.keygen(pk,sk);
 	 } 
 	 unsigned int d=3;
 	 PFSETests():test(d){}
  	 //PairingGroup group;
 	 Pfse test;
 	 pfsepubkey pk ;
+	 PfseKeyStore sk;
 	 bytes testkey = {{0x3a, 0x5d, 0x7a, 0x42, 0x44, 0xd3, 0xd8, 0xaf, 0xf5, 0xf3, 0xf1, 0x87, 0x81, 0x82, 0xb2,
 						  0x53, 0x57, 0x30, 0x59, 0x75, 0x8d, 0xe6, 0x18, 0x17, 0x14, 0xdf, 0xa5, 0xa4, 0x0b,0x43,0xAD,0xBC}};
 	// static PairingGroup _group;
@@ -107,7 +107,7 @@ TEST_F(PFSETests,Decrypt){
 
     //test.puncture(1,eight);
 
-    bytes result = test.decrypt(ct1);
+    bytes result = test.decrypt(pk,sk,ct1);
     ASSERT_EQ(testkey,result);
 }
 
@@ -115,10 +115,10 @@ TEST_F(PFSETests,FailWhenPunctured){
     vector<string> tags;
     tags.push_back("9");
     PseCipherText ct1 = test.encrypt(pk,testkey,1,tags);
-    test.puncture("9");
+    test.puncture(pk,sk,"9");
     //test.puncture(1,eight);
    // test.decrypt(ct1);
-   EXPECT_THROW(test.decrypt(ct1),PuncturedCiphertext);
+   EXPECT_THROW(test.decrypt(pk,sk,ct1),PuncturedCiphertext);
 }
 
 TEST_F(PFSETests,DecryptOnPuncture){
@@ -127,41 +127,41 @@ TEST_F(PFSETests,DecryptOnPuncture){
 
     PseCipherText ct = test.encrypt(pk,testkey,1,tags);
 
-    test.puncture(1,"8");
+    test.puncture(pk,sk,1,"8");
 
-    bytes result = test.decrypt(ct);
+    bytes result = test.decrypt(pk,sk,ct);
 
     EXPECT_EQ(testkey,result);
 
     // test multiple punctures;
-    test.puncture(1,"1");
-    test.puncture(1,"2");
-    test.puncture(1,"3");
+    test.puncture(pk,sk,1,"1");
+    test.puncture(pk,sk,1,"2");
+    test.puncture(pk,sk,1,"3");
 
-    EXPECT_EQ(testkey,test.decrypt(ct));
-	test.prepareNextInterval();
+    EXPECT_EQ(testkey,test.decrypt(pk,sk,ct));
+	test.prepareNextInterval(pk,sk);
 
     PseCipherText ct2 = test.encrypt(pk,testkey,2,tags);
 
-    bytes result1 = test.decrypt(ct2);
+    bytes result1 = test.decrypt(pk,sk,ct2);
 
     EXPECT_EQ(testkey,result1) ;
 }
 
 //
 TEST_F(PFSETests,PassOnPunctureNextInterval){
-	test.prepareNextInterval();
+	test.prepareNextInterval(pk,sk);
 
     vector<string> tags;
     tags.push_back("9");
 
-    test.puncture(2,"8");
-    test.puncture(2,"10");
+    test.puncture(pk,sk,2,"8");
+    test.puncture(pk,sk,2,"10");
 
-	test.prepareNextInterval();
+	test.prepareNextInterval(pk,sk);
     PseCipherText ct1 = test.encrypt(pk,testkey,3,tags);
 
-    bytes result = test.decrypt(ct1);
+    bytes result = test.decrypt(pk,sk,ct1);
     EXPECT_EQ(testkey,result);
 
 }
@@ -172,15 +172,15 @@ TEST_F(PFSETests,PunctureAndDeriveAll){
 	for(unsigned int i =1;i< intervals; i++){
 	    vector<string> tags;
 	    tags.push_back("9");
-	    test.puncture(i,"8");
-	    test.puncture(i,"10");
-	    test.puncture("11");
-	    test.puncture("12");
+	    test.puncture(pk,sk,i,"8");
+	    test.puncture(pk,sk,i,"10");
+	    test.puncture(pk,sk,"11");
+	    test.puncture(pk,sk,"12");
 	    PseCipherText ct1 = test.encrypt(pk,testkey,i,tags);
-	    bytes result = test.decrypt(ct1);
+	    bytes result = test.decrypt(pk,sk,ct1);
 	    EXPECT_EQ(testkey,result);
 	    if(i+1 < intervals){
-			test.prepareNextInterval();
+			test.prepareNextInterval(pk,sk);
 	    }
 	}
 }
@@ -196,34 +196,36 @@ TEST_F(PFSETests,Delete){
     vector<string> tags;
     tags.push_back("9");
 
-    test.puncture(1,"8");
-    test.puncture(1,"10");
+    test.puncture(pk,sk,1,"8");
+    test.puncture(pk,sk,1,"10");
 
     PseCipherText ct = test.encrypt(pk,testkey,1,tags);
 
-    bytes result = test.decrypt(ct);
+    bytes result = test.decrypt(pk,sk,ct);
     EXPECT_EQ(testkey,result);
-    test.eraseKey(1);
-    EXPECT_THROW(test.decrypt(ct),invalid_argument); // no key
-    EXPECT_THROW(test.eraseKey(2),invalid_argument); // no child keys so count delete
+    sk.erase(1);
+    EXPECT_THROW(test.decrypt(pk,sk,ct),invalid_argument); // no key
+    EXPECT_THROW(sk.erase(2),invalid_argument); // no child keys so count delete
 }
 TEST_F(PFSETests,PunctureWrongInterval){
-    EXPECT_THROW( test.puncture(2,"8");,invalid_argument); // can't puncture key we don't have children for.
+    EXPECT_THROW( test.puncture(pk,sk,2,"8");,invalid_argument); // can't puncture key we don't have children for.
 }
 TEST_F(PFSETests,DeriveKeyInFuture){
     PseCipherText ct1 = test.encrypt(pk,testkey,11,{"1"});
-    test.deriveKeyFor(11);
-    bytes result = test.decrypt(ct1);
+    test.deriveKeyFor(pk,sk,11);
+    bytes result = test.decrypt(pk,sk,ct1);
     ASSERT_EQ(testkey,result);
 }
 TEST_F(PFSETests,DeriveAllKeyInFuture){
 	unsigned int intervals = std::pow(2,d+1)-1;
 	for(unsigned int i =1;i<intervals;i++){
 	Pfse test1(d);
-	test1.keygen();
-    PseCipherText ct1 = test1.encrypt(test1.pk,testkey,i,{"1"});
-    test1.deriveKeyFor(i);
-    bytes result = test1.decrypt(ct1);
+	pfsepubkey pk1;
+	PfseKeyStore sk1;
+	test1.keygen(pk1,sk1);
+    PseCipherText ct1 = test1.encrypt(pk1,testkey,i,{"1"});
+    test1.deriveKeyFor(pk1,sk1,i);
+    bytes result = test1.decrypt(pk1,sk1,ct1);
     ASSERT_EQ(testkey,result);
 	}
 }
@@ -265,10 +267,10 @@ TEST_F(PFSETests,serializePfsepubkey){
 TEST_F(PFSETests,serializeGmppkePrivateKey){
 	std::stringstream ss;
 	PfseKeyStore storen;
-	EXPECT_NE(test.privatekeys,storen);
+	EXPECT_NE(sk,storen);
 	{
 		cereal::BinaryOutputArchive oarchive(ss);
-		oarchive(test.privatekeys);
+		oarchive(sk);
 	}
 //	int size = ss.tellp();
 //	cout << "serializeBbhHIBEPublicKey size " << size << endl;
@@ -276,7 +278,7 @@ TEST_F(PFSETests,serializeGmppkePrivateKey){
 	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
 	    iarchive(storen);
 	}
-	EXPECT_EQ(test.privatekeys,storen);
+	EXPECT_EQ(sk,storen);
 }
 
 
@@ -315,7 +317,7 @@ TEST_F(PFSETests,testSeperateDecryptandSerialize){
 	    iarchive(ctnew);
 	}
 	EXPECT_EQ(ct,ctnew);
-    EXPECT_EQ(testkey,test.decrypt(ctnew));
+    EXPECT_EQ(testkey,test.decrypt(pk,sk,ctnew));
 
 }
 

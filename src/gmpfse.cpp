@@ -14,7 +14,7 @@ using namespace std;
 namespace forwardsec{
 using namespace relicxx;
 const static string THE_HASH_CONSTANT = "Do not meddle in the affairs of dragons for you are crunchy and taste good with ketchup.";
-PfseKeyStore::PfseKeyStore(const GmppkePrivateKey & unpuncturedKey){
+PfseKeyStore::PfseKeyStore(const GmppkePrivateKey & unpuncturedKey,unsigned int depth):depth(depth){
 	this->unpucturedPPKEKey = unpuncturedKey;
 }
 PfsePuncturedPrivateKey PfseKeyStore::getKey(unsigned int i)  const{
@@ -46,8 +46,11 @@ void PfseKeyStore::updateKey(unsigned int i, const PfsePuncturedPrivateKey & p){
 	unpucturedHIBEKeys.erase(i);
 }
 void PfseKeyStore::erase(unsigned int i){
-	libforwardsec_DBG(cout << "Erasing key for inteval " << i << endl;)
-
+	libforwardsec_DBG(cout << "Erasing key for interval " << i << endl;)
+	if(needsChildKeys(i)){
+		 throw invalid_argument("Cannot delete key for interval "+std::to_string(i)+
+	                              " , haven't derived keys yet.");
+	}
 	puncturedKeys.erase(i); //FIXME secure erase.
 	unpucturedHIBEKeys.erase(i);
 }
@@ -61,29 +64,28 @@ void PfseKeyStore::addkey(unsigned int i, const BbghPrivatekey & h){
 	unpucturedHIBEKeys[i] = h;
 }
 
-bool PfseKeyStore::needsChildKeys(const unsigned int i, const unsigned int d) const{
-	vector<ZR> path = indexToPath(i,d);
-	if(path.size()==d){ // don't need keys if it's a leaf node.
+bool PfseKeyStore::needsChildKeys(const unsigned int i) const{
+	vector<ZR> path = indexToPath(i,depth);
+	if(path.size()==depth){ // don't need keys if it's a leaf node.
 		return false;
 	}
 	vector<ZR> lpath(path);
 	vector<ZR> rpath(path);
 	lpath.push_back(ZR(0));
 	rpath.push_back(ZR(1));
-	return !(hasKey(pathToIndex(lpath,d)) && hasKey(pathToIndex(rpath,d)));
+	return !(hasKey(pathToIndex(lpath,depth)) && hasKey(pathToIndex(rpath,depth)));
 }
 
 Pfse::Pfse(unsigned int d, unsigned int numtags):hibe(),ppke(),depth(d){
-	this->nextParentInterval = 1 ;
 	this->numtags = numtags;
     // group.setCurve(BN256);
     // cout << "depth" << depth << endl;
 }
 
 
-void Pfse::keygen(){
+void Pfse::keygen( pfsepubkey & pk,  PfseKeyStore &sk) const{
     G2 msk;
-    hibe.setup(depth,this->pk,msk);
+    hibe.setup(depth,pk,msk);
 
 
     std::vector<ZR> left, right;
@@ -92,39 +94,39 @@ void Pfse::keygen(){
     left.push_back(ZR(0));
     right.push_back(ZR(1));
 
-    hibe.keygen(this->pk,msk,left,sklefthibe);
-    hibe.keygen(this->pk,msk,right,skrighthibe);
+    hibe.keygen(pk,msk,left,sklefthibe);
+    hibe.keygen(pk,msk,right,skrighthibe);
     int l = pathToIndex(left,depth);
     int r = pathToIndex(right,depth);
     ZR gamma = group.randomZR();
-    sklefthibe.a0 = group.mul(sklefthibe.a0,group.exp(this->pk.g2G2,group.neg(gamma)));
-    skrighthibe.a0 = group.mul(skrighthibe.a0,group.exp(this->pk.g2G2,group.neg(gamma)));
+    sklefthibe.a0 = group.mul(sklefthibe.a0,group.exp(pk.g2G2,group.neg(gamma)));
+    skrighthibe.a0 = group.mul(skrighthibe.a0,group.exp(pk.g2G2,group.neg(gamma)));
 
     ppke.keygenPartial(gamma,pk,ppkeSK,numtags);
 
 
-    this->privatekeys = PfseKeyStore(ppkeSK);
-    this->privatekeys.addkey(l,sklefthibe);
-    this->privatekeys.addkey(r,skrighthibe);
-    nextParentInterval = 1;
-    this->prepareNextInterval();
+    sk = PfseKeyStore(ppkeSK,depth);
+    sk.addkey(l,sklefthibe);
+    sk.addkey(r,skrighthibe);
+    sk.nextParentInterval = 1;
+    this->prepareNextInterval(pk,sk);
 }
 
-void Pfse::prepareNextInterval(){
+void Pfse::prepareNextInterval(const pfsepubkey & pk, PfseKeyStore &sk)const {
 
-	prepareIntervalAfter(nextParentInterval);
-   	nextParentInterval ++;
+	prepareIntervalAfter(pk,sk,sk.nextParentInterval);
+   	sk.nextParentInterval ++;
 }
 
-void Pfse::prepareIntervalAfter(const unsigned int& i) {
+void Pfse::prepareIntervalAfter(const pfsepubkey & pk, PfseKeyStore &sk,const unsigned int& i) const{
     std::vector<ZR> path = indexToPath(i,depth);
     unsigned int pathlength = path.size();
-    const PfsePuncturedPrivateKey & k = privatekeys.getKey(i); //FIXME refrence could be deleted
+    const PfsePuncturedPrivateKey & k = sk.getKey(i); //FIXME refrence could be deleted
     if(k.punctured()){
-         throw logic_error("The parent tag is already punctured. The software should never allow this to happen"
+         throw logic_error("The parent key is already punctured. The software should never allow this to happen"
         		 " You must call prepareNextInterval before starting");
     }
-    if(!privatekeys.needsChildKeys(i,depth)){
+    if(!sk.needsChildKeys(i)){
     	return;
     }
     if (pathlength  < depth){ // Not a leaf node, so derive new hibe keys.
@@ -141,20 +143,20 @@ void Pfse::prepareIntervalAfter(const unsigned int& i) {
         hibe.keygen(pk,k.hibeSK,path,skrighthibe);
 
         //store keys
-        privatekeys.addkey(leftChildIndex,sklefthibe);
-        privatekeys.addkey(rightChildIndex,skrighthibe);
+        sk.addkey(leftChildIndex,sklefthibe);
+        sk.addkey(rightChildIndex,skrighthibe);
     }
 }
 
-void Pfse::deriveKeyFor(const unsigned int& i,
-		const bool& storeIntermediateKeys) {
+void Pfse::deriveKeyFor(const pfsepubkey & pk, PfseKeyStore &sk,const unsigned int& i,
+		const bool& storeIntermediateKeys) const{
 	std::vector<ZR> path = indexToPath(i,depth);
 	std::vector<ZR> ancestor;
-	while(ancestor.size()<path.size() && privatekeys.hasKey(pathToIndex(ancestor,depth)+1)){
+	while(ancestor.size()<path.size() && sk.hasKey(pathToIndex(ancestor,depth)+1)){
 		ancestor = std::vector<ZR>(path.begin(),path.begin()+ancestor.size()+1);
 
 	}
-    const PfsePuncturedPrivateKey & k = privatekeys.getKey(pathToIndex(ancestor,depth));
+    const PfsePuncturedPrivateKey & k = sk.getKey(pathToIndex(ancestor,depth));
     if(k.punctured()){
          throw logic_error("The parent tag is already punctured. The software should never allow this to happen");
     }
@@ -164,14 +166,14 @@ void Pfse::deriveKeyFor(const unsigned int& i,
 		ancestor = std::vector<ZR>(path.begin(),path.begin()+ancestor.size()+1);
 		hibe.keygen(pk,curk,ancestor,curk);
 		if(storeIntermediateKeys || ancestor.size()==path.size()){
-			 privatekeys.addkey(pathToIndex(ancestor,depth),curk);
+			 sk.addkey(pathToIndex(ancestor,depth),curk);
 		}
 	}
 
 }
 
 
-void Pfse::bindKey(PfsePuncturedPrivateKey & k) {
+void Pfse::bindKey(const pfsepubkey & pk,PfsePuncturedPrivateKey & k) const{
     const ZR gamma = group.randomZR();
     GmppkePrivateKey puncturedKey;
 
@@ -189,35 +191,26 @@ void Pfse::bindKey(PfsePuncturedPrivateKey & k) {
 }
 
 
-void Pfse::eraseKey(unsigned int interval) {
-	if(privatekeys.needsChildKeys(interval,depth)){
-		throw invalid_argument("Cannot delete key for interval "+std::to_string(interval)+
-				" , haven't derived keys yet.");
-	}else{
-		privatekeys.erase(interval);
-	}
-}
-
-void Pfse::puncture(string tag){
+void Pfse::puncture(const pfsepubkey & pk, PfseKeyStore &sk,string tag) const{
 	// The current active interval is one behind the nextParentInterval
-    puncture(nextParentInterval-1,tag);
+    puncture(pk,sk,sk.nextParentInterval-1,tag);
 }
 
-void Pfse::puncture(unsigned int interval, string tag){
-	if(privatekeys.needsChildKeys(interval,depth)){
+void Pfse::puncture(const pfsepubkey & pk, PfseKeyStore &sk,unsigned int interval, string tag) const{
+	if(sk.needsChildKeys(interval)){
 		throw invalid_argument("Cannot puncture key for  interval "+std::to_string(interval)+
-				" , haven't derived keys yet. Last interval with keys is " +std::to_string(nextParentInterval-1));
+				" , haven't derived keys yet. Last interval with keys is " +std::to_string(sk.nextParentInterval-1));
 	}
 
-    PfsePuncturedPrivateKey k = privatekeys.getKey(interval);
+    PfsePuncturedPrivateKey k = sk.getKey(interval);
 
     //if the key is unpunctured, we need to bind in a new punctured key
     if(!k.punctured()){
     	libforwardsec_DBG(cout << interval << "not already punctured" << endl;)
-		bindKey(k);
+		bindKey(pk,k);
     }
     ppke.puncture(pk,k.ppkeSK,tag);
-	privatekeys.updateKey(interval,k);
+	sk.updateKey(interval,k);
 
 //privatekeys[interval] = sk;
 
@@ -267,9 +260,9 @@ PseCipherText Pfse::encryptGT(const pfsepubkey & pk, const GT & M,  const ZR & s
 
     return ct;
 }
-bytes Pfse::decrypt(const PseCipherText &ct) const{
-    const PfsePuncturedPrivateKey & sk = privatekeys.getKey(ct.interval);
-	vector<string> intersect =sk.ppkeSK.puncturedIntersect(ct.ppkeCT.tags);
+bytes Pfse::decrypt(const pfsepubkey & pk, const PfseKeyStore &sk,const PseCipherText &ct) const{
+    const PfsePuncturedPrivateKey & ski = sk.getKey(ct.interval);
+	vector<string> intersect =ski.ppkeSK.puncturedIntersect(ct.ppkeCT.tags);
     if(intersect.size()>0){
     	string duplicates = "";
     	bool first = true;
@@ -282,11 +275,11 @@ bytes Pfse::decrypt(const PseCipherText &ct) const{
     	}
     	throw PuncturedCiphertext("cannot decrypt. The key is punctured on the following tags in the ciphertext: " + duplicates + ".");
     }
-    return decryptFO(sk,ct);
+    return decryptFO(pk,ski,ct);
 }
 
-bytes Pfse::decryptFO(const PfsePuncturedPrivateKey & sk,const PseCipherText &ct) const{
-    GT x = decryptGT(sk,ct);
+bytes Pfse::decryptFO(const pfsepubkey & pk,const PfsePuncturedPrivateKey & ski,const PseCipherText &ct) const{
+    GT x = decryptGT(pk,ski,ct);
     bytes bytestohash = x.getBytes();
     // since we don't have a different hash function, we simply postfix it with a magic constant;
     bytestohash.insert(bytestohash.begin(),THE_HASH_CONSTANT.begin(),THE_HASH_CONSTANT.end());
@@ -302,10 +295,10 @@ bytes Pfse::decryptFO(const PfsePuncturedPrivateKey & sk,const PseCipherText &ct
     }
 }
 
-GT Pfse::decryptGT(const PfsePuncturedPrivateKey & sk,const PseCipherText &ct) const {
-    GT b1 = hibe.recoverBlind(sk.hibeSK,ct.hibeCT);
+GT Pfse::decryptGT(const pfsepubkey & pk,const PfsePuncturedPrivateKey & ski,const PseCipherText &ct) const {
+    GT b1 = hibe.recoverBlind(ski.hibeSK,ct.hibeCT);
    // assert(b1== group.exp(group.exp(group.pair(g2G1,gG2),group.mul(ss,group.sub(aa,gam1))),neg));
-    GT b2 = ppke.recoverBlind(pk,sk.ppkeSK,ct.ppkeCT);
+    GT b2 = ppke.recoverBlind(pk,ski.ppkeSK,ct.ppkeCT);
    // assert(b2 ==group.exp(group.pair(g2G1,gG2),group.mul(ss,gam1)));
     return group.div(ct.ct0,group.mul(b1,b2));
 }
