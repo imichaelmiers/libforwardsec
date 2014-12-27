@@ -13,6 +13,7 @@
 #include <array>
 #include <type_traits> // for static assert
 #include <cstring> // for memcpy
+#include <algorithm> // for std::fill
 
 
 // define classes
@@ -111,10 +112,14 @@ public:
 #if ALLOC == AUTO
 			z[0] = rhs.z[0];
 			order[0] = rhs.order[0];
+			std::memset((&rhs.z[0]),sizeof(rhs.z),0);
 #else
 			z=rhs.z;
 			order=rhs.order;
+			rhs.z=nullptr;
+			rhs.order=nulltpr;
 #endif
+
 			isInit = rhs.isInit;
 		}
 		return * this;
@@ -198,8 +203,10 @@ public:
 			}
 #if ALLOC == AUTO
 			g[0] = rhs.g[0];
+			std::memset((&rhs.g[0]),sizeof(rhs.g),0);
 #else
 			g=rhs.g;
+			rhs.g=nullptr;
 #endif
 			isInit =rhs.isInit;
 		}
@@ -268,8 +275,10 @@ public:
 			}
 #if ALLOC == AUTO
 			g[0] = rhs.g[0];
+			std::memset((&rhs.g[0]),sizeof(rhs.g),0);
 #else
 			g=rhs.g;
+			rhs.g=nulltpr;
 #endif
 			isInit = rhs.isInit;
 		}
@@ -340,8 +349,10 @@ public:
 			}
 #if ALLOC == AUTO
 			std::memcpy(*g,*(rhs.g),sizeof(g));
+			std::memset(*(rhs.g),sizeof(rhs.g),0);
 #else
 			g=rhs.g;
+			rhs.g=nullptr;
 #endif
 			isInit = rhs.isInit;
 		}
