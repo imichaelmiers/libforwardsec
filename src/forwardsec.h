@@ -33,10 +33,10 @@ public:
 
 class baseKey{
 public:
-	G1 gG1;
-	G2 gG2;
-	G1 g2G1;
-	G2 g2G2;
+	relicxx::G1 gG1;
+	relicxx::G2 gG2;
+	relicxx::G1 g2G1;
+	relicxx::G2 g2G2;
 	friend bool operator==(const baseKey& x, const baseKey& y){
 		return (x.gG1 == y.gG1 && x.gG2 == y.gG2 && x.g2G1 == y.g2G1
 				&& x.g2G2 == y.g2G2);

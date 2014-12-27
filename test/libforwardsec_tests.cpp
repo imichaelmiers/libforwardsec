@@ -17,6 +17,7 @@
 
 using namespace std;
 using namespace forwardsec;
+using namespace relicxx;
 class Gmmppketest : public ::testing::Test {
 protected:
 	 virtual void SetUp(){

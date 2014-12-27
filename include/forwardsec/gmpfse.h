@@ -69,7 +69,7 @@ public:
 		return !(l==r);
 	}
 protected:
-	GT ct0;
+	relicxx::GT ct0;
 	PartialBbghCT hibeCT;
 	PartialGmmppkeCT ppkeCT;
 	unsigned int interval;
@@ -169,21 +169,25 @@ public:
 
 
 private:
-	PairingGroup group;
+	relicxx::PairingGroup group;
 	Bbghibe hibe;
 	Gmppke ppke;
 	unsigned int depth;
 	unsigned int numtags;
+	unsigned int nextParentInterval;
+
 	void bindKey(PfsePuncturedPrivateKey & k);
+
 	PseCipherText encryptFO( const pfsepubkey & pk, const bytes & bitmsg,
 			              const unsigned int interval, const std::vector<std::string>  & tags) const;
 	PseCipherText encryptFO( const pfsepubkey & pk, const bytes & bitmsg,
-			const GT & x, const unsigned int interval, const std::vector<std::string>  & tags) const;	PseCipherText encryptGT( const pfsepubkey & pk, const GT & M,const ZR & s, const unsigned int interval, const std::vector<std::string>  & tags) const;
+			const relicxx::GT & x, const unsigned int interval, const std::vector<std::string>  & tags) const;
+	PseCipherText encryptGT( const pfsepubkey & pk, const relicxx::GT & M,const relicxx::ZR & s,
+			const unsigned int interval, const std::vector<std::string>  & tags) const;
 
 
 	bytes decryptFO(const PfsePuncturedPrivateKey &sk, const PseCipherText &ct) const;
-	GT decryptGT(const PfsePuncturedPrivateKey & sk, const PseCipherText &ct) const;
-	unsigned int nextParentInterval;
+	relicxx::GT decryptGT(const PfsePuncturedPrivateKey & sk, const PseCipherText &ct) const;
 };
 }
 namespace cereal

@@ -36,10 +36,10 @@ public:
 				ppkeg1,d,gqofxG1,gqofxG2);
 	}
 protected:
-	G2 ppkeg1;
+	relicxx::G2 ppkeg1;
 	unsigned int d;
-	std::vector<G1> gqofxG1;
-	std::vector<G2> gqofxG2;
+	std::vector<relicxx::G1> gqofxG1;
+	std::vector<relicxx::G2> gqofxG2;
 	friend class ::cereal::access;
 	friend class Gmppke;
 	friend class Pfse;
@@ -56,9 +56,9 @@ public:
 		return !(x==y);
 	}
 protected:
-	G2 sk1;
-	G2 sk2;
-	G2 sk3;
+	relicxx::G2 sk1;
+	relicxx::G2 sk2;
+	relicxx::G2 sk3;
 	std::string sk4;
 	template <class Archive>
 	  void serialize( Archive & ar )
@@ -119,8 +119,8 @@ public:
 		friend bool canDecrypt(const GmppkePrivateKey & sk,const PartialGmmppkeCT & ct);
 
 protected:
-	G1 ct2;
-	std::vector<G1> ct3;
+	relicxx::G1 ct2;
+	std::vector<relicxx::G1> ct3;
     std::vector<std::string> tags;
 	template <class Archive>
 	void serialize( Archive & ar ){
@@ -136,7 +136,7 @@ public:
 	GmmppkeCT(){};
 	GmmppkeCT(const  PartialGmmppkeCT & c) : PartialGmmppkeCT(c){}
 protected:
-	GT ct1;
+	relicxx::GT ct1;
 	friend bool operator==(const GmmppkeCT& x,const GmmppkeCT& y){
 		return x.ct1 == y.ct1 && (PartialGmmppkeCT) x == (PartialGmmppkeCT) y;
 	}
@@ -164,34 +164,34 @@ public:
 
 	void puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const std::string & tag) const;
 
-	PartialGmmppkeCT blind(const GmppkePublicKey & pk, const ZR & s,  const std::vector<std::string> & tags) const;
+	PartialGmmppkeCT blind(const GmppkePublicKey & pk, const relicxx::ZR & s,  const std::vector<std::string> & tags) const;
 
-	GmmppkeCT encrypt(const GmppkePublicKey & pk,const GT & M,const std::vector<std::string> & tags) const;
+	GmmppkeCT encrypt(const GmppkePublicKey & pk,const relicxx::GT & M,const std::vector<std::string> & tags) const;
 
 
-	GT recoverBlind(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const PartialGmmppkeCT & ct ) const;
-	GT decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct ) const;
+	relicxx::GT recoverBlind(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const PartialGmmppkeCT & ct ) const;
+	relicxx::GT decrypt(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct ) const;
 	//For testing purposes only
-	GT decrypt_unchecked(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct ) const;
+	relicxx::GT decrypt_unchecked(const GmppkePublicKey & pk, const GmppkePrivateKey & sk, const GmmppkeCT & ct ) const;
 
 private:
-	PairingGroup group;
+	relicxx::PairingGroup group;
 //	G1 vG1(const std::vector<G1> & gqofxG1, const ZR & x) const;
 //	G2 vG2(const std::vector<G2> & gqofxG2, const ZR & x) const;
 	template <class T>
 	T  vx(const std::vector<T> & gqofxG1, const std::string & x) const{
-	    std::vector<ZR> xcords;
+	    std::vector<relicxx::ZR> xcords;
 	    int size = gqofxG1.size();
 	    for(int i=0;i<size;i++){
-	        ZR xcord = i;
+	    	relicxx::ZR xcord = i;
 	        xcords.push_back(xcord);
 	    }
 	    return LagrangeInterpInExponent(group,group.hashListToZR(x),xcords,gqofxG1);
 
 	}
 
-	void keygenPartial(const ZR & gamma,GmppkePublicKey & pk, GmppkePrivateKey & sk,const unsigned int & d=1) const;
-	GmppkePrivateKeyShare skgen(const GmppkePublicKey &pk,const ZR & alpha ) const;
+	void keygenPartial(const relicxx::ZR & gamma,GmppkePublicKey & pk, GmppkePrivateKey & sk,const unsigned int & d=1) const;
+	GmppkePrivateKeyShare skgen(const GmppkePublicKey &pk,const relicxx::ZR & alpha ) const;
 	friend class Pfse;
 };
 

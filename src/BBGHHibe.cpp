@@ -9,6 +9,7 @@
 namespace forwardsec{
 
 using namespace std;
+using namespace relicxx;
 void Bbghibe::setup(const unsigned int & l, BbhHIBEPublicKey & pk, G2 & msk) const
 {
     ZR alpha = group.randomZR();

@@ -6,6 +6,7 @@
 namespace forwardsec{
 
 using namespace std;
+using namespace relicxx;
 static const string  NULLTAG = "42"; // the reserved tag
 
 using namespace std;

@@ -29,10 +29,10 @@ public:
 		return !(x==y);
 	}
 protected:
-	G2 a0;
-	G2 a1;
-	std::vector<G1> b;
-	std::vector<G2> bG2;
+	relicxx::G2 a0;
+	relicxx::G2 a1;
+	std::vector<relicxx::G1> b;
+	std::vector<relicxx::G2> bG2;
 	template <class Archive>
 	  void serialize( Archive & ar )
 	{
@@ -57,11 +57,11 @@ public:
 
 protected:
 	unsigned int l;
-	G2 hibeg1;
-	G1 g3G1;
-	G2 g3G2;
-	std::vector<G1> hG1;
-	std::vector<G2> hG2;
+	relicxx::G2 hibeg1;
+	relicxx::G1 g3G1;
+	relicxx::G2 g3G2;
+	std::vector<relicxx::G1> hG1;
+	std::vector<relicxx::G2> hG2;
 	template <class Archive>
 	  void serialize( Archive & ar )
 	{
@@ -84,8 +84,8 @@ public:
 		return !(x==y);
 	}
 protected:
-	G1 B;
-	G1 C;
+	relicxx::G1 B;
+	relicxx::G1 C;
 	template <class Archive>
 	void serialize( Archive & ar ){
 		ar(B,C);
@@ -106,7 +106,7 @@ public:
 		return !(x==y);
 	}
 protected:
-	GT A;
+	relicxx::GT A;
 	template <class Archive>
 	void serialize( Archive & ar ){
 		ar(::cereal::base_class<PartialBbghCT>(this),A);
@@ -119,20 +119,20 @@ protected:
 class Bbghibe
 {
 public:
-	PairingGroup group;
+	relicxx::PairingGroup group;
 	Bbghibe(){};
 	~Bbghibe() {};
 
-	void setup(const unsigned int & l, BbhHIBEPublicKey & pk, G2 & msk) const;
+	void setup(const unsigned int & l, BbhHIBEPublicKey & pk, relicxx::G2 & msk) const;
 
-	void keygen(const BbhHIBEPublicKey & pk,const G2 & msk,const  std::vector<ZR> & id, BbghPrivatekey & sk) const;
-    void keygen(const BbhHIBEPublicKey & pk,const  BbghPrivatekey & sk, const std::vector<ZR> & id,BbghPrivatekey & skout) const;
+	void keygen(const BbhHIBEPublicKey & pk,const relicxx::G2 & msk,const  std::vector<relicxx::ZR> & id, BbghPrivatekey & sk) const;
+    void keygen(const BbhHIBEPublicKey & pk,const  BbghPrivatekey & sk, const std::vector<relicxx::ZR> & id,BbghPrivatekey & skout) const;
 
-    PartialBbghCT blind(const BbhHIBEPublicKey & pk,const ZR &s, const  std::vector<ZR>  & id) const;
-    BbghCT encrypt(const BbhHIBEPublicKey & pk, const GT & M, const std::vector<ZR>  & id ) const;
+    PartialBbghCT blind(const BbhHIBEPublicKey & pk,const relicxx::ZR &s, const  std::vector<relicxx::ZR>  & id) const;
+    BbghCT encrypt(const BbhHIBEPublicKey & pk, const relicxx::GT & M, const std::vector<relicxx::ZR>  & id ) const;
 
-	GT recoverBlind(const BbghPrivatekey & sk, const PartialBbghCT & ct) const; // decrypt for PFSE
-	GT decrypt(const BbghPrivatekey & sk,const BbghCT & ct) const; // actual decrypt
+    relicxx::GT recoverBlind(const BbghPrivatekey & sk, const PartialBbghCT & ct) const; // decrypt for PFSE
+    relicxx::GT decrypt(const BbghPrivatekey & sk,const BbghCT & ct) const; // actual decrypt
 
 };
 }

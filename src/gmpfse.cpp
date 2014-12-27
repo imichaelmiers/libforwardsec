@@ -12,6 +12,7 @@ using namespace std;
 #define libforwardsec_DBG(x)
 #endif
 namespace forwardsec{
+using namespace relicxx;
 const static string THE_HASH_CONSTANT = "Do not meddle in the affairs of dragons for you are crunchy and taste good with ketchup.";
 PfseKeyStore::PfseKeyStore(const GmppkePrivateKey & unpuncturedKey){
 	this->unpucturedPPKEKey = unpuncturedKey;

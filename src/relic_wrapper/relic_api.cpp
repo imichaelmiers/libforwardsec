@@ -2,6 +2,8 @@
 #include <stdexcept>
 #include "relic_api.h"
 using namespace std;
+namespace relicxx{
+
 void ro_error(void)
 {
 	throw  std::invalid_argument("writing to read only object");
@@ -465,13 +467,6 @@ GT pairing(const G1& g1, const G2& g2)
 	return gt;
 }
 
-//GT pairing(const G1& g10, const G1& g11)
-//{
-//	GT gt;
-//	/* compute optimal ate pairing */
-////	pp_map_oatep(gt.g, g1.g, g2.g);
-//	return gt;
-//}
 
 bool GT::ismember(bn_t order)
 {
@@ -649,12 +644,6 @@ GT PairingGroup::pair(const G2 & h, const G1 & g) const
 	return pairing(g, h);
 }
 
-
-// GT PairingGroup::pair(G1 g, G1 h)
-// {
-// 	return pairing(g, h);
-// }
-
 bool PairingGroup::ismember(GT & g)
 {
 	return g.ismember(grp_order); // add code to check
@@ -826,3 +815,4 @@ G2 PairingGroup::hashListToG2(const bytes & b) const
 //    }
 //    return t;
 //}
+}

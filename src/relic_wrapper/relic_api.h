@@ -63,8 +63,10 @@ static_assert(MULTI == OPENMP, "Error. Relicxx compiled to use OPENMP. But Relic
 #endif
 #endif
 
-typedef  std::vector<uint8_t> bytes;
 #define convert_str(a)  a /* nothing */
+
+namespace relicxx{
+typedef  std::vector<uint8_t> bytes;
 void ro_error(void);
 
 const static std::string HASH_FUNCTION_STRINGS       = "0";
@@ -473,5 +475,5 @@ private:
 //template<> 
 //ZR PairingGroup::random12<ZR>(){return this->random(ZR_t);}
 //byte256 intToBits(const ZR & id);
-
+}
 #endif

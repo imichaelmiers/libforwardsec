@@ -4,6 +4,7 @@
 #include "gtest/gtest.h"
 #include "relic_wrapper/relic_api.h"
 using namespace std;
+using namespace relicxx;
 void rand(ZR &a, PairingGroup &g){
 	a= g.randomZR();
 }

@@ -2,6 +2,7 @@
 #include"util.h"
 using namespace std;
 namespace forwardsec{
+using namespace relicxx;
 
 bytes xorarray(const bytes & l,const bytes & r){
 	if(l.size()!=r.size()){
