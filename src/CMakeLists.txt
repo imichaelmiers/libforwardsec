@@ -1,5 +1,6 @@
 file(GLOB FORWARDSEC_SRCS *.cpp)
 file(GLOB_RECURSE RELIC_WARPER_SRCS relic_wrapper/*.c*)
-add_library(forwardsec ${FORWARDSEC_SRCS} ${RELIC_WARPER_SRCS})
+add_library(forwardsec SHARED ${FORWARDSEC_SRCS} ${RELIC_WARPER_SRCS})
 target_include_directories (forwardsec PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(forwardsec LINK_PUBLIC ${RELIC_LIBRARY})
+install(TARGETS forwardsec DESTINATION bin)
