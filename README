@@ -9,6 +9,8 @@ Dependencies
 	* gmp (assuming relic is configured to use it) 
 * For serialization:
 	*  cereal(https://github.com/USCiLab/cereal) 
+* For testing:
+	* Google test 
 	
 
 Build
@@ -33,7 +35,7 @@ cmake --help
 
 
 
- Building dependencies
+ Instaling  dependencies
 ----------------------------
 
 # Relic (note, depends on gmp)
@@ -53,3 +55,7 @@ cmake --help
  	cd cereal
  	git checkout v1.0.0
  	cp -R ./include/* /usr/local/include/
+ 	
+ # Google test
+    git submodule init
+    git submodule update
