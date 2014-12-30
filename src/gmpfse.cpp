@@ -14,10 +14,10 @@ using namespace std;
 namespace forwardsec{
 using namespace relicxx;
 const static string THE_HASH_CONSTANT = "Do not meddle in the affairs of dragons for you are crunchy and taste good with ketchup.";
-PfseKeyStore::PfseKeyStore(const GmppkePrivateKey & unpuncturedKey,unsigned int depth):depth(depth){
+GMPfsePrivateKey::GMPfsePrivateKey(const GmppkePrivateKey & unpuncturedKey,unsigned int depth):depth(depth){
 	this->unpucturedPPKEKey = unpuncturedKey;
 }
-PfsePuncturedPrivateKey PfseKeyStore::getKey(unsigned int i)  const{
+PfsePuncturedPrivateKey GMPfsePrivateKey::getKey(unsigned int i)  const{
 	PfsePuncturedPrivateKey p;
 	auto x = puncturedKeys.find(i);
 	if(x == puncturedKeys.end()){
@@ -38,14 +38,14 @@ PfsePuncturedPrivateKey PfseKeyStore::getKey(unsigned int i)  const{
 	return p;
 }
 
-void PfseKeyStore::updateKey(unsigned int i, const PfsePuncturedPrivateKey & p){
+void GMPfsePrivateKey::updateKey(unsigned int i, const PfsePuncturedPrivateKey & p){
 //	if(p.ppkeSK == unpucturedPPKEKey){
 //		throw invalid_argument("Key not punctured");
 //	}
 	puncturedKeys[i] = p;
 	unpucturedHIBEKeys.erase(i);
 }
-void PfseKeyStore::erase(unsigned int i){
+void GMPfsePrivateKey::erase(unsigned int i){
 	libforwardsec_DBG(cout << "Erasing key for interval " << i << endl;)
 	if(needsChildKeys(i)){
 		 throw invalid_argument("Cannot delete key for interval "+std::to_string(i)+
@@ -54,17 +54,17 @@ void PfseKeyStore::erase(unsigned int i){
 	puncturedKeys.erase(i); //FIXME secure erase.
 	unpucturedHIBEKeys.erase(i);
 }
-bool PfseKeyStore::hasKey(const unsigned int i) const{
+bool GMPfsePrivateKey::hasKey(const unsigned int i) const{
 	return puncturedKeys.count(i) || unpucturedHIBEKeys.count(i);
 }
 
 
-void PfseKeyStore::addkey(unsigned int i, const BbghPrivatekey & h){
+void GMPfsePrivateKey::addkey(unsigned int i, const BbghPrivatekey & h){
 	libforwardsec_DBG(cout << "added key for interval " << i << endl;);
 	unpucturedHIBEKeys[i] = h;
 }
 
-bool PfseKeyStore::needsChildKeys(const unsigned int i) const{
+bool GMPfsePrivateKey::needsChildKeys(const unsigned int i) const{
 	vector<ZR> path = indexToPath(i,depth);
 	if(path.size()==depth){ // don't need keys if it's a leaf node.
 		return false;
@@ -83,7 +83,7 @@ GMPfse::GMPfse(unsigned int d, unsigned int numtags):hibe(),ppke(),depth(d){
 }
 
 
-void GMPfse::keygen( pfsepubkey & pk,  PfseKeyStore &sk) const{
+void GMPfse::keygen( pfsepubkey & pk,  GMPfsePrivateKey &sk) const{
     G2 msk;
     hibe.setup(depth,pk,msk);
 
@@ -105,20 +105,20 @@ void GMPfse::keygen( pfsepubkey & pk,  PfseKeyStore &sk) const{
     ppke.keygenPartial(gamma,pk,ppkeSK,numtags);
 
 
-    sk = PfseKeyStore(ppkeSK,depth);
+    sk = GMPfsePrivateKey(ppkeSK,depth);
     sk.addkey(l,sklefthibe);
     sk.addkey(r,skrighthibe);
     sk.nextParentInterval = 1;
     this->prepareNextInterval(pk,sk);
 }
 
-void GMPfse::prepareNextInterval(const pfsepubkey & pk, PfseKeyStore &sk)const {
+void GMPfse::prepareNextInterval(const pfsepubkey & pk, GMPfsePrivateKey &sk)const {
 
 	prepareIntervalAfter(pk,sk,sk.nextParentInterval);
    	sk.nextParentInterval ++;
 }
 
-void GMPfse::prepareIntervalAfter(const pfsepubkey & pk, PfseKeyStore &sk,const unsigned int& i) const{
+void GMPfse::prepareIntervalAfter(const pfsepubkey & pk, GMPfsePrivateKey &sk,const unsigned int& i) const{
     std::vector<ZR> path = indexToPath(i,depth);
     unsigned int pathlength = path.size();
     const PfsePuncturedPrivateKey & k = sk.getKey(i); //FIXME refrence could be deleted
@@ -148,7 +148,7 @@ void GMPfse::prepareIntervalAfter(const pfsepubkey & pk, PfseKeyStore &sk,const 
     }
 }
 
-void GMPfse::deriveKeyFor(const pfsepubkey & pk, PfseKeyStore &sk,const unsigned int& i,
+void GMPfse::deriveKeyFor(const pfsepubkey & pk, GMPfsePrivateKey &sk,const unsigned int& i,
 		const bool& storeIntermediateKeys) const{
 	std::vector<ZR> path = indexToPath(i,depth);
 	std::vector<ZR> ancestor;
@@ -191,12 +191,12 @@ void GMPfse::bindKey(const pfsepubkey & pk,PfsePuncturedPrivateKey & k) const{
 }
 
 
-void GMPfse::puncture(const pfsepubkey & pk, PfseKeyStore &sk,string tag) const{
+void GMPfse::puncture(const pfsepubkey & pk, GMPfsePrivateKey &sk,string tag) const{
 	// The current active interval is one behind the nextParentInterval
     puncture(pk,sk,sk.nextParentInterval-1,tag);
 }
 
-void GMPfse::puncture(const pfsepubkey & pk, PfseKeyStore &sk,unsigned int interval, string tag) const{
+void GMPfse::puncture(const pfsepubkey & pk, GMPfsePrivateKey &sk,unsigned int interval, string tag) const{
 	if(sk.needsChildKeys(interval)){
 		throw invalid_argument("Cannot puncture key for  interval "+std::to_string(interval)+
 				" , haven't derived keys yet. Last interval with keys is " +std::to_string(sk.nextParentInterval-1));
@@ -260,7 +260,7 @@ PseCipherText GMPfse::encryptGT(const pfsepubkey & pk, const GT & M,  const ZR &
 
     return ct;
 }
-bytes GMPfse::decrypt(const pfsepubkey & pk, const PfseKeyStore &sk,const PseCipherText &ct) const{
+bytes GMPfse::decrypt(const pfsepubkey & pk, const GMPfsePrivateKey &sk,const PseCipherText &ct) const{
     const PfsePuncturedPrivateKey & ski = sk.getKey(ct.interval);
 	vector<string> intersect =ski.ppkeSK.puncturedIntersect(ct.ppkeCT.tags);
     if(intersect.size()>0){

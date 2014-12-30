@@ -17,7 +17,7 @@
 
 namespace forwardsec{
 class GMPfse;
-class PfseKeyStore;
+class GMPfsePrivateKey;
 class pfsepubkey: public BbhHIBEPublicKey,  public GmppkePublicKey{
 	friend bool operator==(const pfsepubkey& x, const pfsepubkey& y){
 		return (BbhHIBEPublicKey)x == (BbhHIBEPublicKey)y && (GmppkePublicKey)x == (GmppkePublicKey)y;
@@ -55,7 +55,7 @@ protected:
 	}
 	friend class ::cereal::access;
 	friend class GMPfse;
-	friend class PfseKeyStore;
+	friend class GMPfsePrivateKey;
 };
 
 class PseCipherText{
@@ -86,10 +86,10 @@ protected:
 //		//ar(b.ct0,b.hibeCT,b.ppkeCT,b.interval,b.xorct);
 //}
 
-class PfseKeyStore{
+class GMPfsePrivateKey{
 public:
-	PfseKeyStore(){};
-	PfseKeyStore(const GmppkePrivateKey & unpuncturedKey,unsigned int depth);
+	GMPfsePrivateKey(){};
+	GMPfsePrivateKey(const GmppkePrivateKey & unpuncturedKey,unsigned int depth);
 	PfsePuncturedPrivateKey getKey(unsigned int i) const;
 	void updateKey(unsigned int i, const PfsePuncturedPrivateKey & p);
 	void addkey(unsigned int i, const BbghPrivatekey & h);
@@ -97,11 +97,11 @@ public:
 	bool hasKey(const unsigned int i) const;
 	bool needsChildKeys(const unsigned int i) const;
 
-	friend bool operator==(const PfseKeyStore& l,const PfseKeyStore& r){
+	friend bool operator==(const GMPfsePrivateKey& l,const GMPfsePrivateKey& r){
 		return l.puncturedKeys == r.puncturedKeys && l.unpucturedHIBEKeys == r.unpucturedHIBEKeys &&
 				l.unpucturedPPKEKey == r.unpucturedPPKEKey;
 	}
-	friend bool operator!=(const PfseKeyStore& l,const PfseKeyStore& r){
+	friend bool operator!=(const GMPfsePrivateKey& l,const GMPfsePrivateKey& r){
 		return !(l==r);
 	}
 	unsigned int nextParentInterval=0;
@@ -128,7 +128,7 @@ public:
 	  * @param pk the public key
 	  * @param sk the private key
 	  */
-	void keygen(pfsepubkey & pk, PfseKeyStore & sk) const;
+	void keygen(pfsepubkey & pk, GMPfsePrivateKey & sk) const;
 
 	/** Encrypts a message. Messages are limited to 32 bytes. (e.g. an AES key).
 	 *
@@ -147,7 +147,7 @@ public:
 	 * @param ct the ciphertext
 	 * @return the message
 	 */
-	bytes decrypt(const pfsepubkey & pk, const PfseKeyStore &sk, const PseCipherText &ct) const;
+	bytes decrypt(const pfsepubkey & pk, const GMPfsePrivateKey &sk, const PseCipherText &ct) const;
 	
 	/**Derives keys from the current interval and updates the provided
 	 * secret key to store them.
@@ -155,7 +155,7 @@ public:
 	 * @param pk the public key
 	 * @param sk the private key.
 	 */
-	void prepareNextInterval(const pfsepubkey & pk, PfseKeyStore &sk) const;
+	void prepareNextInterval(const pfsepubkey & pk, GMPfsePrivateKey &sk) const;
 
 	/** Derives  keys from the specified interval  and updates the provided
 	 * secret key to store them. This or prepareNextInterval must be run
@@ -166,7 +166,7 @@ public:
 	 * @param sk the private key
 	 * @param i the interval to derive the keys from.
 	 */
-	void prepareIntervalAfter(const pfsepubkey & pk, PfseKeyStore &sk,const unsigned int &i) const;
+	void prepareIntervalAfter(const pfsepubkey & pk, GMPfsePrivateKey &sk,const unsigned int &i) const;
 
 	/** Derives the key for the given interval and updates sk to store it
 	 *
@@ -175,7 +175,7 @@ public:
 	 * @param i the interval
 	 * @param storeIntermediateKeys (defaults to true) whether the intermediate keys derived along the way are stored
 	 */
-	void deriveKeyFor(const pfsepubkey & pk, PfseKeyStore &sk,const unsigned int &i, const bool & storeIntermediateKeys = true)const;
+	void deriveKeyFor(const pfsepubkey & pk, GMPfsePrivateKey &sk,const unsigned int &i, const bool & storeIntermediateKeys = true)const;
 
 	/**Puncture the key in the specified interval
 	 *
@@ -184,14 +184,14 @@ public:
 	 * @param i the interval
 	 * @param str the string to puncture the key with.
 	 */
-	void puncture(const pfsepubkey & pk, PfseKeyStore &sk,unsigned int interval, std::string str) const;
+	void puncture(const pfsepubkey & pk, GMPfsePrivateKey &sk,unsigned int interval, std::string str) const;
 	/**Puncture the key for the current interval
 	 *
 	 * @param pk the public key
 	 * @param sk the private ky
 	 * @param str the string to puncture the key with.
 	 */
-	void puncture(const pfsepubkey & pk, PfseKeyStore &sk, std::string str) const;
+	void puncture(const pfsepubkey & pk, GMPfsePrivateKey &sk, std::string str) const;
 
 
 private:

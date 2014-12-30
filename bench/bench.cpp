@@ -26,7 +26,7 @@ Benchmark benchKeygen(const unsigned int iterations, const unsigned int d =31,
 		GMPfse test(d,n);
 		b.start();
 		pfsepubkey pk;
-		PfseKeyStore sk;
+		GMPfsePrivateKey sk;
 		test.keygen(pk,sk);
 		b.stop();
 		b.computeTimeInMilliseconds();
@@ -37,7 +37,7 @@ Benchmark benchEnc(const unsigned int iterations, const unsigned int d =31,
 		const unsigned int n = 1){
 	GMPfse test(d,n);
 	pfsepubkey pk;
-	PfseKeyStore sk;
+	GMPfsePrivateKey sk;
 	test.keygen(pk,sk);    Benchmark benchE;
     for(unsigned int i=0;i < iterations;i++){
         benchE.start();
@@ -51,7 +51,7 @@ Benchmark benchDec(const unsigned int iterations, const unsigned int d =31,
 		const unsigned int n = 1){
 	GMPfse test(d,n);
 	pfsepubkey pk;
-	PfseKeyStore sk;
+	GMPfsePrivateKey sk;
 	test.keygen(pk,sk);    Benchmark benchD;
     PseCipherText ct = test.encrypt(pk,testVector,1,makeTags(n));;
     for(unsigned int i=0;i < iterations;i++){
@@ -69,7 +69,7 @@ Benchmark benchPuncFirst(const unsigned int iterations, const unsigned int d =31
     for(unsigned int i=0;i < iterations;i++){
     	GMPfse test(d,n);
 		pfsepubkey pk;
-		PfseKeyStore sk;
+		GMPfsePrivateKey sk;
 		test.keygen(pk,sk);
         benchP.start();
         test.puncture(pk,sk,"punc"+std::to_string(i));
@@ -86,7 +86,7 @@ Benchmark benchPunc(const unsigned int iterations, const unsigned int d =31,
     for(unsigned int i=0;i < iterations;i++){
     	GMPfse test(d,n);
 		pfsepubkey pk;
-		PfseKeyStore sk;
+		GMPfsePrivateKey sk;
 		test.keygen(pk,sk);
         test.puncture(pk,sk,"punc");
         benchP.start();
@@ -104,7 +104,7 @@ Benchmark benchNextInterval(const unsigned int iterations, const unsigned int d 
     for(unsigned int i=0;i < iterations;i++){
     	GMPfse test(d,n);
 		pfsepubkey pk;
-		PfseKeyStore sk;
+		GMPfsePrivateKey sk;
 		test.keygen(pk,sk);
 		benchN.start();
         test.prepareNextInterval(pk,sk);
@@ -125,7 +125,7 @@ std::vector<std::tuple<unsigned int ,Benchmark>> benchDecPunctured(const unsigne
         Benchmark benchDP;
     	GMPfse test(d,n);
 		pfsepubkey pk;
-		PfseKeyStore sk;
+		GMPfsePrivateKey sk;
 		test.keygen(pk,sk);
 		PseCipherText ct = test.encrypt(pk,testVector,1,makeTags(n));;
         for(unsigned int i =0;i<p;i++){
@@ -166,7 +166,7 @@ template <class T>
 void sizes(const unsigned int d =31,const unsigned int n = 1){
 	GMPfse test(d,n);
 	pfsepubkey pk;
-	PfseKeyStore sk;
+	GMPfsePrivateKey sk;
 	test.keygen(pk,sk);
 	PairingGroup group;
     {

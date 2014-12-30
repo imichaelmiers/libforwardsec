@@ -39,7 +39,7 @@ protected:
  	 //PairingGroup group;
 	 GMPfse test;
 	 pfsepubkey pk ;
-	 PfseKeyStore sk;
+	 GMPfsePrivateKey sk;
 	 bytes testkey = {{0x3a, 0x5d, 0x7a, 0x42, 0x44, 0xd3, 0xd8, 0xaf, 0xf5, 0xf3, 0xf1, 0x87, 0x81, 0x82, 0xb2,
 						  0x53, 0x57, 0x30, 0x59, 0x75, 0x8d, 0xe6, 0x18, 0x17, 0x14, 0xdf, 0xa5, 0xa4, 0x0b,0x43,0xAD,0xBC}};
 	// static PairingGroup _group;
@@ -221,7 +221,7 @@ TEST_F(PFSETests,DeriveAllKeyInFuture){
 	for(unsigned int i =1;i<intervals;i++){
 	GMPfse test1(d);
 	pfsepubkey pk1;
-	PfseKeyStore sk1;
+	GMPfsePrivateKey sk1;
 	test1.keygen(pk1,sk1);
     PseCipherText ct1 = test1.encrypt(pk1,testkey,i,{"1"});
     test1.deriveKeyFor(pk1,sk1,i);
@@ -266,7 +266,7 @@ TEST_F(PFSETests,serializePfsepubkey){
 }
 TEST_F(PFSETests,serializeGmppkePrivateKey){
 	std::stringstream ss;
-	PfseKeyStore storen;
+	GMPfsePrivateKey storen;
 	EXPECT_NE(sk,storen);
 	{
 		cereal::BinaryOutputArchive oarchive(ss);
