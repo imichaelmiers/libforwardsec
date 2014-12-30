@@ -34,15 +34,15 @@ class GMPfsePublicKey: public BbhHIBEPublicKey,  public GmppkePublicKey{
 	friend class ::cereal::access;
 };
 
-class PfsePuncturedPrivateKey{
+class GMPfseIntervalKey{
 public:
 	 bool punctured() const{
 		return ppkeSK.punctured();
 	}
-	friend bool operator==(const PfsePuncturedPrivateKey& x, const PfsePuncturedPrivateKey& y){
+	friend bool operator==(const GMPfseIntervalKey& x, const GMPfseIntervalKey& y){
 		return x.hibeSK == y.hibeSK && x.ppkeSK == y.ppkeSK;
 	}
-	friend bool operator!=(const PfsePuncturedPrivateKey& x, const PfsePuncturedPrivateKey& y){
+	friend bool operator!=(const GMPfseIntervalKey& x, const GMPfseIntervalKey& y){
 		return !(x==y);
 	}
 protected:
@@ -90,8 +90,8 @@ class GMPfsePrivateKey{
 public:
 	GMPfsePrivateKey(){};
 	GMPfsePrivateKey(const GmppkePrivateKey & unpuncturedKey,unsigned int depth);
-	PfsePuncturedPrivateKey getKey(unsigned int i) const;
-	void updateKey(unsigned int i, const PfsePuncturedPrivateKey & p);
+	GMPfseIntervalKey getKey(unsigned int i) const;
+	void updateKey(unsigned int i, const GMPfseIntervalKey & p);
 	void addkey(unsigned int i, const BbghPrivatekey & h);
 	void erase(unsigned int i);
 	bool hasKey(const unsigned int i) const;
@@ -107,7 +107,7 @@ public:
 	unsigned int nextParentInterval=0;
 private:
 	unsigned int depth;
-	std::map<unsigned int,PfsePuncturedPrivateKey> puncturedKeys;
+	std::map<unsigned int,GMPfseIntervalKey> puncturedKeys;
 	std::map<unsigned int,BbghPrivatekey> unpucturedHIBEKeys;
 	GmppkePrivateKey unpucturedPPKEKey;
 	template <class Archive>
@@ -201,7 +201,7 @@ private:
 	unsigned int depth;
 	unsigned int numtags;
 
-	void bindKey(const GMPfsePublicKey & pk,PfsePuncturedPrivateKey & k) const;
+	void bindKey(const GMPfsePublicKey & pk,GMPfseIntervalKey & k) const;
 
 	GMPfseCiphertext encryptFO(const GMPfsePublicKey & pk, const bytes & bitmsg,
 			              const unsigned int interval, const std::vector<std::string>  & tags) const;
@@ -211,8 +211,8 @@ private:
 			const unsigned int interval, const std::vector<std::string>  & tags) const;
 
 
-	bytes decryptFO(const GMPfsePublicKey & pk, const PfsePuncturedPrivateKey &ski, const GMPfseCiphertext &ct) const;
-	relicxx::GT decryptGT(const GMPfsePublicKey & pk, const PfsePuncturedPrivateKey & ski, const GMPfseCiphertext &ct) const;
+	bytes decryptFO(const GMPfsePublicKey & pk, const GMPfseIntervalKey &ski, const GMPfseCiphertext &ct) const;
+	relicxx::GT decryptGT(const GMPfsePublicKey & pk, const GMPfseIntervalKey & ski, const GMPfseCiphertext &ct) const;
 };
 }
 namespace cereal

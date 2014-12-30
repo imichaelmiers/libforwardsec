@@ -17,8 +17,8 @@ const static string THE_HASH_CONSTANT = "Do not meddle in the affairs of dragons
 GMPfsePrivateKey::GMPfsePrivateKey(const GmppkePrivateKey & unpuncturedKey,unsigned int depth):depth(depth){
 	this->unpucturedPPKEKey = unpuncturedKey;
 }
-PfsePuncturedPrivateKey GMPfsePrivateKey::getKey(unsigned int i)  const{
-	PfsePuncturedPrivateKey p;
+GMPfseIntervalKey GMPfsePrivateKey::getKey(unsigned int i)  const{
+	GMPfseIntervalKey p;
 	auto x = puncturedKeys.find(i);
 	if(x == puncturedKeys.end()){
 		auto y = unpucturedHIBEKeys.find(i);
@@ -38,7 +38,7 @@ PfsePuncturedPrivateKey GMPfsePrivateKey::getKey(unsigned int i)  const{
 	return p;
 }
 
-void GMPfsePrivateKey::updateKey(unsigned int i, const PfsePuncturedPrivateKey & p){
+void GMPfsePrivateKey::updateKey(unsigned int i, const GMPfseIntervalKey & p){
 //	if(p.ppkeSK == unpucturedPPKEKey){
 //		throw invalid_argument("Key not punctured");
 //	}
@@ -121,7 +121,7 @@ void GMPfse::prepareNextInterval(const GMPfsePublicKey & pk, GMPfsePrivateKey &s
 void GMPfse::prepareIntervalAfter(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,const unsigned int& i) const{
     std::vector<ZR> path = indexToPath(i,depth);
     unsigned int pathlength = path.size();
-    const PfsePuncturedPrivateKey & k = sk.getKey(i); //FIXME refrence could be deleted
+    const GMPfseIntervalKey & k = sk.getKey(i); //FIXME refrence could be deleted
     if(k.punctured()){
          throw logic_error("The parent key is already punctured. The software should never allow this to happen"
         		 " You must call prepareNextInterval before starting");
@@ -156,7 +156,7 @@ void GMPfse::deriveKeyFor(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,const
 		ancestor = std::vector<ZR>(path.begin(),path.begin()+ancestor.size()+1);
 
 	}
-    const PfsePuncturedPrivateKey & k = sk.getKey(pathToIndex(ancestor,depth));
+    const GMPfseIntervalKey & k = sk.getKey(pathToIndex(ancestor,depth));
     if(k.punctured()){
          throw logic_error("The parent tag is already punctured. The software should never allow this to happen");
     }
@@ -173,7 +173,7 @@ void GMPfse::deriveKeyFor(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,const
 }
 
 
-void GMPfse::bindKey(const GMPfsePublicKey & pk,PfsePuncturedPrivateKey & k) const{
+void GMPfse::bindKey(const GMPfsePublicKey & pk,GMPfseIntervalKey & k) const{
     const ZR gamma = group.randomZR();
     GmppkePrivateKey puncturedKey;
 
@@ -202,7 +202,7 @@ void GMPfse::puncture(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,unsigned 
 				" , haven't derived keys yet. Last interval with keys is " +std::to_string(sk.nextParentInterval-1));
 	}
 
-    PfsePuncturedPrivateKey k = sk.getKey(interval);
+    GMPfseIntervalKey k = sk.getKey(interval);
 
     //if the key is unpunctured, we need to bind in a new punctured key
     if(!k.punctured()){
@@ -261,7 +261,7 @@ GMPfseCiphertext GMPfse::encryptGT(const GMPfsePublicKey & pk, const GT & M,  co
     return ct;
 }
 bytes GMPfse::decrypt(const GMPfsePublicKey & pk, const GMPfsePrivateKey &sk,const GMPfseCiphertext &ct) const{
-    const PfsePuncturedPrivateKey & ski = sk.getKey(ct.interval);
+    const GMPfseIntervalKey & ski = sk.getKey(ct.interval);
 	vector<string> intersect =ski.ppkeSK.puncturedIntersect(ct.ppkeCT.tags);
     if(intersect.size()>0){
     	string duplicates = "";
@@ -278,7 +278,7 @@ bytes GMPfse::decrypt(const GMPfsePublicKey & pk, const GMPfsePrivateKey &sk,con
     return decryptFO(pk,ski,ct);
 }
 
-bytes GMPfse::decryptFO(const GMPfsePublicKey & pk,const PfsePuncturedPrivateKey & ski,const GMPfseCiphertext &ct) const{
+bytes GMPfse::decryptFO(const GMPfsePublicKey & pk,const GMPfseIntervalKey & ski,const GMPfseCiphertext &ct) const{
     GT x = decryptGT(pk,ski,ct);
     bytes bytestohash = x.getBytes();
     // since we don't have a different hash function, we simply postfix it with a magic constant;
@@ -295,7 +295,7 @@ bytes GMPfse::decryptFO(const GMPfsePublicKey & pk,const PfsePuncturedPrivateKey
     }
 }
 
-GT GMPfse::decryptGT(const GMPfsePublicKey & pk,const PfsePuncturedPrivateKey & ski,const GMPfseCiphertext &ct) const {
+GT GMPfse::decryptGT(const GMPfsePublicKey & pk,const GMPfseIntervalKey & ski,const GMPfseCiphertext &ct) const {
     GT b1 = hibe.recoverBlind(ski.hibeSK,ct.hibeCT);
    // assert(b1== group.exp(group.exp(group.pair(g2G1,gG2),group.mul(ss,group.sub(aa,gam1))),neg));
     GT b2 = ppke.recoverBlind(pk,ski.ppkeSK,ct.ppkeCT);
