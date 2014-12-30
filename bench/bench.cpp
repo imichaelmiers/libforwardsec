@@ -25,7 +25,7 @@ Benchmark benchKeygen(const unsigned int iterations, const unsigned int d =31,
     for(unsigned int i=0;i < iterations;i++){
 		GMPfse test(d,n);
 		b.start();
-		pfsepubkey pk;
+		GMPfsePublicKey pk;
 		GMPfsePrivateKey sk;
 		test.keygen(pk,sk);
 		b.stop();
@@ -36,7 +36,7 @@ Benchmark benchKeygen(const unsigned int iterations, const unsigned int d =31,
 Benchmark benchEnc(const unsigned int iterations, const unsigned int d =31,
 		const unsigned int n = 1){
 	GMPfse test(d,n);
-	pfsepubkey pk;
+	GMPfsePublicKey pk;
 	GMPfsePrivateKey sk;
 	test.keygen(pk,sk);    Benchmark benchE;
     for(unsigned int i=0;i < iterations;i++){
@@ -50,7 +50,7 @@ Benchmark benchEnc(const unsigned int iterations, const unsigned int d =31,
 Benchmark benchDec(const unsigned int iterations, const unsigned int d =31,
 		const unsigned int n = 1){
 	GMPfse test(d,n);
-	pfsepubkey pk;
+	GMPfsePublicKey pk;
 	GMPfsePrivateKey sk;
 	test.keygen(pk,sk);    Benchmark benchD;
     GMPfseCiphertext ct = test.encrypt(pk,testVector,1,makeTags(n));;
@@ -68,7 +68,7 @@ Benchmark benchPuncFirst(const unsigned int iterations, const unsigned int d =31
     Benchmark benchP;
     for(unsigned int i=0;i < iterations;i++){
     	GMPfse test(d,n);
-		pfsepubkey pk;
+		GMPfsePublicKey pk;
 		GMPfsePrivateKey sk;
 		test.keygen(pk,sk);
         benchP.start();
@@ -85,7 +85,7 @@ Benchmark benchPunc(const unsigned int iterations, const unsigned int d =31,
     Benchmark benchP;
     for(unsigned int i=0;i < iterations;i++){
     	GMPfse test(d,n);
-		pfsepubkey pk;
+		GMPfsePublicKey pk;
 		GMPfsePrivateKey sk;
 		test.keygen(pk,sk);
         test.puncture(pk,sk,"punc");
@@ -103,7 +103,7 @@ Benchmark benchNextInterval(const unsigned int iterations, const unsigned int d 
     Benchmark benchN;
     for(unsigned int i=0;i < iterations;i++){
     	GMPfse test(d,n);
-		pfsepubkey pk;
+		GMPfsePublicKey pk;
 		GMPfsePrivateKey sk;
 		test.keygen(pk,sk);
 		benchN.start();
@@ -124,7 +124,7 @@ std::vector<std::tuple<unsigned int ,Benchmark>> benchDecPunctured(const unsigne
 		cout.flush();
         Benchmark benchDP;
     	GMPfse test(d,n);
-		pfsepubkey pk;
+		GMPfsePublicKey pk;
 		GMPfsePrivateKey sk;
 		test.keygen(pk,sk);
 		GMPfseCiphertext ct = test.encrypt(pk,testVector,1,makeTags(n));;
@@ -165,7 +165,7 @@ void relicSizes(){
 template <class T>
 void sizes(const unsigned int d =31,const unsigned int n = 1){
 	GMPfse test(d,n);
-	pfsepubkey pk;
+	GMPfsePublicKey pk;
 	GMPfsePrivateKey sk;
 	test.keygen(pk,sk);
 	PairingGroup group;

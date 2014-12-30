@@ -83,7 +83,7 @@ GMPfse::GMPfse(unsigned int d, unsigned int numtags):hibe(),ppke(),depth(d){
 }
 
 
-void GMPfse::keygen( pfsepubkey & pk,  GMPfsePrivateKey &sk) const{
+void GMPfse::keygen( GMPfsePublicKey & pk,  GMPfsePrivateKey &sk) const{
     G2 msk;
     hibe.setup(depth,pk,msk);
 
@@ -112,13 +112,13 @@ void GMPfse::keygen( pfsepubkey & pk,  GMPfsePrivateKey &sk) const{
     this->prepareNextInterval(pk,sk);
 }
 
-void GMPfse::prepareNextInterval(const pfsepubkey & pk, GMPfsePrivateKey &sk)const {
+void GMPfse::prepareNextInterval(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk)const {
 
 	prepareIntervalAfter(pk,sk,sk.nextParentInterval);
    	sk.nextParentInterval ++;
 }
 
-void GMPfse::prepareIntervalAfter(const pfsepubkey & pk, GMPfsePrivateKey &sk,const unsigned int& i) const{
+void GMPfse::prepareIntervalAfter(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,const unsigned int& i) const{
     std::vector<ZR> path = indexToPath(i,depth);
     unsigned int pathlength = path.size();
     const PfsePuncturedPrivateKey & k = sk.getKey(i); //FIXME refrence could be deleted
@@ -148,7 +148,7 @@ void GMPfse::prepareIntervalAfter(const pfsepubkey & pk, GMPfsePrivateKey &sk,co
     }
 }
 
-void GMPfse::deriveKeyFor(const pfsepubkey & pk, GMPfsePrivateKey &sk,const unsigned int& i,
+void GMPfse::deriveKeyFor(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,const unsigned int& i,
 		const bool& storeIntermediateKeys) const{
 	std::vector<ZR> path = indexToPath(i,depth);
 	std::vector<ZR> ancestor;
@@ -173,7 +173,7 @@ void GMPfse::deriveKeyFor(const pfsepubkey & pk, GMPfsePrivateKey &sk,const unsi
 }
 
 
-void GMPfse::bindKey(const pfsepubkey & pk,PfsePuncturedPrivateKey & k) const{
+void GMPfse::bindKey(const GMPfsePublicKey & pk,PfsePuncturedPrivateKey & k) const{
     const ZR gamma = group.randomZR();
     GmppkePrivateKey puncturedKey;
 
@@ -191,12 +191,12 @@ void GMPfse::bindKey(const pfsepubkey & pk,PfsePuncturedPrivateKey & k) const{
 }
 
 
-void GMPfse::puncture(const pfsepubkey & pk, GMPfsePrivateKey &sk,string tag) const{
+void GMPfse::puncture(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,string tag) const{
 	// The current active interval is one behind the nextParentInterval
     puncture(pk,sk,sk.nextParentInterval-1,tag);
 }
 
-void GMPfse::puncture(const pfsepubkey & pk, GMPfsePrivateKey &sk,unsigned int interval, string tag) const{
+void GMPfse::puncture(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,unsigned int interval, string tag) const{
 	if(sk.needsChildKeys(interval)){
 		throw invalid_argument("Cannot puncture key for  interval "+std::to_string(interval)+
 				" , haven't derived keys yet. Last interval with keys is " +std::to_string(sk.nextParentInterval-1));
@@ -215,7 +215,7 @@ void GMPfse::puncture(const pfsepubkey & pk, GMPfsePrivateKey &sk,unsigned int i
 //privatekeys[interval] = sk;
 
 }
-GMPfseCiphertext GMPfse::encrypt(const pfsepubkey & pk, const bytes msg, const unsigned int interval,const vector<std::string> tags) const {
+GMPfseCiphertext GMPfse::encrypt(const GMPfsePublicKey & pk, const bytes msg, const unsigned int interval,const vector<std::string> tags) const {
 	if(msg.size()>32){
 		throw invalid_argument("msg must be at most 32 bytes.");
 	}
@@ -225,7 +225,7 @@ GMPfseCiphertext GMPfse::encrypt(const pfsepubkey & pk, const bytes msg, const u
 /** Fujisaki Okomoto CCA2 secure encryption
  *
  */
-GMPfseCiphertext GMPfse::encryptFO(const pfsepubkey & pk,  const bytes  & msg,const  GT & x,
+GMPfseCiphertext GMPfse::encryptFO(const GMPfsePublicKey & pk,  const bytes  & msg,const  GT & x,
 		const unsigned int interval, const vector<std::string>  & tags ) const {
     std::stringstream ss;
     bytes b = x.getBytes();
@@ -247,7 +247,7 @@ GMPfseCiphertext GMPfse::encryptFO(const pfsepubkey & pk,  const bytes  & msg,co
 /** Encryption of group elements. used by encryptFO
  *
  */
-GMPfseCiphertext GMPfse::encryptGT(const pfsepubkey & pk, const GT & M,  const ZR & s, const unsigned int interval, const vector<std::string>  & tags) const{
+GMPfseCiphertext GMPfse::encryptGT(const GMPfsePublicKey & pk, const GT & M,  const ZR & s, const unsigned int interval, const vector<std::string>  & tags) const{
     GMPfseCiphertext ct;
 
     ct.interval = interval;
@@ -260,7 +260,7 @@ GMPfseCiphertext GMPfse::encryptGT(const pfsepubkey & pk, const GT & M,  const Z
 
     return ct;
 }
-bytes GMPfse::decrypt(const pfsepubkey & pk, const GMPfsePrivateKey &sk,const GMPfseCiphertext &ct) const{
+bytes GMPfse::decrypt(const GMPfsePublicKey & pk, const GMPfsePrivateKey &sk,const GMPfseCiphertext &ct) const{
     const PfsePuncturedPrivateKey & ski = sk.getKey(ct.interval);
 	vector<string> intersect =ski.ppkeSK.puncturedIntersect(ct.ppkeCT.tags);
     if(intersect.size()>0){
@@ -278,7 +278,7 @@ bytes GMPfse::decrypt(const pfsepubkey & pk, const GMPfsePrivateKey &sk,const GM
     return decryptFO(pk,ski,ct);
 }
 
-bytes GMPfse::decryptFO(const pfsepubkey & pk,const PfsePuncturedPrivateKey & ski,const GMPfseCiphertext &ct) const{
+bytes GMPfse::decryptFO(const GMPfsePublicKey & pk,const PfsePuncturedPrivateKey & ski,const GMPfseCiphertext &ct) const{
     GT x = decryptGT(pk,ski,ct);
     bytes bytestohash = x.getBytes();
     // since we don't have a different hash function, we simply postfix it with a magic constant;
@@ -295,7 +295,7 @@ bytes GMPfse::decryptFO(const pfsepubkey & pk,const PfsePuncturedPrivateKey & sk
     }
 }
 
-GT GMPfse::decryptGT(const pfsepubkey & pk,const PfsePuncturedPrivateKey & ski,const GMPfseCiphertext &ct) const {
+GT GMPfse::decryptGT(const GMPfsePublicKey & pk,const PfsePuncturedPrivateKey & ski,const GMPfseCiphertext &ct) const {
     GT b1 = hibe.recoverBlind(ski.hibeSK,ct.hibeCT);
    // assert(b1== group.exp(group.exp(group.pair(g2G1,gG2),group.mul(ss,group.sub(aa,gam1))),neg));
     GT b2 = ppke.recoverBlind(pk,ski.ppkeSK,ct.ppkeCT);

@@ -38,7 +38,7 @@ protected:
 	 PFSETests():test(d){}
  	 //PairingGroup group;
 	 GMPfse test;
-	 pfsepubkey pk ;
+	 GMPfsePublicKey pk ;
 	 GMPfsePrivateKey sk;
 	 bytes testkey = {{0x3a, 0x5d, 0x7a, 0x42, 0x44, 0xd3, 0xd8, 0xaf, 0xf5, 0xf3, 0xf1, 0x87, 0x81, 0x82, 0xb2,
 						  0x53, 0x57, 0x30, 0x59, 0x75, 0x8d, 0xe6, 0x18, 0x17, 0x14, 0xdf, 0xa5, 0xa4, 0x0b,0x43,0xAD,0xBC}};
@@ -220,7 +220,7 @@ TEST_F(PFSETests,DeriveAllKeyInFuture){
 	unsigned int intervals = std::pow(2,d+1)-1;
 	for(unsigned int i =1;i<intervals;i++){
 	GMPfse test1(d);
-	pfsepubkey pk1;
+	GMPfsePublicKey pk1;
 	GMPfsePrivateKey sk1;
 	test1.keygen(pk1,sk1);
     GMPfseCiphertext ct1 = test1.encrypt(pk1,testkey,i,{"1"});
@@ -249,7 +249,7 @@ TEST_F(PFSETests,serializePseCipherText){
 }
 
 TEST_F(PFSETests,serializePfsepubkey){
-	pfsepubkey pknew;
+	GMPfsePublicKey pknew;
 	std::stringstream ss;
 	EXPECT_NE(pk,pknew);
 	{
@@ -292,7 +292,7 @@ TEST_F(PFSETests,testSeperateDecryptandSerialize){
 
 
 	std::stringstream ss;
-	 pfsepubkey pksender;
+	 GMPfsePublicKey pksender;
 
 	GMPfse testsender(d);
 

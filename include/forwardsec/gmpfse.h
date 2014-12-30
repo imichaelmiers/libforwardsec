@@ -18,11 +18,11 @@
 namespace forwardsec{
 class GMPfse;
 class GMPfsePrivateKey;
-class pfsepubkey: public BbhHIBEPublicKey,  public GmppkePublicKey{
-	friend bool operator==(const pfsepubkey& x, const pfsepubkey& y){
+class GMPfsePublicKey: public BbhHIBEPublicKey,  public GmppkePublicKey{
+	friend bool operator==(const GMPfsePublicKey& x, const GMPfsePublicKey& y){
 		return (BbhHIBEPublicKey)x == (BbhHIBEPublicKey)y && (GmppkePublicKey)x == (GmppkePublicKey)y;
 	}
-	friend bool operator!=(const pfsepubkey& x, const pfsepubkey& y){
+	friend bool operator!=(const GMPfsePublicKey& x, const GMPfsePublicKey& y){
 		return !(x==y);
 	}
 	template <class Archive>
@@ -128,7 +128,7 @@ public:
 	  * @param pk the public key
 	  * @param sk the private key
 	  */
-	void keygen(pfsepubkey & pk, GMPfsePrivateKey & sk) const;
+	void keygen(GMPfsePublicKey & pk, GMPfsePrivateKey & sk) const;
 
 	/** Encrypts a message. Messages are limited to 32 bytes. (e.g. an AES key).
 	 *
@@ -138,7 +138,7 @@ public:
 	 * @param tags the tags for the message
 	 * @return the ciphertext
 	 */
-	GMPfseCiphertext encrypt(const pfsepubkey & pk, const bytes msg, const unsigned int interval, const std::vector<std::string> tags) const;
+	GMPfseCiphertext encrypt(const GMPfsePublicKey & pk, const bytes msg, const unsigned int interval, const std::vector<std::string> tags) const;
 
 	/**Decrypt a message using the provided public and private keys.
 	 *
@@ -147,7 +147,7 @@ public:
 	 * @param ct the ciphertext
 	 * @return the message
 	 */
-	bytes decrypt(const pfsepubkey & pk, const GMPfsePrivateKey &sk, const GMPfseCiphertext &ct) const;
+	bytes decrypt(const GMPfsePublicKey & pk, const GMPfsePrivateKey &sk, const GMPfseCiphertext &ct) const;
 	
 	/**Derives keys from the current interval and updates the provided
 	 * secret key to store them.
@@ -155,7 +155,7 @@ public:
 	 * @param pk the public key
 	 * @param sk the private key.
 	 */
-	void prepareNextInterval(const pfsepubkey & pk, GMPfsePrivateKey &sk) const;
+	void prepareNextInterval(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk) const;
 
 	/** Derives  keys from the specified interval  and updates the provided
 	 * secret key to store them. This or prepareNextInterval must be run
@@ -166,7 +166,7 @@ public:
 	 * @param sk the private key
 	 * @param i the interval to derive the keys from.
 	 */
-	void prepareIntervalAfter(const pfsepubkey & pk, GMPfsePrivateKey &sk,const unsigned int &i) const;
+	void prepareIntervalAfter(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,const unsigned int &i) const;
 
 	/** Derives the key for the given interval and updates sk to store it
 	 *
@@ -175,7 +175,7 @@ public:
 	 * @param i the interval
 	 * @param storeIntermediateKeys (defaults to true) whether the intermediate keys derived along the way are stored
 	 */
-	void deriveKeyFor(const pfsepubkey & pk, GMPfsePrivateKey &sk,const unsigned int &i, const bool & storeIntermediateKeys = true)const;
+	void deriveKeyFor(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,const unsigned int &i, const bool & storeIntermediateKeys = true)const;
 
 	/**Puncture the key in the specified interval
 	 *
@@ -184,14 +184,14 @@ public:
 	 * @param i the interval
 	 * @param str the string to puncture the key with.
 	 */
-	void puncture(const pfsepubkey & pk, GMPfsePrivateKey &sk,unsigned int interval, std::string str) const;
+	void puncture(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,unsigned int interval, std::string str) const;
 	/**Puncture the key for the current interval
 	 *
 	 * @param pk the public key
 	 * @param sk the private ky
 	 * @param str the string to puncture the key with.
 	 */
-	void puncture(const pfsepubkey & pk, GMPfsePrivateKey &sk, std::string str) const;
+	void puncture(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk, std::string str) const;
 
 
 private:
@@ -201,24 +201,24 @@ private:
 	unsigned int depth;
 	unsigned int numtags;
 
-	void bindKey(const pfsepubkey & pk,PfsePuncturedPrivateKey & k) const;
+	void bindKey(const GMPfsePublicKey & pk,PfsePuncturedPrivateKey & k) const;
 
-	GMPfseCiphertext encryptFO(const pfsepubkey & pk, const bytes & bitmsg,
+	GMPfseCiphertext encryptFO(const GMPfsePublicKey & pk, const bytes & bitmsg,
 			              const unsigned int interval, const std::vector<std::string>  & tags) const;
-	GMPfseCiphertext encryptFO( const pfsepubkey & pk, const bytes & bitmsg,
+	GMPfseCiphertext encryptFO( const GMPfsePublicKey & pk, const bytes & bitmsg,
 			const relicxx::GT & x, const unsigned int interval, const std::vector<std::string>  & tags) const;
-	GMPfseCiphertext encryptGT( const pfsepubkey & pk, const relicxx::GT & M,const relicxx::ZR & s,
+	GMPfseCiphertext encryptGT( const GMPfsePublicKey & pk, const relicxx::GT & M,const relicxx::ZR & s,
 			const unsigned int interval, const std::vector<std::string>  & tags) const;
 
 
-	bytes decryptFO(const pfsepubkey & pk, const PfsePuncturedPrivateKey &ski, const GMPfseCiphertext &ct) const;
-	relicxx::GT decryptGT(const pfsepubkey & pk, const PfsePuncturedPrivateKey & ski, const GMPfseCiphertext &ct) const;
+	bytes decryptFO(const GMPfsePublicKey & pk, const PfsePuncturedPrivateKey &ski, const GMPfseCiphertext &ct) const;
+	relicxx::GT decryptGT(const GMPfsePublicKey & pk, const PfsePuncturedPrivateKey & ski, const GMPfseCiphertext &ct) const;
 };
 }
 namespace cereal
 {
  template <class Archive>
- struct specialize<Archive, forwardsec::pfsepubkey, cereal::specialization::member_serialize> {};
+ struct specialize<Archive, forwardsec::GMPfsePublicKey, cereal::specialization::member_serialize> {};
 }
 #endif
 
