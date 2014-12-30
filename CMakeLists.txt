@@ -47,7 +47,7 @@ ENDIF(NOT CEREAL_HEADER)
 
 
 option(RELICXX_UNCONST "Cast const values to non-const when passing to relic functions which are const but not marked as such. (e.g read_bin,mul,etc)." ON)
-option(USE_OPEN_MP "Use OpenMP for parallelizing decrypt." OFF)
+option(OPEN_MP "Use OpenMP for parallelizing decrypt." OFF)
 option(RELICXX_MOVE "Use C++11 move semantics for  ZR,G1,G2" ON)
 include(CMakeDependentOption)
 CMAKE_DEPENDENT_OPTION(RELICXX_MOVEZR "Use C++11 move semantics for ZR" OFF "NOT RELICXX_MOVE" ON)
@@ -65,7 +65,7 @@ if(USE_OPENMP)
 	    add_definitions(-DRELICXX_USE_OPENMP)
 	 else()
 	 	message(WARNING "Cannot find OpenMP. OpenMP now dissalbled and  USE_OPENMP = Off")
-	endif(OPENMPFOUND)
+	endif(OPENMP_FOUND)
 endif(USE_OPENMP)
 
 if(RELICXX_UNCONST)
