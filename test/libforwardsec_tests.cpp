@@ -18,7 +18,7 @@
 using namespace std;
 using namespace forwardsec;
 using namespace relicxx;
-class Gmmppketest : public ::testing::Test {
+class GMPpkeTests : public ::testing::Test {
 protected:
 	 virtual void SetUp(){
 	 	test.keygen(pk,sk,3);
@@ -29,13 +29,13 @@ protected:
 	 GmppkePrivateKey sk;
 };
 
-class PFSETests : public ::testing::Test {
+class GMPfseTests : public ::testing::Test {
 protected: 
 	 virtual void SetUp(){
 	 	test.keygen(pk,sk);
 	 } 
 	 unsigned int d=3;
-	 PFSETests():test(d){}
+	 GMPfseTests():test(d){}
  	 //PairingGroup group;
 	 GMPfse test;
 	 GMPfsePublicKey pk ;
@@ -45,7 +45,7 @@ protected:
 	// static PairingGroup _group;
 };
 
-class BbghhibeTests : public ::testing::Test {
+class BBGHibeTests : public ::testing::Test {
 protected: 
      PairingGroup group;
 
@@ -100,7 +100,7 @@ protected:
 };
 
 
-TEST_F(PFSETests,Decrypt){
+TEST_F(GMPfseTests,Decrypt){
     vector<string> tags;
     tags.push_back("9");
     GMPfseCiphertext ct1 = test.encrypt(pk,testkey,1,tags);
@@ -111,7 +111,7 @@ TEST_F(PFSETests,Decrypt){
     ASSERT_EQ(testkey,result);
 }
 
-TEST_F(PFSETests,FailWhenPunctured){
+TEST_F(GMPfseTests,FailWhenPunctured){
     vector<string> tags;
     tags.push_back("9");
     GMPfseCiphertext ct1 = test.encrypt(pk,testkey,1,tags);
@@ -121,7 +121,7 @@ TEST_F(PFSETests,FailWhenPunctured){
    EXPECT_THROW(test.decrypt(pk,sk,ct1),PuncturedCiphertext);
 }
 
-TEST_F(PFSETests,DecryptOnPuncture){
+TEST_F(GMPfseTests,DecryptOnPuncture){
     vector<string> tags;
     tags.push_back("9");
 
@@ -149,7 +149,7 @@ TEST_F(PFSETests,DecryptOnPuncture){
 }
 
 //
-TEST_F(PFSETests,PassOnPunctureNextInterval){
+TEST_F(GMPfseTests,PassOnPunctureNextInterval){
 	test.prepareNextInterval(pk,sk);
 
     vector<string> tags;
@@ -165,7 +165,7 @@ TEST_F(PFSETests,PassOnPunctureNextInterval){
     EXPECT_EQ(testkey,result);
 
 }
-TEST_F(PFSETests,PunctureAndDeriveAll){
+TEST_F(GMPfseTests,PunctureAndDeriveAll){
 	// there are 2^d =1 nodes in a tree of depth d.
 	// we don't have the root, so we subtrct one more.
 	unsigned int intervals = std::pow(2,d+1)-1;
@@ -191,7 +191,7 @@ TEST(Util,IndexToPath){
 	EXPECT_THROW(indexToPath(15,3),invalid_argument);
 }
 
-TEST_F(PFSETests,Delete){
+TEST_F(GMPfseTests,Delete){
 
     vector<string> tags;
     tags.push_back("9");
@@ -207,16 +207,16 @@ TEST_F(PFSETests,Delete){
     EXPECT_THROW(test.decrypt(pk,sk,ct),invalid_argument); // no key
     EXPECT_THROW(sk.erase(2),invalid_argument); // no child keys so count delete
 }
-TEST_F(PFSETests,PunctureWrongInterval){
+TEST_F(GMPfseTests,PunctureWrongInterval){
     EXPECT_THROW( test.puncture(pk,sk,2,"8");,invalid_argument); // can't puncture key we don't have children for.
 }
-TEST_F(PFSETests,DeriveKeyInFuture){
+TEST_F(GMPfseTests,DeriveKeyInFuture){
     GMPfseCiphertext ct1 = test.encrypt(pk,testkey,11,{"1"});
     test.deriveKeyFor(pk,sk,11);
     bytes result = test.decrypt(pk,sk,ct1);
     ASSERT_EQ(testkey,result);
 }
-TEST_F(PFSETests,DeriveAllKeyInFuture){
+TEST_F(GMPfseTests,DeriveAllKeyInFuture){
 	unsigned int intervals = std::pow(2,d+1)-1;
 	for(unsigned int i =1;i<intervals;i++){
 	GMPfse test1(d);
@@ -230,7 +230,7 @@ TEST_F(PFSETests,DeriveAllKeyInFuture){
 	}
 }
 
-TEST_F(PFSETests,serializePseCipherText){
+TEST_F(GMPfseTests,serializePseCipherText){
 	std::stringstream ss;
     vector<std::string> tags;
     tags.push_back("2");
@@ -248,7 +248,7 @@ TEST_F(PFSETests,serializePseCipherText){
 	EXPECT_EQ(ct,ctnew);
 }
 
-TEST_F(PFSETests,serializePfsepubkey){
+TEST_F(GMPfseTests,serializePfsepubkey){
 	GMPfsePublicKey pknew;
 	std::stringstream ss;
 	EXPECT_NE(pk,pknew);
@@ -264,7 +264,7 @@ TEST_F(PFSETests,serializePfsepubkey){
 	}
 	EXPECT_EQ(pk,pknew);
 }
-TEST_F(PFSETests,serializeGmppkePrivateKey){
+TEST_F(GMPfseTests,serializeGmppkePrivateKey){
 	std::stringstream ss;
 	GMPfsePrivateKey storen;
 	EXPECT_NE(sk,storen);
@@ -282,7 +282,7 @@ TEST_F(PFSETests,serializeGmppkePrivateKey){
 }
 
 
-TEST_F(PFSETests,testSeperateDecryptandSerialize){
+TEST_F(GMPfseTests,testSeperateDecryptandSerialize){
 
     vector<string> tags;
     tags.push_back("9");
@@ -326,7 +326,7 @@ TEST_F(PFSETests,testSeperateDecryptandSerialize){
 
 
 
-TEST_F(BbghhibeTests,basic){
+TEST_F(BBGHibeTests,basic){
     GT m = group.randomGT();
 
     BbghCT ct = test.encrypt(pk,m,id1);
@@ -335,7 +335,7 @@ TEST_F(BbghhibeTests,basic){
 }
 
 
-TEST_F(BbghhibeTests,basicFail){
+TEST_F(BBGHibeTests,basicFail){
     GT m = group.randomGT();
 
     BbghCT ct = test.encrypt(pk,m,id1);
@@ -345,7 +345,7 @@ TEST_F(BbghhibeTests,basicFail){
 
 
 }
-TEST_F(BbghhibeTests,derived){
+TEST_F(BBGHibeTests,derived){
     GT m = group.randomGT();
 
 
@@ -356,7 +356,7 @@ TEST_F(BbghhibeTests,derived){
     EXPECT_NE(m,test.decrypt(sk01,ct));
 
 }
-TEST_F(BbghhibeTests,derivedFurther){
+TEST_F(BBGHibeTests,derivedFurther){
     GT m = group.randomGT();
 
     BbghCT ct = test.encrypt(pk,m,id111);
@@ -367,7 +367,7 @@ TEST_F(BbghhibeTests,derivedFurther){
 
 }
 
-TEST_F(BbghhibeTests,serializeBbghCT){
+TEST_F(BBGHibeTests,serializeBbghCT){
 	std::stringstream ss;
     GT m = group.randomGT();
 
@@ -387,7 +387,7 @@ TEST_F(BbghhibeTests,serializeBbghCT){
 	EXPECT_EQ(ct,ctnew);
 }
 
-TEST_F(BbghhibeTests,serializeBbhHIBEPublicKey){
+TEST_F(BBGHibeTests,serializeBbhHIBEPublicKey){
 	BbhHIBEPublicKey pknew;
 	std::stringstream ss;
 	EXPECT_NE(pk,pknew);
@@ -403,7 +403,7 @@ TEST_F(BbghhibeTests,serializeBbhHIBEPublicKey){
 	}
 	EXPECT_EQ(pk,pknew);
 }
-TEST_F(BbghhibeTests,serializeBbghPrivatekey){
+TEST_F(BBGHibeTests,serializeBbghPrivatekey){
 	BbhHIBEPublicKey pknew;
 	std::stringstream ss;
 	BbghPrivatekey skn;
@@ -432,7 +432,7 @@ TEST_F(BbghhibeTests,serializeBbghPrivatekey){
 	EXPECT_EQ(skn,sk111);
 }
 
-TEST_F(BbghhibeTests,testSeperateDecryptandSerialize){
+TEST_F(BBGHibeTests,testSeperateDecryptandSerialize){
 	std::stringstream ss;
 	BbhHIBEPublicKey pksender;
 
@@ -463,7 +463,7 @@ TEST_F(BbghhibeTests,testSeperateDecryptandSerialize){
 }
 
 
-TEST_F(Gmmppketest,basic){
+TEST_F(GMPpkeTests,basic){
     GT m = group.randomGT();
 
 
@@ -471,7 +471,7 @@ TEST_F(Gmmppketest,basic){
     EXPECT_EQ(m,test.decrypt(pk,sk,ct));
 
 }
-TEST_F(Gmmppketest,puncture){
+TEST_F(GMPpkeTests,puncture){
     GT m = group.randomGT();
     GmmppkeCT ct = test.encrypt(pk,m,{{"1","2","3"}});
     test.puncture(pk,sk,"4");
@@ -481,7 +481,7 @@ TEST_F(Gmmppketest,puncture){
     EXPECT_EQ(m,test.decrypt(pk,sk,ct));
 }
 
-TEST_F(Gmmppketest,punctureFailWithPuncturedCiphertext){
+TEST_F(GMPpkeTests,punctureFailWithPuncturedCiphertext){
     GT m = group.randomGT();
     GmmppkeCT ct = test.encrypt(pk,m,{{"1","2","3"}});
     test.puncture(pk,sk,"2");
@@ -496,7 +496,7 @@ TEST_F(Gmmppketest,punctureFailWithPuncturedCiphertext){
 // catch mechanism appears to not work across threads.
 #ifndef RELICXX_USE_OPENMP
 // checks tha the system actually fails when handed a
-TEST_F(Gmmppketest,punctureFail){
+TEST_F(GMPpkeTests,punctureFail){
     GT m = group.randomGT();
     GmmppkeCT ct = test.encrypt(pk,m,{{"1","2","3"}});
     test.puncture(pk,sk,"2");
@@ -506,7 +506,7 @@ TEST_F(Gmmppketest,punctureFail){
     EXPECT_THROW(test.decrypt_unchecked(pk,sk,ct),std::logic_error);
 }
 #endif
-TEST_F(Gmmppketest,serializeGmmppkeCT){
+TEST_F(GMPpkeTests,serializeGmmppkeCT){
 	std::stringstream ss;
     GT m = group.randomGT();
 
@@ -524,7 +524,7 @@ TEST_F(Gmmppketest,serializeGmmppkeCT){
 	EXPECT_EQ(ct,ctnew);
 }
 
-TEST_F(Gmmppketest,serializeGmppkePublicKey){
+TEST_F(GMPpkeTests,serializeGmppkePublicKey){
 	GmppkePublicKey pknew;
 	std::stringstream ss;
 	EXPECT_NE(pk,pknew);
@@ -540,7 +540,7 @@ TEST_F(Gmmppketest,serializeGmppkePublicKey){
 	}
 	EXPECT_EQ(pk,pknew);
 }
-TEST_F(Gmmppketest,serializeGmppkePrivateKey){
+TEST_F(GMPpkeTests,serializeGmppkePrivateKey){
 	std::stringstream ss;
 	GmppkePrivateKey skn;
 	EXPECT_NE(sk,skn);
@@ -557,7 +557,7 @@ TEST_F(Gmmppketest,serializeGmppkePrivateKey){
 	EXPECT_EQ(sk,skn);
 }
 
-TEST_F(Gmmppketest,testSeperateDecryptandSerialize){
+TEST_F(GMPpkeTests,testSeperateDecryptandSerialize){
 	std::stringstream ss;
 	GmppkePublicKey pksender;
 
