@@ -1,4 +1,4 @@
-Libforwardsec. A library for forward secure encryption.
+Libforwardsec. A library for puncturable forward secure encryption.
 ============================
 
 
@@ -10,19 +10,19 @@ Dependencies
 * For serialization:
 	*  cereal(https://github.com/USCiLab/cereal) 
 * For testing:
-	* Google test 
+	* Google test (https://code.google.com/p/googletest/) 
 	
 
 Build
 ----------------------------
 This project builds with cmake.
-
-	cd build/ 
-	cmake ../
-	make 
-	make check # (optional) builds and runs tests.
-	make bench # (optional) builds and runs benchmarks
-	make install 
+    
+    cd build/ 
+    cmake ../
+    make 
+    make check # (optional) builds and runs tests.
+    make bench # (optional) builds and runs benchmarks
+    make install 
 
 It is known to build and pass all tests on OSX 10.9.5  with Apple LLVM version 6.0 (clang-600.0.54) (based on LLVM 3.5svn) 
 and Ubuntu 14.04 with gcc version 4.8.2 (Ubuntu 4.8.2-19ubuntu1) 
@@ -41,26 +41,27 @@ cmake --help
 ----------------------------
 
 # Relic (note, depends on gmp)
-	#from a suitable directory
-	git clone https://github.com/relic-toolkit/relic.git
-	cd relic
-	git checkout relic-toolkit-0.4.0 
-	cmake -G "Unix Makefiles" -DCOMP="-O2 -funroll-loops -fomit-frame-pointer" -DARCH="X64"  -DRAND="UDEV" -DWITH="BN;DV;FP;FPX;EP;EPX;PP;PC;MD" -DCHECK=off -DVERBS=off -DDEBUG=on -DBENCH=0 -DTESTS=1 -DARITH=gmp -DFP_PRIME=256 -DFP_QNRES=off -DFP_METHD="BASIC;COMBA;COMBA;MONTY;LOWER;SLIDE" -DFPX_METHD="INTEG;INTEG;LAZYR" -DPP_METHD="LAZYR;OATEP"
-	make 
-	make install 
+    #from a suitable directory
+    git clone https://github.com/relic-toolkit/relic.git
+    cd relic
+    git checkout relic-toolkit-0.4.0 
+    cmake -G "Unix Makefiles" -DCOMP="-O2 -funroll-loops -fomit-frame-pointer" -DARCH="X64"  -DRAND="UDEV" -DWITH="BN;DV;FP;FPX;EP;EPX;PP;PC;MD" -DCHECK=off -DVERBS=off -DDEBUG=on -DBENCH=0 -DTESTS=1 -DARITH=gmp -DFP_PRIME=256 -DFP_QNRES=off -DFP_METHD="BASIC;COMBA;COMBA;MONTY;LOWER;SLIDE" -DFPX_METHD="INTEG;INTEG;LAZYR" -DPP_METHD="LAZYR;OATEP"
+    make 
+    make install 
 	
 # GMP
-	Install using your package manager
+Install using your package manager.
 	
 # Cereal
-  Cereal is a header only library.  Try your local package manager or 
-  	#from a suitable directory
- 	git clone https://github.com/USCiLab/cereal.git
- 	cd cereal
- 	git checkout v1.0.0
- 	cp -R ./include/* /usr/local/include/
+Cereal is a header only library.  Try your local package manager or 
+    
+    #from a suitable directory
+    git clone https://github.com/USCiLab/cereal.git
+    cd cereal
+    git checkout v1.0.0
+    cp -R ./include/* /usr/local/include/
  	
- # Google test
- 	#from the root of the libforwardsec project
+# Google test
+    #from the root of the libforwardsec project
     git submodule init
     git submodule update
