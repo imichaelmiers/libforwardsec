@@ -16,7 +16,7 @@
 #include "util.h"
 namespace forwardsec{
 class Gmppke;
-class Pfse;
+class GMPfse;
 class PartialGmmppkeCT;
 class GmppkePrivateKey;
 class GmppkePublicKey: public  virtual  baseKey{
@@ -42,7 +42,7 @@ protected:
 	std::vector<relicxx::G2> gqofxG2;
 	friend class ::cereal::access;
 	friend class Gmppke;
-	friend class Pfse;
+	friend class GMPfse;
 };
 
  class GmppkePrivateKeyShare{
@@ -67,7 +67,7 @@ protected:
 	}
 	friend class cereal::access;
 	friend class Gmppke;
-	friend class Pfse;
+	friend class GMPfse;
 	friend class GmppkePrivateKey;
 };
 
@@ -97,7 +97,7 @@ protected:
 	}
 	friend class cereal::access;
 	friend class Gmppke;
-	friend class Pfse;
+	friend class GMPfse;
  };
 
 class PartialGmmppkeCT{
@@ -110,7 +110,7 @@ public:
 			return !(x==y);
 		}
 
-		/** Checks if you can decrypt a pfse ciphertext
+		/** Checks if you can decrypt a GMPfse ciphertext
 		 *
 		 * @param sk
 		 * @param ct
@@ -128,7 +128,7 @@ protected:
 	}
 	friend class cereal::access;
 	friend class Gmppke;
-	friend class Pfse;
+	friend class GMPfse;
 };
 
 class GmmppkeCT: public PartialGmmppkeCT{
@@ -149,7 +149,7 @@ protected:
 	}
 	friend class cereal::access;
 	friend class Gmppke;
-	friend class Pfse;
+	friend class GMPfse;
 };
 
 
@@ -192,7 +192,7 @@ private:
 
 	void keygenPartial(const relicxx::ZR & gamma,GmppkePublicKey & pk, GmppkePrivateKey & sk,const unsigned int & d=1) const;
 	GmppkePrivateKeyShare skgen(const GmppkePublicKey &pk,const relicxx::ZR & alpha ) const;
-	friend class Pfse;
+	friend class GMPfse;
 };
 
 }

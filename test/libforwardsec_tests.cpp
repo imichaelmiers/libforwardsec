@@ -37,7 +37,7 @@ protected:
 	 unsigned int d=3;
 	 PFSETests():test(d){}
  	 //PairingGroup group;
-	 Pfse test;
+	 GMPfse test;
 	 pfsepubkey pk ;
 	 PfseKeyStore sk;
 	 bytes testkey = {{0x3a, 0x5d, 0x7a, 0x42, 0x44, 0xd3, 0xd8, 0xaf, 0xf5, 0xf3, 0xf1, 0x87, 0x81, 0x82, 0xb2,
@@ -219,7 +219,7 @@ TEST_F(PFSETests,DeriveKeyInFuture){
 TEST_F(PFSETests,DeriveAllKeyInFuture){
 	unsigned int intervals = std::pow(2,d+1)-1;
 	for(unsigned int i =1;i<intervals;i++){
-	Pfse test1(d);
+	GMPfse test1(d);
 	pfsepubkey pk1;
 	PfseKeyStore sk1;
 	test1.keygen(pk1,sk1);
@@ -294,7 +294,7 @@ TEST_F(PFSETests,testSeperateDecryptandSerialize){
 	std::stringstream ss;
 	 pfsepubkey pksender;
 
-	Pfse testsender(d);
+	GMPfse testsender(d);
 
 	EXPECT_NE(pk,pksender);
 	{

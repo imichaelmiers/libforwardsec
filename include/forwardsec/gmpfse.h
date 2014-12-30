@@ -16,7 +16,7 @@
 #include "BBGHibe.h"
 
 namespace forwardsec{
-class Pfse;
+class GMPfse;
 class PfseKeyStore;
 class pfsepubkey: public BbhHIBEPublicKey,  public GmppkePublicKey{
 	friend bool operator==(const pfsepubkey& x, const pfsepubkey& y){
@@ -54,7 +54,7 @@ protected:
 		ar(hibeSK,ppkeSK);
 	}
 	friend class ::cereal::access;
-	friend class Pfse;
+	friend class GMPfse;
 	friend class PfseKeyStore;
 };
 
@@ -79,7 +79,7 @@ protected:
 	{
 		ar(ct0,hibeCT,ppkeCT,interval,xorct);
 	}
-	friend class Pfse;
+	friend class GMPfse;
 };
 //template <class Archive>
 //void serialize( Archive & ar, PseCipherText & b ){
@@ -118,10 +118,10 @@ private:
 	friend class ::cereal::access;
 };
 
-class Pfse
+class GMPfse
 {
 public:
-	Pfse(unsigned int d,unsigned int numtags = 1);
+	GMPfse(unsigned int d,unsigned int numtags = 1);
 	 /**Generates the public and private key. These are stored in  the object.
 	  *
 	  *

@@ -23,7 +23,7 @@ Benchmark benchKeygen(const unsigned int iterations, const unsigned int d =31,
 		const unsigned int n = 1){
 	Benchmark b;
     for(unsigned int i=0;i < iterations;i++){
-		Pfse test(d,n);
+		GMPfse test(d,n);
 		b.start();
 		pfsepubkey pk;
 		PfseKeyStore sk;
@@ -35,7 +35,7 @@ Benchmark benchKeygen(const unsigned int iterations, const unsigned int d =31,
 }
 Benchmark benchEnc(const unsigned int iterations, const unsigned int d =31,
 		const unsigned int n = 1){
-	Pfse test(d,n);
+	GMPfse test(d,n);
 	pfsepubkey pk;
 	PfseKeyStore sk;
 	test.keygen(pk,sk);    Benchmark benchE;
@@ -49,7 +49,7 @@ Benchmark benchEnc(const unsigned int iterations, const unsigned int d =31,
 }
 Benchmark benchDec(const unsigned int iterations, const unsigned int d =31,
 		const unsigned int n = 1){
-	Pfse test(d,n);
+	GMPfse test(d,n);
 	pfsepubkey pk;
 	PfseKeyStore sk;
 	test.keygen(pk,sk);    Benchmark benchD;
@@ -67,7 +67,7 @@ Benchmark benchPuncFirst(const unsigned int iterations, const unsigned int d =31
 
     Benchmark benchP;
     for(unsigned int i=0;i < iterations;i++){
-    	Pfse test(d,n);
+    	GMPfse test(d,n);
 		pfsepubkey pk;
 		PfseKeyStore sk;
 		test.keygen(pk,sk);
@@ -84,7 +84,7 @@ Benchmark benchPunc(const unsigned int iterations, const unsigned int d =31,
 
     Benchmark benchP;
     for(unsigned int i=0;i < iterations;i++){
-    	Pfse test(d,n);
+    	GMPfse test(d,n);
 		pfsepubkey pk;
 		PfseKeyStore sk;
 		test.keygen(pk,sk);
@@ -102,7 +102,7 @@ Benchmark benchNextInterval(const unsigned int iterations, const unsigned int d 
 
     Benchmark benchN;
     for(unsigned int i=0;i < iterations;i++){
-    	Pfse test(d,n);
+    	GMPfse test(d,n);
 		pfsepubkey pk;
 		PfseKeyStore sk;
 		test.keygen(pk,sk);
@@ -123,7 +123,7 @@ std::vector<std::tuple<unsigned int ,Benchmark>> benchDecPunctured(const unsigne
 		cout << ".";
 		cout.flush();
         Benchmark benchDP;
-    	Pfse test(d,n);
+    	GMPfse test(d,n);
 		pfsepubkey pk;
 		PfseKeyStore sk;
 		test.keygen(pk,sk);
@@ -164,7 +164,7 @@ void relicSizes(){
 }
 template <class T>
 void sizes(const unsigned int d =31,const unsigned int n = 1){
-	Pfse test(d,n);
+	GMPfse test(d,n);
 	pfsepubkey pk;
 	PfseKeyStore sk;
 	test.keygen(pk,sk);

@@ -16,7 +16,7 @@
 #include "forwardsec.h"
 namespace forwardsec{
 
-class Pfse;
+class GMPfse;
 class Bbghibe;
 class BbghPrivatekey{
 public:
@@ -39,7 +39,7 @@ protected:
 		ar(a0,a1,b,bG2);
 	}
 	friend class ::cereal::access;
-	friend class Pfse;
+	friend class GMPfse;
 	friend class Bbghibe;
 };
 
@@ -69,7 +69,7 @@ protected:
 				l,hibeg1,g3G1,g3G2,hG1,hG2);
 	}
 	friend class ::cereal::access;
-	friend class Pfse;
+	friend class GMPfse;
 	friend class Bbghibe;
 };
 
@@ -91,7 +91,7 @@ protected:
 		ar(B,C);
 	}
 	friend class ::cereal::access;
-	friend class Pfse;
+	friend class GMPfse;
 	friend class Bbghibe;
 };
 class BbghCT: public PartialBbghCT{
@@ -112,7 +112,7 @@ protected:
 		ar(::cereal::base_class<PartialBbghCT>(this),A);
 	}
 	friend class ::cereal::access;
-	friend class Pfse;
+	friend class GMPfse;
 	friend class Bbghibe;
 };
 
@@ -131,7 +131,7 @@ public:
     PartialBbghCT blind(const BbhHIBEPublicKey & pk,const relicxx::ZR &s, const  std::vector<relicxx::ZR>  & id) const;
     BbghCT encrypt(const BbhHIBEPublicKey & pk, const relicxx::GT & M, const std::vector<relicxx::ZR>  & id ) const;
 
-    relicxx::GT recoverBlind(const BbghPrivatekey & sk, const PartialBbghCT & ct) const; // decrypt for PFSE
+    relicxx::GT recoverBlind(const BbghPrivatekey & sk, const PartialBbghCT & ct) const; // decrypt for GMPfse
     relicxx::GT decrypt(const BbghPrivatekey & sk,const BbghCT & ct) const; // actual decrypt
 
 };
