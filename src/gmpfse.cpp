@@ -215,7 +215,7 @@ void GMPfse::puncture(const pfsepubkey & pk, GMPfsePrivateKey &sk,unsigned int i
 //privatekeys[interval] = sk;
 
 }
-PseCipherText GMPfse::encrypt(const pfsepubkey & pk, const bytes msg, const unsigned int interval,const vector<std::string> tags) const {
+GMPfseCiphertext GMPfse::encrypt(const pfsepubkey & pk, const bytes msg, const unsigned int interval,const vector<std::string> tags) const {
 	if(msg.size()>32){
 		throw invalid_argument("msg must be at most 32 bytes.");
 	}
@@ -225,7 +225,7 @@ PseCipherText GMPfse::encrypt(const pfsepubkey & pk, const bytes msg, const unsi
 /** Fujisaki Okomoto CCA2 secure encryption
  *
  */
-PseCipherText GMPfse::encryptFO(const pfsepubkey & pk,  const bytes  & msg,const  GT & x,
+GMPfseCiphertext GMPfse::encryptFO(const pfsepubkey & pk,  const bytes  & msg,const  GT & x,
 		const unsigned int interval, const vector<std::string>  & tags ) const {
     std::stringstream ss;
     bytes b = x.getBytes();
@@ -233,7 +233,7 @@ PseCipherText GMPfse::encryptFO(const pfsepubkey & pk,  const bytes  & msg,const
     b.insert(b.begin(),msg.begin(),msg.end());
     ZR s = group.hashListToZR(b);
 
-    PseCipherText ct = encryptGT(pk,x,s,interval,tags);
+    GMPfseCiphertext ct = encryptGT(pk,x,s,interval,tags);
     bytes bytestohash = x.getBytes();
     // since we don't have a different hash function, we simply postfix it with a magic constant;
     bytestohash.insert(bytestohash.begin(),THE_HASH_CONSTANT.begin(),THE_HASH_CONSTANT.end());
@@ -247,8 +247,8 @@ PseCipherText GMPfse::encryptFO(const pfsepubkey & pk,  const bytes  & msg,const
 /** Encryption of group elements. used by encryptFO
  *
  */
-PseCipherText GMPfse::encryptGT(const pfsepubkey & pk, const GT & M,  const ZR & s, const unsigned int interval, const vector<std::string>  & tags) const{
-    PseCipherText ct;
+GMPfseCiphertext GMPfse::encryptGT(const pfsepubkey & pk, const GT & M,  const ZR & s, const unsigned int interval, const vector<std::string>  & tags) const{
+    GMPfseCiphertext ct;
 
     ct.interval = interval;
 
@@ -260,7 +260,7 @@ PseCipherText GMPfse::encryptGT(const pfsepubkey & pk, const GT & M,  const ZR &
 
     return ct;
 }
-bytes GMPfse::decrypt(const pfsepubkey & pk, const GMPfsePrivateKey &sk,const PseCipherText &ct) const{
+bytes GMPfse::decrypt(const pfsepubkey & pk, const GMPfsePrivateKey &sk,const GMPfseCiphertext &ct) const{
     const PfsePuncturedPrivateKey & ski = sk.getKey(ct.interval);
 	vector<string> intersect =ski.ppkeSK.puncturedIntersect(ct.ppkeCT.tags);
     if(intersect.size()>0){
@@ -278,7 +278,7 @@ bytes GMPfse::decrypt(const pfsepubkey & pk, const GMPfsePrivateKey &sk,const Ps
     return decryptFO(pk,ski,ct);
 }
 
-bytes GMPfse::decryptFO(const pfsepubkey & pk,const PfsePuncturedPrivateKey & ski,const PseCipherText &ct) const{
+bytes GMPfse::decryptFO(const pfsepubkey & pk,const PfsePuncturedPrivateKey & ski,const GMPfseCiphertext &ct) const{
     GT x = decryptGT(pk,ski,ct);
     bytes bytestohash = x.getBytes();
     // since we don't have a different hash function, we simply postfix it with a magic constant;
@@ -287,7 +287,7 @@ bytes GMPfse::decryptFO(const pfsepubkey & pk,const PfsePuncturedPrivateKey & sk
 	SHA_FUNC(&bits[0], &bytestohash[0], bytestohash.size());
 
     bytes aes_key = xorarray(ct.xorct, bits);
-    PseCipherText cttest = encryptFO(pk,aes_key,x,ct.interval,ct.ppkeCT.tags);
+    GMPfseCiphertext cttest = encryptFO(pk,aes_key,x,ct.interval,ct.ppkeCT.tags);
     if(ct == cttest ){
         return aes_key;
     }else{
@@ -295,7 +295,7 @@ bytes GMPfse::decryptFO(const pfsepubkey & pk,const PfsePuncturedPrivateKey & sk
     }
 }
 
-GT GMPfse::decryptGT(const pfsepubkey & pk,const PfsePuncturedPrivateKey & ski,const PseCipherText &ct) const {
+GT GMPfse::decryptGT(const pfsepubkey & pk,const PfsePuncturedPrivateKey & ski,const GMPfseCiphertext &ct) const {
     GT b1 = hibe.recoverBlind(ski.hibeSK,ct.hibeCT);
    // assert(b1== group.exp(group.exp(group.pair(g2G1,gG2),group.mul(ss,group.sub(aa,gam1))),neg));
     GT b2 = ppke.recoverBlind(pk,ski.ppkeSK,ct.ppkeCT);

@@ -53,7 +53,7 @@ Benchmark benchDec(const unsigned int iterations, const unsigned int d =31,
 	pfsepubkey pk;
 	GMPfsePrivateKey sk;
 	test.keygen(pk,sk);    Benchmark benchD;
-    PseCipherText ct = test.encrypt(pk,testVector,1,makeTags(n));;
+    GMPfseCiphertext ct = test.encrypt(pk,testVector,1,makeTags(n));;
     for(unsigned int i=0;i < iterations;i++){
         benchD.start();
         test.decrypt(pk,sk,ct);
@@ -127,7 +127,7 @@ std::vector<std::tuple<unsigned int ,Benchmark>> benchDecPunctured(const unsigne
 		pfsepubkey pk;
 		GMPfsePrivateKey sk;
 		test.keygen(pk,sk);
-		PseCipherText ct = test.encrypt(pk,testVector,1,makeTags(n));;
+		GMPfseCiphertext ct = test.encrypt(pk,testVector,1,makeTags(n));;
         for(unsigned int i =0;i<p;i++){
         	if(i%10 == 0) cout << ".";
             test.puncture(pk,sk,"punc"+std::to_string(i));
@@ -223,7 +223,7 @@ void sizes(const unsigned int d =31,const unsigned int n = 1){
 		cout << "\tSK size:\t" << ss.tellp() <<" bytes " << endl;
 	}
 
-    PseCipherText ct = test.encrypt(pk,testVector,1,makeTags(n));;
+    GMPfseCiphertext ct = test.encrypt(pk,testVector,1,makeTags(n));;
 	{
 		stringstream ss;
 		{

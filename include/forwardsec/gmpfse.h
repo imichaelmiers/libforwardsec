@@ -58,14 +58,14 @@ protected:
 	friend class GMPfsePrivateKey;
 };
 
-class PseCipherText{
+class GMPfseCiphertext{
 public:
 	friend class ::cereal::access;
-	friend bool operator==(const PseCipherText& l,const PseCipherText& r){
+	friend bool operator==(const GMPfseCiphertext& l,const GMPfseCiphertext& r){
 		return l.ct0 == r.ct0 && l.hibeCT == r.hibeCT && l.ppkeCT == r.ppkeCT
 				&& l.interval == r.interval && l.xorct == r.xorct;
 	}
-	friend bool operator!=(const PseCipherText& l,const PseCipherText& r){
+	friend bool operator!=(const GMPfseCiphertext& l,const GMPfseCiphertext& r){
 		return !(l==r);
 	}
 	unsigned int interval;
@@ -138,7 +138,7 @@ public:
 	 * @param tags the tags for the message
 	 * @return the ciphertext
 	 */
-	PseCipherText encrypt(const pfsepubkey & pk, const bytes msg, const unsigned int interval, const std::vector<std::string> tags) const;
+	GMPfseCiphertext encrypt(const pfsepubkey & pk, const bytes msg, const unsigned int interval, const std::vector<std::string> tags) const;
 
 	/**Decrypt a message using the provided public and private keys.
 	 *
@@ -147,7 +147,7 @@ public:
 	 * @param ct the ciphertext
 	 * @return the message
 	 */
-	bytes decrypt(const pfsepubkey & pk, const GMPfsePrivateKey &sk, const PseCipherText &ct) const;
+	bytes decrypt(const pfsepubkey & pk, const GMPfsePrivateKey &sk, const GMPfseCiphertext &ct) const;
 	
 	/**Derives keys from the current interval and updates the provided
 	 * secret key to store them.
@@ -203,16 +203,16 @@ private:
 
 	void bindKey(const pfsepubkey & pk,PfsePuncturedPrivateKey & k) const;
 
-	PseCipherText encryptFO(const pfsepubkey & pk, const bytes & bitmsg,
+	GMPfseCiphertext encryptFO(const pfsepubkey & pk, const bytes & bitmsg,
 			              const unsigned int interval, const std::vector<std::string>  & tags) const;
-	PseCipherText encryptFO( const pfsepubkey & pk, const bytes & bitmsg,
+	GMPfseCiphertext encryptFO( const pfsepubkey & pk, const bytes & bitmsg,
 			const relicxx::GT & x, const unsigned int interval, const std::vector<std::string>  & tags) const;
-	PseCipherText encryptGT( const pfsepubkey & pk, const relicxx::GT & M,const relicxx::ZR & s,
+	GMPfseCiphertext encryptGT( const pfsepubkey & pk, const relicxx::GT & M,const relicxx::ZR & s,
 			const unsigned int interval, const std::vector<std::string>  & tags) const;
 
 
-	bytes decryptFO(const pfsepubkey & pk, const PfsePuncturedPrivateKey &ski, const PseCipherText &ct) const;
-	relicxx::GT decryptGT(const pfsepubkey & pk, const PfsePuncturedPrivateKey & ski, const PseCipherText &ct) const;
+	bytes decryptFO(const pfsepubkey & pk, const PfsePuncturedPrivateKey &ski, const GMPfseCiphertext &ct) const;
+	relicxx::GT decryptGT(const pfsepubkey & pk, const PfsePuncturedPrivateKey & ski, const GMPfseCiphertext &ct) const;
 };
 }
 namespace cereal

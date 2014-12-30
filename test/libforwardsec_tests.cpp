@@ -103,7 +103,7 @@ protected:
 TEST_F(PFSETests,Decrypt){
     vector<string> tags;
     tags.push_back("9");
-    PseCipherText ct1 = test.encrypt(pk,testkey,1,tags);
+    GMPfseCiphertext ct1 = test.encrypt(pk,testkey,1,tags);
 
     //test.puncture(1,eight);
 
@@ -114,7 +114,7 @@ TEST_F(PFSETests,Decrypt){
 TEST_F(PFSETests,FailWhenPunctured){
     vector<string> tags;
     tags.push_back("9");
-    PseCipherText ct1 = test.encrypt(pk,testkey,1,tags);
+    GMPfseCiphertext ct1 = test.encrypt(pk,testkey,1,tags);
     test.puncture(pk,sk,"9");
     //test.puncture(1,eight);
    // test.decrypt(ct1);
@@ -125,7 +125,7 @@ TEST_F(PFSETests,DecryptOnPuncture){
     vector<string> tags;
     tags.push_back("9");
 
-    PseCipherText ct = test.encrypt(pk,testkey,1,tags);
+    GMPfseCiphertext ct = test.encrypt(pk,testkey,1,tags);
 
     test.puncture(pk,sk,1,"8");
 
@@ -141,7 +141,7 @@ TEST_F(PFSETests,DecryptOnPuncture){
     EXPECT_EQ(testkey,test.decrypt(pk,sk,ct));
 	test.prepareNextInterval(pk,sk);
 
-    PseCipherText ct2 = test.encrypt(pk,testkey,2,tags);
+    GMPfseCiphertext ct2 = test.encrypt(pk,testkey,2,tags);
 
     bytes result1 = test.decrypt(pk,sk,ct2);
 
@@ -159,7 +159,7 @@ TEST_F(PFSETests,PassOnPunctureNextInterval){
     test.puncture(pk,sk,2,"10");
 
 	test.prepareNextInterval(pk,sk);
-    PseCipherText ct1 = test.encrypt(pk,testkey,3,tags);
+    GMPfseCiphertext ct1 = test.encrypt(pk,testkey,3,tags);
 
     bytes result = test.decrypt(pk,sk,ct1);
     EXPECT_EQ(testkey,result);
@@ -176,7 +176,7 @@ TEST_F(PFSETests,PunctureAndDeriveAll){
 	    test.puncture(pk,sk,i,"10");
 	    test.puncture(pk,sk,"11");
 	    test.puncture(pk,sk,"12");
-	    PseCipherText ct1 = test.encrypt(pk,testkey,i,tags);
+	    GMPfseCiphertext ct1 = test.encrypt(pk,testkey,i,tags);
 	    bytes result = test.decrypt(pk,sk,ct1);
 	    EXPECT_EQ(testkey,result);
 	    if(i+1 < intervals){
@@ -199,7 +199,7 @@ TEST_F(PFSETests,Delete){
     test.puncture(pk,sk,1,"8");
     test.puncture(pk,sk,1,"10");
 
-    PseCipherText ct = test.encrypt(pk,testkey,1,tags);
+    GMPfseCiphertext ct = test.encrypt(pk,testkey,1,tags);
 
     bytes result = test.decrypt(pk,sk,ct);
     EXPECT_EQ(testkey,result);
@@ -211,7 +211,7 @@ TEST_F(PFSETests,PunctureWrongInterval){
     EXPECT_THROW( test.puncture(pk,sk,2,"8");,invalid_argument); // can't puncture key we don't have children for.
 }
 TEST_F(PFSETests,DeriveKeyInFuture){
-    PseCipherText ct1 = test.encrypt(pk,testkey,11,{"1"});
+    GMPfseCiphertext ct1 = test.encrypt(pk,testkey,11,{"1"});
     test.deriveKeyFor(pk,sk,11);
     bytes result = test.decrypt(pk,sk,ct1);
     ASSERT_EQ(testkey,result);
@@ -223,7 +223,7 @@ TEST_F(PFSETests,DeriveAllKeyInFuture){
 	pfsepubkey pk1;
 	GMPfsePrivateKey sk1;
 	test1.keygen(pk1,sk1);
-    PseCipherText ct1 = test1.encrypt(pk1,testkey,i,{"1"});
+    GMPfseCiphertext ct1 = test1.encrypt(pk1,testkey,i,{"1"});
     test1.deriveKeyFor(pk1,sk1,i);
     bytes result = test1.decrypt(pk1,sk1,ct1);
     ASSERT_EQ(testkey,result);
@@ -234,7 +234,7 @@ TEST_F(PFSETests,serializePseCipherText){
 	std::stringstream ss;
     vector<std::string> tags;
     tags.push_back("2");
-    PseCipherText ctnew, ct = test.encrypt(pk,testkey,1,tags);
+    GMPfseCiphertext ctnew, ct = test.encrypt(pk,testkey,1,tags);
 	EXPECT_NE(ct,ctnew);
 	{
 		cereal::BinaryOutputArchive oarchive(ss);
@@ -286,7 +286,7 @@ TEST_F(PFSETests,testSeperateDecryptandSerialize){
 
     vector<string> tags;
     tags.push_back("9");
-    PseCipherText ct1 = test.encrypt(pk,testkey,1,tags);
+    GMPfseCiphertext ct1 = test.encrypt(pk,testkey,1,tags);
 
     //test.puncture(1,eight);
 
@@ -305,7 +305,7 @@ TEST_F(PFSETests,testSeperateDecryptandSerialize){
 	    cereal::BinaryInputArchive iarchive(ss); // Create an input archive
 	    iarchive(pksender);
 	}
-	PseCipherText ctnew,ct = testsender.encrypt(pksender,testkey,1,tags);
+	GMPfseCiphertext ctnew,ct = testsender.encrypt(pksender,testkey,1,tags);
 	{
 		cereal::BinaryOutputArchive oarchive(ss);
 	//	oarchive(a);
