@@ -59,7 +59,7 @@ bool GMPfsePrivateKey::hasKey(const unsigned int i) const{
 }
 
 
-void GMPfsePrivateKey::addkey(unsigned int i, const BbghPrivatekey & h){
+void GMPfsePrivateKey::addkey(unsigned int i, const BBGHibePrivateKey & h){
 	libforwardsec_DBG(cout << "added key for interval " << i << endl;);
 	unpucturedHIBEKeys[i] = h;
 }
@@ -89,7 +89,7 @@ void GMPfse::keygen( GMPfsePublicKey & pk,  GMPfsePrivateKey &sk) const{
 
 
     std::vector<ZR> left, right;
-    BbghPrivatekey sklefthibe,  skrighthibe;
+    BBGHibePrivateKey sklefthibe,  skrighthibe;
     GmppkePrivateKey ppkeSK;
     left.push_back(ZR(0));
     right.push_back(ZR(1));
@@ -130,7 +130,7 @@ void GMPfse::prepareIntervalAfter(const GMPfsePublicKey & pk, GMPfsePrivateKey &
     	return;
     }
     if (pathlength  < depth){ // Not a leaf node, so derive new hibe keys.
-    	BbghPrivatekey sklefthibe, skrighthibe;
+    	BBGHibePrivateKey sklefthibe, skrighthibe;
 
         // compute left key
         path.push_back(ZR(0));
@@ -161,7 +161,7 @@ void GMPfse::deriveKeyFor(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,const
          throw logic_error("The parent tag is already punctured. The software should never allow this to happen");
     }
 
-    BbghPrivatekey  curk= k.hibeSK;
+    BBGHibePrivateKey  curk= k.hibeSK;
     while(ancestor.size()<path.size()){
 		ancestor = std::vector<ZR>(path.begin(),path.begin()+ancestor.size()+1);
 		hibe.keygen(pk,curk,ancestor,curk);

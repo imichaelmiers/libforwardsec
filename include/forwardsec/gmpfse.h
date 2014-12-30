@@ -18,9 +18,9 @@
 namespace forwardsec{
 class GMPfse;
 class GMPfsePrivateKey;
-class GMPfsePublicKey: public BbhHIBEPublicKey,  public GmppkePublicKey{
+class GMPfsePublicKey: public BBGHibePublicKey,  public GmppkePublicKey{
 	friend bool operator==(const GMPfsePublicKey& x, const GMPfsePublicKey& y){
-		return (BbhHIBEPublicKey)x == (BbhHIBEPublicKey)y && (GmppkePublicKey)x == (GmppkePublicKey)y;
+		return (BBGHibePublicKey)x == (BBGHibePublicKey)y && (GmppkePublicKey)x == (GmppkePublicKey)y;
 	}
 	friend bool operator!=(const GMPfsePublicKey& x, const GMPfsePublicKey& y){
 		return !(x==y);
@@ -28,7 +28,7 @@ class GMPfsePublicKey: public BbhHIBEPublicKey,  public GmppkePublicKey{
 	template <class Archive>
 	  void serialize( Archive & ar )
 	{
-		ar(::cereal::base_class<BbhHIBEPublicKey>(this),
+		ar(::cereal::base_class<BBGHibePublicKey>(this),
 				::cereal::base_class<GmppkePublicKey>(this));
 	}
 	friend class ::cereal::access;
@@ -46,7 +46,7 @@ public:
 		return !(x==y);
 	}
 protected:
-	BbghPrivatekey hibeSK;
+	BBGHibePrivateKey hibeSK;
 	GmppkePrivateKey ppkeSK;
 	template <class Archive>
 	  void serialize( Archive & ar )
@@ -71,7 +71,7 @@ public:
 	unsigned int interval;
 protected:
 	relicxx::GT ct0;
-	PartialBbghCT hibeCT;
+	BBGHibePartialCiphertext hibeCT;
 	PartialGmmppkeCT ppkeCT;
 	bytes xorct;
 	template <class Archive>
@@ -92,7 +92,7 @@ public:
 	GMPfsePrivateKey(const GmppkePrivateKey & unpuncturedKey,unsigned int depth);
 	GMPfseIntervalKey getKey(unsigned int i) const;
 	void updateKey(unsigned int i, const GMPfseIntervalKey & p);
-	void addkey(unsigned int i, const BbghPrivatekey & h);
+	void addkey(unsigned int i, const BBGHibePrivateKey & h);
 	void erase(unsigned int i);
 	bool hasKey(const unsigned int i) const;
 	bool needsChildKeys(const unsigned int i) const;
@@ -108,7 +108,7 @@ public:
 private:
 	unsigned int depth;
 	std::map<unsigned int,GMPfseIntervalKey> puncturedKeys;
-	std::map<unsigned int,BbghPrivatekey> unpucturedHIBEKeys;
+	std::map<unsigned int,BBGHibePrivateKey> unpucturedHIBEKeys;
 	GmppkePrivateKey unpucturedPPKEKey;
 	template <class Archive>
 	  void serialize( Archive & ar )
@@ -196,7 +196,7 @@ public:
 
 private:
 	relicxx::PairingGroup group;
-	Bbghibe hibe;
+	BBGHibe hibe;
 	Gmppke ppke;
 	unsigned int depth;
 	unsigned int numtags;

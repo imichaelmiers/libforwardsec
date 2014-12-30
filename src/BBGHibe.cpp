@@ -10,7 +10,7 @@ namespace forwardsec{
 
 using namespace std;
 using namespace relicxx;
-void Bbghibe::setup(const unsigned int & l, BbhHIBEPublicKey & pk, G2 & msk) const
+void BBGHibe::setup(const unsigned int & l, BBGHibePublicKey & pk, G2 & msk) const
 {
 	if(l>31){
 		throw invalid_argument("max id length must be less than 32.");
@@ -37,7 +37,7 @@ void Bbghibe::setup(const unsigned int & l, BbhHIBEPublicKey & pk, G2 & msk) con
     return;
 }
 
-void Bbghibe::keygen(const BbhHIBEPublicKey & pk, const G2 & msk, const std::vector<ZR> & id, BbghPrivatekey & sk) const
+void BBGHibe::keygen(const BBGHibePublicKey & pk, const G2 & msk, const std::vector<ZR> & id, BBGHibePrivateKey & sk) const
 {
     const ZR r = group.randomZR();
     const unsigned int k = id.size();
@@ -60,7 +60,7 @@ void Bbghibe::keygen(const BbhHIBEPublicKey & pk, const G2 & msk, const std::vec
     return;
 }
 
-void Bbghibe::keygen(const BbhHIBEPublicKey & pk,const  BbghPrivatekey & sk, const std::vector<ZR> &id,BbghPrivatekey & skout) const{
+void BBGHibe::keygen(const BBGHibePublicKey & pk,const  BBGHibePrivateKey & sk, const std::vector<ZR> &id,BBGHibePrivateKey & skout) const{
     const unsigned int k = id.size();
     ZR t = group.randomZR();
 
@@ -86,17 +86,17 @@ void Bbghibe::keygen(const BbhHIBEPublicKey & pk,const  BbghPrivatekey & sk, con
     return;
 }
 
-BbghCT Bbghibe::encrypt(const BbhHIBEPublicKey & pk, const GT & M, const std::vector<ZR> & id) const{
+BBGHibeCiphertext BBGHibe::encrypt(const BBGHibePublicKey & pk, const GT & M, const std::vector<ZR> & id) const{
     ZR s = group.randomZR();
 
-     BbghCT ct =blind(pk,s,id);
+     BBGHibeCiphertext ct =blind(pk,s,id);
      ct.A = group.mul(group.exp(group.pair(pk.g2G1, pk.hibeg1), s), M);
      return ct;
 }
 
-PartialBbghCT Bbghibe::blind(const BbhHIBEPublicKey & pk, const ZR & s,const std::vector<ZR> & id) const
+BBGHibePartialCiphertext BBGHibe::blind(const BBGHibePublicKey & pk, const ZR & s,const std::vector<ZR> & id) const
 {
-	PartialBbghCT ct;
+	BBGHibePartialCiphertext ct;
     const unsigned int k = id.size();
     assert(k<=pk.l);
 
@@ -111,12 +111,12 @@ PartialBbghCT Bbghibe::blind(const BbhHIBEPublicKey & pk, const ZR & s,const std
     return ct;
 }
 
-GT Bbghibe::recoverBlind(const BbghPrivatekey & sk, const PartialBbghCT & ct) const{
+GT BBGHibe::recoverBlind(const BBGHibePrivateKey & sk, const BBGHibePartialCiphertext & ct) const{
 	// This is inverted so that decrypt is ct/result. I.e. it aligns with the ppke scheme.
     return group.div(group.pair(ct.B, sk.a0),group.pair(ct.C, sk.a1));
 }
 
-GT Bbghibe::decrypt(const BbghPrivatekey & sk, const BbghCT & ct) const
+GT BBGHibe::decrypt(const BBGHibePrivateKey & sk, const BBGHibeCiphertext & ct) const
 {
 
     return group.div(ct.A, recoverBlind(sk,ct));

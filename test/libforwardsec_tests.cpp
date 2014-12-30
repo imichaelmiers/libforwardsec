@@ -49,13 +49,13 @@ class BBGHibeTests : public ::testing::Test {
 protected: 
      PairingGroup group;
 
-     Bbghibe test;
-     BbhHIBEPublicKey pk;
+     BBGHibe test;
+     BBGHibePublicKey pk;
 
      std::vector<ZR> id0, id1, id00, id01,
                  id10, id11, id111;
 
-     BbghPrivatekey sk0, sk1, sk00, sk01,
+     BBGHibePrivateKey sk0, sk1, sk00, sk01,
                     sk10, sk11, sk111;
 
      virtual void SetUp(){
@@ -329,7 +329,7 @@ TEST_F(GMPfseTests,testSeperateDecryptandSerialize){
 TEST_F(BBGHibeTests,basic){
     GT m = group.randomGT();
 
-    BbghCT ct = test.encrypt(pk,m,id1);
+    BBGHibeCiphertext ct = test.encrypt(pk,m,id1);
     EXPECT_EQ(m,test.decrypt(sk1, ct));
 
 }
@@ -338,7 +338,7 @@ TEST_F(BBGHibeTests,basic){
 TEST_F(BBGHibeTests,basicFail){
     GT m = group.randomGT();
 
-    BbghCT ct = test.encrypt(pk,m,id1);
+    BBGHibeCiphertext ct = test.encrypt(pk,m,id1);
 
     EXPECT_NE(m,test.decrypt(sk0,ct));
     EXPECT_NE(m,test.decrypt(sk11,ct));
@@ -349,7 +349,7 @@ TEST_F(BBGHibeTests,derived){
     GT m = group.randomGT();
 
 
-    BbghCT ct = test.encrypt(pk,m,id11);
+    BBGHibeCiphertext ct = test.encrypt(pk,m,id11);
     EXPECT_EQ(m,test.decrypt(sk11,ct));
     EXPECT_NE(m,test.decrypt(sk00,ct));
     EXPECT_NE(m,test.decrypt(sk10,ct));
@@ -359,7 +359,7 @@ TEST_F(BBGHibeTests,derived){
 TEST_F(BBGHibeTests,derivedFurther){
     GT m = group.randomGT();
 
-    BbghCT ct = test.encrypt(pk,m,id111);
+    BBGHibeCiphertext ct = test.encrypt(pk,m,id111);
     EXPECT_EQ(m,test.decrypt(sk111,ct));
     EXPECT_NE(m,test.decrypt(sk00,ct));
     EXPECT_NE(m,test.decrypt(sk10,ct));
@@ -371,8 +371,8 @@ TEST_F(BBGHibeTests,serializeBbghCT){
 	std::stringstream ss;
     GT m = group.randomGT();
 
-    BbghCT ctnew;
-    BbghCT ct = test.encrypt(pk,m,id1);
+    BBGHibeCiphertext ctnew;
+    BBGHibeCiphertext ct = test.encrypt(pk,m,id1);
 	EXPECT_NE(ct,ctnew);
 	{
 		cereal::BinaryOutputArchive oarchive(ss);
@@ -388,7 +388,7 @@ TEST_F(BBGHibeTests,serializeBbghCT){
 }
 
 TEST_F(BBGHibeTests,serializeBbhHIBEPublicKey){
-	BbhHIBEPublicKey pknew;
+	BBGHibePublicKey pknew;
 	std::stringstream ss;
 	EXPECT_NE(pk,pknew);
 	{
@@ -404,9 +404,9 @@ TEST_F(BBGHibeTests,serializeBbhHIBEPublicKey){
 	EXPECT_EQ(pk,pknew);
 }
 TEST_F(BBGHibeTests,serializeBbghPrivatekey){
-	BbhHIBEPublicKey pknew;
+	BBGHibePublicKey pknew;
 	std::stringstream ss;
-	BbghPrivatekey skn;
+	BBGHibePrivateKey skn;
 	EXPECT_NE(sk0,skn);
 	{
 		cereal::BinaryOutputArchive oarchive(ss);
@@ -434,9 +434,9 @@ TEST_F(BBGHibeTests,serializeBbghPrivatekey){
 
 TEST_F(BBGHibeTests,testSeperateDecryptandSerialize){
 	std::stringstream ss;
-	BbhHIBEPublicKey pksender;
+	BBGHibePublicKey pksender;
 
-	Bbghibe testsender;
+	BBGHibe testsender;
 	EXPECT_NE(pk,pksender);
 	{
 		cereal::BinaryOutputArchive oarchive(ss);
@@ -449,7 +449,7 @@ TEST_F(BBGHibeTests,testSeperateDecryptandSerialize){
 
     GT m = group.randomGT();
 
-    BbghCT ctnew,ct = testsender.encrypt(pksender,m,id1);
+    BBGHibeCiphertext ctnew,ct = testsender.encrypt(pksender,m,id1);
 	{
 		cereal::BinaryOutputArchive oarchive(ss);
 		oarchive(ct);

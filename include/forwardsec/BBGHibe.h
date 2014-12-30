@@ -17,15 +17,15 @@
 namespace forwardsec{
 
 class GMPfse;
-class Bbghibe;
-class BbghPrivatekey{
+class BBGHibe;
+class BBGHibePrivateKey{
 public:
 
-	friend bool operator==(const BbghPrivatekey& x, const BbghPrivatekey& y){
+	friend bool operator==(const BBGHibePrivateKey& x, const BBGHibePrivateKey& y){
 		return  (x.a0 == y.a0 && x.a1 == y.a1 && x.b == y.b &&
 				x.bG2 == y.bG2);
 	}
-	friend bool operator!=(const BbghPrivatekey& x, const BbghPrivatekey& y){
+	friend bool operator!=(const BBGHibePrivateKey& x, const BBGHibePrivateKey& y){
 		return !(x==y);
 	}
 protected:
@@ -40,18 +40,18 @@ protected:
 	}
 	friend class ::cereal::access;
 	friend class GMPfse;
-	friend class Bbghibe;
+	friend class BBGHibe;
 };
 
 
-class BbhHIBEPublicKey:  public virtual  baseKey{
+class BBGHibePublicKey:  public virtual  baseKey{
 public:
-	friend bool operator==(const BbhHIBEPublicKey& x, const BbhHIBEPublicKey& y){
+	friend bool operator==(const BBGHibePublicKey& x, const BBGHibePublicKey& y){
 		return  ((baseKey)x == (baseKey)y &&
 				x.l == y.l && x.hibeg1 == y.hibeg1 && x.g3G1 == y.g3G1 &&
 				x.g3G2 == y.g3G2 && x.hG1 == y.hG1 && x.hG2 == y.hG2);
 	}
-	friend bool operator!=(const BbhHIBEPublicKey& x, const BbhHIBEPublicKey& y){
+	friend bool operator!=(const BBGHibePublicKey& x, const BBGHibePublicKey& y){
 		return !(x==y);
 	}
 
@@ -70,17 +70,17 @@ protected:
 	}
 	friend class ::cereal::access;
 	friend class GMPfse;
-	friend class Bbghibe;
+	friend class BBGHibe;
 };
 
-class PartialBbghCT{
+class BBGHibePartialCiphertext{
 public:
-	PartialBbghCT(){};
+	BBGHibePartialCiphertext(){};
 
-	friend bool operator==(const PartialBbghCT& x,const PartialBbghCT& y){
+	friend bool operator==(const BBGHibePartialCiphertext& x,const BBGHibePartialCiphertext& y){
 		return x.B == y.B && x.C == y.C;
 	}
-	friend bool operator!=(const PartialBbghCT& x,const PartialBbghCT& y){
+	friend bool operator!=(const BBGHibePartialCiphertext& x,const BBGHibePartialCiphertext& y){
 		return !(x==y);
 	}
 protected:
@@ -92,47 +92,47 @@ protected:
 	}
 	friend class ::cereal::access;
 	friend class GMPfse;
-	friend class Bbghibe;
+	friend class BBGHibe;
 };
-class BbghCT: public PartialBbghCT{
+class BBGHibeCiphertext: public BBGHibePartialCiphertext{
 public:
-	BbghCT(){};
-	BbghCT(const  PartialBbghCT & c) : PartialBbghCT(c){}
+	BBGHibeCiphertext(){};
+	BBGHibeCiphertext(const  BBGHibePartialCiphertext & c) : BBGHibePartialCiphertext(c){}
 
-	friend bool operator==(const BbghCT& x,const BbghCT& y){
-		return x.A == y.A  && (PartialBbghCT) x == (PartialBbghCT) y;
+	friend bool operator==(const BBGHibeCiphertext& x,const BBGHibeCiphertext& y){
+		return x.A == y.A  && (BBGHibePartialCiphertext) x == (BBGHibePartialCiphertext) y;
 	}
-	friend bool operator!=(const BbghCT& x,const BbghCT& y){
+	friend bool operator!=(const BBGHibeCiphertext& x,const BBGHibeCiphertext& y){
 		return !(x==y);
 	}
 protected:
 	relicxx::GT A;
 	template <class Archive>
 	void serialize( Archive & ar ){
-		ar(::cereal::base_class<PartialBbghCT>(this),A);
+		ar(::cereal::base_class<BBGHibePartialCiphertext>(this),A);
 	}
 	friend class ::cereal::access;
 	friend class GMPfse;
-	friend class Bbghibe;
+	friend class BBGHibe;
 };
 
-class Bbghibe
+class BBGHibe
 {
 public:
 	relicxx::PairingGroup group;
-	Bbghibe(){};
-	~Bbghibe() {};
+	BBGHibe(){};
+	~BBGHibe() {};
 
-	void setup(const unsigned int & l, BbhHIBEPublicKey & pk, relicxx::G2 & msk) const;
+	void setup(const unsigned int & l, BBGHibePublicKey & pk, relicxx::G2 & msk) const;
 
-	void keygen(const BbhHIBEPublicKey & pk,const relicxx::G2 & msk,const  std::vector<relicxx::ZR> & id, BbghPrivatekey & sk) const;
-    void keygen(const BbhHIBEPublicKey & pk,const  BbghPrivatekey & sk, const std::vector<relicxx::ZR> & id,BbghPrivatekey & skout) const;
+	void keygen(const BBGHibePublicKey & pk,const relicxx::G2 & msk,const  std::vector<relicxx::ZR> & id, BBGHibePrivateKey & sk) const;
+    void keygen(const BBGHibePublicKey & pk,const  BBGHibePrivateKey & sk, const std::vector<relicxx::ZR> & id,BBGHibePrivateKey & skout) const;
 
-    PartialBbghCT blind(const BbhHIBEPublicKey & pk,const relicxx::ZR &s, const  std::vector<relicxx::ZR>  & id) const;
-    BbghCT encrypt(const BbhHIBEPublicKey & pk, const relicxx::GT & M, const std::vector<relicxx::ZR>  & id ) const;
+    BBGHibePartialCiphertext blind(const BBGHibePublicKey & pk,const relicxx::ZR &s, const  std::vector<relicxx::ZR>  & id) const;
+    BBGHibeCiphertext encrypt(const BBGHibePublicKey & pk, const relicxx::GT & M, const std::vector<relicxx::ZR>  & id ) const;
 
-    relicxx::GT recoverBlind(const BbghPrivatekey & sk, const PartialBbghCT & ct) const; // decrypt for GMPfse
-    relicxx::GT decrypt(const BbghPrivatekey & sk,const BbghCT & ct) const; // actual decrypt
+    relicxx::GT recoverBlind(const BBGHibePrivateKey & sk, const BBGHibePartialCiphertext & ct) const; // decrypt for GMPfse
+    relicxx::GT decrypt(const BBGHibePrivateKey & sk,const BBGHibeCiphertext & ct) const; // actual decrypt
 
 };
 }
@@ -141,7 +141,7 @@ public:
 namespace cereal
 {
  template <class Archive>
- struct specialize<Archive, forwardsec::BbhHIBEPublicKey, cereal::specialization::member_serialize> {};
+ struct specialize<Archive, forwardsec::BBGHibePublicKey, cereal::specialization::member_serialize> {};
  // cereal no longer has any ambiguity when serializing MyDerived
 }
 #endif /* SRC_BBGHIBE_H_ */
