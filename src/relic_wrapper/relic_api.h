@@ -106,7 +106,7 @@ public:
 	}
 
 	ZR&  operator=(ZR && rhs){
-		if(this !=&rhs){
+		if(this !=&rhs && rhs.isInit){
 			isInit = rhs.isInit;
 			rhs.isInit = false;
 			if(isInit){
@@ -210,7 +210,7 @@ public:
 		*this=std::move(other);
 	}
 	G1&  operator=(G1 && rhs){
-		if(this !=&rhs){
+		if(this !=&rhs && rhs.isInit){
 			isInit =rhs.isInit;
 			rhs.isInit = false;
 			if(isInit){
@@ -282,7 +282,7 @@ public:
 		*this=std::move(other);
 	}
 	G2&  operator=(G2 && rhs){
-		if(this !=&rhs){
+		if(this !=&rhs && rhs.isInit){
 			isInit = rhs.isInit;
 			rhs.isInit = false;
 			if(isInit){
@@ -356,7 +356,7 @@ public:
 	}
 #ifdef RELICXX_MOVEGT
 	GT&  operator=(GT && rhs){
-		if(this !=&rhs){
+		if(this !=&rhs && rhs.isInit){
 			isInit = rhs.isInit;
 			rhs.isInit = false;
 			if(isInit){
