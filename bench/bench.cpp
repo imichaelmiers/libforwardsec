@@ -114,6 +114,25 @@ Benchmark benchNextInterval(const unsigned int iterations, const unsigned int d 
 	   return benchN;
 
 }
+std::vector<Benchmark> benchNextIntFull(const unsigned int iterations, const unsigned int d =31,
+		const unsigned int n = 1){
+
+    std::vector<Benchmark>  b(d);
+
+    for(unsigned int i=0;i < iterations;i++){
+    	GMPfse test(d,n);
+		GMPfsePublicKey pk;
+		GMPfsePrivateKey sk;
+		test.keygen(pk,sk);
+		for(unsigned int dd = 0;dd<d;dd++){
+			b[dd].start();
+	        test.prepareNextInterval(pk,sk);
+	        b[dd].stop();
+	        b[dd].computeTimeInMilliseconds();
+    	}
+    }
+	return b;
+}
 std::vector<std::tuple<unsigned int ,Benchmark>> benchDecPunctured(const unsigned int iterations,
 		const unsigned int punctures, const unsigned int puncture_steps,
 		const unsigned int d =31,
@@ -269,6 +288,12 @@ int main()
 
     N = benchNextInterval(i,d,n);
     cout << "\tNextInterval:\t\t" << N << endl;
+    cout << "\tNextIntervals:\n";
+
+    auto res = benchNextIntFull(i,d,n);
+    for(unsigned int j=0;j<res.size();j++){
+    	cout <<"\t\t " << j << "\t" <<  res[j] <<endl;
+    }
 	cout << "\tDec(punctured):" << endl;
     auto marks = benchDecPunctured(i,100,20,d,n);
     for(auto m:marks){
