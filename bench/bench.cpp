@@ -119,7 +119,7 @@ std::vector<std::tuple<unsigned int ,Benchmark>> benchDecPunctured(const unsigne
 		const unsigned int d =31,
 		const unsigned int n = 1){
 	std::vector<std::tuple<unsigned int ,Benchmark>>  b;
-	for(unsigned int p = 0; p < punctures;p+=puncture_steps){
+	for(unsigned int p = 0; p <= punctures;p+=puncture_steps){
 		cout << ".";
 		cout.flush();
         Benchmark benchDP;
@@ -128,11 +128,11 @@ std::vector<std::tuple<unsigned int ,Benchmark>> benchDecPunctured(const unsigne
 		GMPfsePrivateKey sk;
 		test.keygen(pk,sk);
 		GMPfseCiphertext ct = test.encrypt(pk,testVector,1,makeTags(n));;
-        for(unsigned int i =0;i<p;i++){
+        for(unsigned int i =0;i<=p;i++){
         	if(i%10 == 0) cout << ".";
             test.puncture(pk,sk,"punc"+std::to_string(i));
         }
-        for(unsigned int i=0;i < iterations;i++){
+        for(unsigned int i=0;i <= iterations;i++){
         	if(i%10 == 0) cout << ".";
            benchDP.start();
 		   test.decrypt(pk,sk,ct);
@@ -236,7 +236,7 @@ void sizes(const unsigned int d =31,const unsigned int n = 1){
 int main()
 {
 	relicResourceHandle h;
-	unsigned int i = 10;
+	unsigned int i = 500;
 	unsigned int d = 31;
 	unsigned int n = 1;
     Benchmark K,E,D,PF,PS,N,DP;
