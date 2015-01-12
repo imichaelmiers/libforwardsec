@@ -252,7 +252,46 @@ void sizes(const unsigned int d =31,const unsigned int n = 1){
 		cout << "\tCT size:\t" << ss.tellp() <<" bytes " << endl;
 	}
 }
-int main()
+unsigned int treeSize(unsigned int k){
+    return (2 <<(k)) -1;
+}
+void bencKeySize(unsigned int tag , unsigned int depth,unsigned int puncturesperinterval){
+	    GMPfse test(depth,tag);
+		GMPfsePublicKey pk;
+		GMPfsePrivateKey sk;
+		test.keygen(pk,sk);
+		const unsigned int tsize = treeSize(depth);
+		int ctr = 0;
+		for(unsigned int i  =0;i < (tsize-1);i++ ){
+			stringstream ss;
+			{
+				cereal::PortableBinaryOutputArchive oarchive(ss);
+				oarchive(sk);
+			}
+			ctr++;
+			cout << ctr <<" SK interval "<< i << " 0 : " << ss.tellp() <<" bytes " << endl;
+			for(unsigned int j = 0 ;j <puncturesperinterval;j++){
+        		test.puncture(pk,sk,"punc"+std::to_string(j)+std::to_string(i));
+				stringstream ss;
+				{
+					cereal::PortableBinaryOutputArchive oarchive(ss);
+					oarchive(sk);
+				}
+				cout << ctr <<" SK interval "<< i << " "<< j << " : " << ss.tellp() <<" bytes " << endl;
+				ctr++;
+			}
+			test.prepareNextInterval(pk,sk);
+			sk.erase(i+1);
+		}
+		
+}
+
+int main(){
+		relicResourceHandle h; 
+		cout << "endl" << endl;
+	bencKeySize(1,10,10);
+}
+int main2()
 {
 	relicResourceHandle h;
 	unsigned int i = 500;
