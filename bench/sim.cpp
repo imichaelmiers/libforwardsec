@@ -1,0 +1,88 @@
+ #include <iostream>
+#include <vector>
+#include <tuple>
+#include <cereal/archives/portable_binary.hpp>
+#include <cereal/archives/binary.hpp>
+#include <cereal/archives/json.hpp>
+#include "locale"
+#include "gmpfse.h"
+#include "Benchmark.h"
+#include <fstream>
+
+using namespace std;
+using namespace forwardsec;
+using namespace relicxx;
+bytes testVector = {{0x3a, 0x5d, 0x7a, 0x42, 0x44, 0xd3, 0xd8, 0xaf, 0xf5, 0xf3, 0xf1, 0x87, 0x81, 0x82, 0xb2,
+						  0x53, 0x57, 0x30, 0x59, 0x75, 0x8d, 0xe6, 0x18, 0x17, 0x14, 0xdf, 0xa5, 0xa4, 0x0b,0x43,0xAD,0xBC}};
+std::vector<string>makeTags(unsigned int n){
+	std::vector<string> tags(n);
+	for(unsigned int i=0;i<n;i++){
+		tags[i] = "tag"+std::to_string(i);
+	}
+	return tags;
+}
+ void sim(){
+	 unsigned int windowsize;
+	 unsigned int depth;
+	 unsigned int numtags;
+	 unsigned int iterations;
+	 std::cin >> windowsize >> depth >> numtags >> iterations;
+	 cout << "window size: " << windowsize << " depth: " << depth << " numtags: " 
+	 	<< numtags << " iterations: " << iterations << endl;
+	 Benchmark dec,punc,derive;
+	 
+	 GMPfse test(depth,numtags);
+	 GMPfsePublicKey pk;
+	 GMPfsePrivateKey sk;
+	 test.keygen(pk,sk);
+	 bytes msg = {{0x3a, 0x5d, 0x7a, 0x42, 0x44, 0xd3, 0xd8, 0xaf, 0xf5, 0xf3, 0xf1, 0x87, 0x81, 0x82, 0xb2,
+						  0x53, 0x57, 0x30, 0x59, 0x75, 0x8d, 0xe6, 0x18, 0x17, 0x14, 0xdf, 0xa5, 0xa4, 0x0b,0x43,0xAD,0xBC}};
+	int msg_interval;
+	 while(std::cin >> msg_interval){
+	 	cout << "Msg interval " << msg_interval << endl;
+	 	auto tags = makeTags(numtags);
+ 	 	GMPfseCiphertext ct = test.encrypt(pk,msg,msg_interval,tags);
+		if(!sk.hasKey(msg_interval)){
+ 	 		GMPfsePrivateKey skcpy;
+	 	 	for(unsigned int i =0;i<iterations;i++){
+	 	 		skcpy = sk;
+ 	 			derive.start();
+ 	 			test.deriveKeyFor(pk,skcpy,msg_interval);
+ 	 			derive.stop();
+ 	 			derive.computeTimeInMilliseconds();
+ 	 		}
+ 	 		sk=skcpy;
+		}
+
+ 	 	for(unsigned int i =0;i<iterations;i++){
+ 		 	dec.start();
+ 			bytes result = test.decrypt(pk,sk,ct);
+ 	 		dec.stop();
+	 	 	dec.computeTimeInMilliseconds();
+	 	 }
+ 	 	for(auto t: tags){
+ 	 		GMPfsePrivateKey skcpy;
+	 	 	for(unsigned int i =0;i<iterations;i++){
+	 	 		skcpy=sk;
+	 	 		if(skcpy.needsChildKeys(msg_interval)){
+	 	 			derive.start();
+	 	 			test.prepareIntervalAfter(pk,skcpy,msg_interval);
+	 	 			derive.stop();
+	 	 			derive.computeTimeInMilliseconds();
+	 	 		}
+ 	 			punc.start();
+ 	 			test.puncture(pk,skcpy,msg_interval,t);
+ 	 			punc.stop();
+ 	 			punc.computeTimeInMilliseconds();
+ 	 		}
+ 	 		sk=skcpy;
+ 	 	}
+	}
+	cout << "DeriveTime \t" << derive << endl;
+	cout << "DecTime \t" << dec << endl;
+	cout << "PunTime \t" << punc << endl;
+ }
+ int main(){
+ 	relicResourceHandle h;
+ 	sim();
+ }
