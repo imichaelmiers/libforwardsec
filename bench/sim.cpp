@@ -14,10 +14,10 @@ using namespace forwardsec;
 using namespace relicxx;
 bytes testVector = {{0x3a, 0x5d, 0x7a, 0x42, 0x44, 0xd3, 0xd8, 0xaf, 0xf5, 0xf3, 0xf1, 0x87, 0x81, 0x82, 0xb2,
 						  0x53, 0x57, 0x30, 0x59, 0x75, 0x8d, 0xe6, 0x18, 0x17, 0x14, 0xdf, 0xa5, 0xa4, 0x0b,0x43,0xAD,0xBC}};
-std::vector<string>makeTags(unsigned int n){
+std::vector<string>makeTags(unsigned int n,unsigned int startintag){
 	std::vector<string> tags(n);
 	for(unsigned int i=0;i<n;i++){
-		tags[i] = "tag"+std::to_string(i);
+		tags[i] = "tag"+std::to_string(startintag+i);
 	}
 	return tags;
 }
@@ -27,7 +27,7 @@ std::vector<string>makeTags(unsigned int n){
 	 unsigned int numtags;
 	 unsigned int iterations;
 	 std::cin >> windowsize >> depth >> numtags >> iterations;
-	 cout << "window size: " << windowsize << " depth: " << depth << " numtags: " 
+	 cerr << "window size: " << windowsize << " depth: " << depth << " numtags: " 
 	 	<< numtags << " iterations: " << iterations << endl;
 	 Benchmark dec,punc,derive;
 	 
@@ -38,9 +38,15 @@ std::vector<string>makeTags(unsigned int n){
 	 bytes msg = {{0x3a, 0x5d, 0x7a, 0x42, 0x44, 0xd3, 0xd8, 0xaf, 0xf5, 0xf3, 0xf1, 0x87, 0x81, 0x82, 0xb2,
 						  0x53, 0x57, 0x30, 0x59, 0x75, 0x8d, 0xe6, 0x18, 0x17, 0x14, 0xdf, 0xa5, 0xa4, 0x0b,0x43,0xAD,0xBC}};
 	int msg_interval;
+	int tagctr = 42;
+	unsigned int clockticks = 1;
 	 while(std::cin >> msg_interval){
-	 	cout << "Msg interval " << msg_interval << endl;
-	 	auto tags = makeTags(numtags);
+	 	tagctr++;
+	 	if(msg_interval == 0 ){
+	 		clockticks ++;
+	 		continue;
+	 	}
+	 	auto tags = makeTags(numtags,tagctr);
  	 	GMPfseCiphertext ct = test.encrypt(pk,msg,msg_interval,tags);
 		if(!sk.hasKey(msg_interval)){
  	 		GMPfsePrivateKey skcpy;
