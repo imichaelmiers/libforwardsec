@@ -16,7 +16,7 @@ bytes xorarray(const bytes & l,const bytes & r){
 }
 
 unsigned int treeSize(unsigned int k){
-    return (2 <<(k)) -1;
+    return (2 <<(k+1)) -1;
 }
 
 std::vector<ZR>  indexToPath(const unsigned int &index,const unsigned int & treeDepth){
@@ -27,7 +27,7 @@ std::vector<ZR>  indexToPath(const unsigned int &index,const unsigned int & tree
         throw invalid_argument ("index out of bounds of tree");
     }
     for(level =0 ; level < treeDepth ; level++){
-        unsigned int subtree_height = treeSize(treeDepth-level-1);
+        unsigned int subtree_height = treeSize(treeDepth-level-2);
         if (nodesSoFar == index){
             return path;
         }else if(index <= (subtree_height + nodesSoFar)){
@@ -56,7 +56,7 @@ unsigned int pathToIndex(const std::vector<ZR> & path, const unsigned int & tree
 
           unsigned int left_subtree_level = level + 1;
           unsigned int left_subtree_height = treeDepth - left_subtree_level;
-          unsigned int left_subtree_size = treeSize(left_subtree_height);
+          unsigned int left_subtree_size = treeSize(left_subtree_height-1);
 
           index += left_subtree_size;
 

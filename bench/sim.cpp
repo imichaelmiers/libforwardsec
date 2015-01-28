@@ -8,6 +8,7 @@
 #include "gmpfse.h"
 #include "Benchmark.h"
 #include <fstream>
+#include <algorithm>    // std::max
 
 using namespace std;
 using namespace forwardsec;
@@ -39,6 +40,7 @@ std::vector<string>makeTags(unsigned int n,unsigned int startintag){
 						  0x53, 0x57, 0x30, 0x59, 0x75, 0x8d, 0xe6, 0x18, 0x17, 0x14, 0xdf, 0xa5, 0xa4, 0x0b,0x43,0xAD,0xBC}};
 	int msg_interval;
 	int tagctr = 42;
+	int skSize = 0;
 	unsigned int clockticks = 1;
 	 while(std::cin >> msg_interval){
 	 	tagctr++;
@@ -83,10 +85,19 @@ std::vector<string>makeTags(unsigned int n,unsigned int startintag){
  	 		}
  	 		sk=skcpy;
  	 	}
+		stringstream ss;
+		{
+			PortableBinaryOutputArchive oarchive(ss);
+			oarchive(sk);
+		}
+		skSize = std::max(skSize,ss.tellp())
+		cout << "\tSK size:\t" << ss.tellp() <<" bytes " << endl;
+
 	}
 	cout << "DeriveTime \t" << derive << endl;
 	cout << "DecTime \t" << dec << endl;
 	cout << "PunTime \t" << punc << endl;
+	cout << "MaxSize \t" << skSize << endl;
  }
  int main(){
  	relicResourceHandle h;

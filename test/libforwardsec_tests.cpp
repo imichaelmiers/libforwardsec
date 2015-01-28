@@ -33,7 +33,7 @@ protected:
 	 virtual void SetUp(){
 	 	test.keygen(pk,sk);
 	 } 
-	 unsigned int d=3;
+	 unsigned int d=4;
 	 GMPfseTests():test(d){}
  	 //PairingGroup group;
 	 GMPfse test;
@@ -146,6 +146,23 @@ TEST_F(GMPfseTests,DecryptOnPuncture){
 
     EXPECT_EQ(testkey,result1) ;
 }
+TEST(GMPfseTestsss,DecryptFarFuture){
+		unsigned int target=30;
+		unsigned int offset =31;
+	GMPfse test1(target);
+	GMPfsePublicKey pk;
+	GMPfsePrivateKey sk;
+	test1.keygen(pk,sk);
+
+	 bytes testkey = {{0x3a, 0x5d, 0x7a, 0x42, 0x44, 0xd3, 0xd8, 0xaf, 0xf5, 0xf3, 0xf1, 0x87, 0x81, 0x82, 0xb2,
+						  0x53, 0x57, 0x30, 0x59, 0x75, 0x8d, 0xe6, 0x18, 0x17, 0x14, 0xdf, 0xa5, 0xa4, 0x0b,0x43,0xAD,0xBC}};
+    GMPfseCiphertext ct1 = test1.encrypt(pk,testkey,offset,{"1"});
+	test1.deriveKeyFor(pk,sk,offset);
+    //test.puncture(1,eight);
+
+    bytes result = test1.decrypt(pk,sk,ct1);
+    ASSERT_EQ(testkey,result);
+}
 
 //
 TEST_F(GMPfseTests,PassOnPunctureNextInterval){
@@ -167,7 +184,7 @@ TEST_F(GMPfseTests,PassOnPunctureNextInterval){
 TEST_F(GMPfseTests,PunctureAndDeriveAll){
 	// there are 2^d =1 nodes in a tree of depth d.
 	// we don't have the root, so we subtrct one more.
-	unsigned int intervals = std::pow(2,d+1)-1;
+	unsigned int intervals = std::pow(2,d+1)-2;
 	for(unsigned int i =1;i< intervals; i++){
 	    vector<string> tags;
 	    tags.push_back("9");
