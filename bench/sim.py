@@ -15,7 +15,7 @@ def main(argv):
 	print "duration: %d"%duration 
 	print "path: %s"%path
 
-	for window,rate in itertools.product(rates,windows):
+	for window,rate in itertools.product(windows,rates):
 		print "w: %s r:%s"%(window,rate)
 
 
@@ -29,7 +29,7 @@ def main(argv):
 def sim(path,window,avg,iterations,msgs,depth=31,numtags=1):
 	rate = 1.0/avg;
 	p = Popen(path, stdin=PIPE, stdout = PIPE, bufsize=1)
-	args = "%s %s %s %s \n"%(window,30,numtags,iterations)
+	args = "%d %s %d %d \n"%(window,30,numtags,iterations)
 	print args
 	p.stdin.write(args)
 	#print p.stdout.readline()
