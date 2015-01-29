@@ -151,10 +151,14 @@ void GMPfse::prepareIntervalAfter(const GMPfsePublicKey & pk, GMPfsePrivateKey &
 void GMPfse::deriveKeyFor(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,const unsigned int& i,
 		const bool& storeIntermediateKeys) const{
 	std::vector<ZR> path = indexToPath(i,depth);
-	std::vector<ZR> ancestor;
-	while(ancestor.size()<path.size() && sk.hasKey(pathToIndex(ancestor,depth)+1)){
-		ancestor = std::vector<ZR>(path.begin(),path.begin()+ancestor.size()+1);
-
+	std::vector<ZR> ancestor,ancestorprime;
+	while(ancestor.size()<path.size()){
+		ancestorprime = std::vector<ZR>(path.begin(),path.begin()+ancestor.size()+1);
+        if(sk.hasKey(pathToIndex(ancestorprime,depth))){
+            ancestor = ancestorprime;
+        }else{
+            break;
+        }
 	}
     const GMPfseIntervalKey & k = sk.getKey(pathToIndex(ancestor,depth));
     if(k.punctured()){
