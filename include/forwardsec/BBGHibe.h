@@ -28,6 +28,7 @@ public:
 	friend bool operator!=(const BBGHibePrivateKey& x, const BBGHibePrivateKey& y){
 		return !(x==y);
 	}
+	void neuter();
 protected:
 	relicxx::G2 a0;
 	relicxx::G2 a1;

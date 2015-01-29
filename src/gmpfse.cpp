@@ -75,7 +75,21 @@ bool GMPfsePrivateKey::needsChildKeys(const unsigned int i) const{
 	rpath.push_back(ZR(1));
 	return !(hasKey(pathToIndex(lpath,depth)) && hasKey(pathToIndex(rpath,depth)));
 }
-
+void GMPfsePrivateKey::neuter(const unsigned int i){
+    if(!hasKey(i)){
+        throw invalid_argument("Cannot neuter key for interval "+std::to_string(i)+
+                                  " , don't have that key.");
+    }else if(needsChildKeys(i)){
+         throw invalid_argument("Cannot neuter key for interval "+std::to_string(i)+
+                                  " , haven't derived keys yet.");
+    }else{
+        if(puncturedKeys.count(i)){
+            puncturedKeys[i].hibeSK.neuter();
+        }else if(unpucturedHIBEKeys.count(i)){
+            unpucturedHIBEKeys[i].neuter();
+        }
+    }
+}
 GMPfse::GMPfse(unsigned int d, unsigned int numtags):hibe(),ppke(),depth(d){
 	this->numtags = numtags;
     // group.setCurve(BN256);
@@ -149,7 +163,7 @@ void GMPfse::prepareIntervalAfter(const GMPfsePublicKey & pk, GMPfsePrivateKey &
 }
 
 void GMPfse::deriveKeyFor(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,const unsigned int& i,
-		const bool& storeIntermediateKeys) const{
+		const bool& storeIntermediateKeys, const bool & neuter) const{
 	std::vector<ZR> path = indexToPath(i,depth);
 	std::vector<ZR> ancestor,ancestorprime;
 	while(ancestor.size()<path.size()){
@@ -160,6 +174,7 @@ void GMPfse::deriveKeyFor(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,const
             break;
         }
 	}
+    std::vector<ZR>  lastAncestor = ancestor;
     const GMPfseIntervalKey & k = sk.getKey(pathToIndex(ancestor,depth));
     if(k.punctured()){
          throw logic_error("The parent tag is already punctured. The software should never allow this to happen");
@@ -167,13 +182,28 @@ void GMPfse::deriveKeyFor(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,const
 
     BBGHibePrivateKey  curk= k.hibeSK;
     while(ancestor.size()<path.size()){
-		ancestor = std::vector<ZR>(path.begin(),path.begin()+ancestor.size()+1);
-		hibe.keygen(pk,curk,ancestor,curk);
+        BBGHibePrivateKey newkey,orphanedkey;
+		std::vector<ZR>  curid = std::vector<ZR>(path.begin(),path.begin()+ancestor.size()+1);
+		hibe.keygen(pk,curk,curid,newkey);
 		if(storeIntermediateKeys || ancestor.size()==path.size()){
-			 sk.addkey(pathToIndex(ancestor,depth),curk);
+			 sk.addkey(pathToIndex(curid,depth),newkey);
 		}
+        curid[curid.size()-1] = curid[curid.size()-1] == 0 ? 1 : 0;
+        hibe.keygen(pk,curk,curid,orphanedkey);
+        if(storeIntermediateKeys){
+             sk.addkey(pathToIndex(curid,depth),orphanedkey);
+        }
+        curk = newkey;
+        ancestor = curid;
 	}
 
+    while(lastAncestor.size()<path.size()){
+        lastAncestor = std::vector<ZR>(path.begin(),path.begin()+lastAncestor.size()+1);
+        const unsigned int index  = pathToIndex(ancestor,depth);
+        if(!sk.needsChildKeys(index)){
+            sk.neuter(index);
+        }
+    }
 }
 
 

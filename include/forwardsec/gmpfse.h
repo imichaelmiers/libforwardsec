@@ -96,7 +96,7 @@ public:
 	void erase(unsigned int i);
 	bool hasKey(const unsigned int i) const;
 	bool needsChildKeys(const unsigned int i) const;
-
+	void neuter(const unsigned int i);
 	friend bool operator==(const GMPfsePrivateKey& l,const GMPfsePrivateKey& r){
 		return l.puncturedKeys == r.puncturedKeys && l.unpucturedHIBEKeys == r.unpucturedHIBEKeys &&
 				l.unpucturedPPKEKey == r.unpucturedPPKEKey;
@@ -174,8 +174,10 @@ public:
 	 * @param sk the private ky
 	 * @param i the interval
 	 * @param storeIntermediateKeys (defaults to true) whether the intermediate keys derived along the way are stored
+	 * @param neuter whether to make keys undelegatable form as we go. Defaults to true
 	 */
-	void deriveKeyFor(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,const unsigned int &i, const bool & storeIntermediateKeys = true)const;
+	void deriveKeyFor(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,const unsigned int &i, const bool & storeIntermediateKeys = true, 
+		const bool &neuter = true)const;
 
 	/**Puncture the key in the specified interval
 	 *
@@ -192,8 +194,6 @@ public:
 	 * @param str the string to puncture the key with.
 	 */
 	void puncture(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk, std::string str) const;
-
-
 private:
 	relicxx::PairingGroup group;
 	BBGHibe hibe;

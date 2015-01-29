@@ -11,6 +11,7 @@ def main(argv):
 	iterations = int(argv[3])
 	duration = int(argv[2])
 	path = argv[1]
+	savename = argv[4]
 	print "iterations: %d "%iterations
 	print "duration: %d"%duration 
 	print "path: %s"%path
@@ -24,7 +25,8 @@ def main(argv):
 		results.append(rs)
 
 	np = array(results)
-
+	save(savename,np)
+	
 def sim(path,window,avg,iterations,msgs,depth=31,numtags=1):
 	rate = 1.0/avg;
 	p = Popen(path, stdin=PIPE, stdout = PIPE, bufsize=1)

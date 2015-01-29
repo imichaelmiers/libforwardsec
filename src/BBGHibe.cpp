@@ -10,6 +10,11 @@ namespace forwardsec{
 
 using namespace std;
 using namespace relicxx;
+
+void BBGHibePrivateKey::neuter(){
+    b.resize(0); //FIXME secure erase
+    bG2.resize(0);
+}
 void BBGHibe::setup(const unsigned int & l, BBGHibePublicKey & pk, G2 & msk) const
 {
 	if(l>31){
