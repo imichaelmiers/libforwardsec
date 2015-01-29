@@ -44,6 +44,7 @@ std::vector<string>makeTags(unsigned int n,unsigned int startintag){
 	unsigned int clockticks = 1;
 	 while(std::cin >> msg_interval){
 	 	tagctr++;
+		cerr << ".";
 	 	if(msg_interval == 0 ){
 	 		if(clockticks>windowsize){
 	 			for(unsigned int toDelete = clockticks - windowsize;toDelete<clockticks;toDelete++){

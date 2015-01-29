@@ -5,7 +5,12 @@ import random , math
 from numpy  import array,save,vstack
 def main(argv):
 	sims = [
-	(10*60,60)
+	(10*60,60),
+	(10*60,1),
+	(10*60*60,60),
+	(10*60*60,1),
+	(10*60,10),
+	(10*60&60,10),
 	]
 	results = []
 	iterations = int(argv[3])
