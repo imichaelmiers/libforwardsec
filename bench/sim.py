@@ -1,17 +1,11 @@
 from subprocess import PIPE, Popen
 from sys import argv
 from operator import itemgetter
-import random , math
+import random , math, itertools
 from numpy  import array,save,vstack
 def main(argv):
-	sims = [
-	(10*60,60),
-	(10*60,1),
-	(10*60*60,60),
-	(10*60*60,1),
-	(10*60,10),
-	(10*60&60,10),
-	]
+	rates = [.01,.1,.5,1,10]
+	windows = [60,60*60,60*60*12]
 	results = []
 	iterations = int(argv[3])
 	duration = int(argv[2])
@@ -21,7 +15,7 @@ def main(argv):
 	print "duration: %d"%duration 
 	print "path: %s"%path
 
-	for window,rate in sims:
+	for window,rate in itertools.product(rates,windows):
 		print "w: %s r:%s"%(window,rate)
 
 
@@ -61,6 +55,6 @@ def sim(path,window,avg,iterations,msgs,depth=31,numtags=1):
 	print DecTime
 	print PunTime
 	print MaxSize
-	return [window,avg,float(dert),float(derdev),float(dect),float(maxs),float(decdev),float(punt),float(pundev)]
+	return [window,avg,float(dert),float(derdev),float(dect),float(decdev),float(punt),float(pundev),float(maxs)]
 if __name__ == "__main__":
 	main(argv)
