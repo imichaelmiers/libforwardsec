@@ -45,7 +45,17 @@ std::vector<string>makeTags(unsigned int n,unsigned int startintag){
 	 while(std::cin >> msg_interval){
 	 	tagctr++;
 	 	if(msg_interval == 0 ){
-	 		clockticks ++;
+	 		if(clockticks>windowsize){
+	 			for(unsigned int toDelete = clockticks - windowsize;toDelete<clockticks;toDelete++){
+		 			if(!sk.hasKey(toDelete)){
+		 				continue;
+		 			}
+		 			if(sk.needsChildKeys(toDelete)){
+		 				test.prepareIntervalAfter(pk,sk,toDelete);
+		 			}
+		 			sk.erase(toDelete);
+	 			}
+	 		}
 	 		continue;
 	 	}
 	 	auto tags = makeTags(numtags,tagctr);
