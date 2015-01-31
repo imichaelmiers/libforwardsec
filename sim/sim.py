@@ -3,9 +3,13 @@ from sys import argv
 from operator import itemgetter
 import random , math, itertools
 from numpy  import array,save,vstack
+from collections import namedtuple
+
+
+
 def main(argv):
-	rates = [.01,.1,1,10,100,1000]
-	windows = [1,60,60*60,60*60*12]
+	rates = [1]#[.01,.1,1,10,100,1000]
+	windows = [10] # [1,60,60*60,60*60*12]
 	results = []
 	iterations = int(argv[3])
 	duration = int(argv[2])
@@ -25,7 +29,18 @@ def main(argv):
 
 	np = array(results)
 	save(savename,np)
-	
+def parseLine(line):
+	a,b,c = itemgetter(2,4,6)(line.split())
+	return [float(a),float(b),float(c)]
+def parseTimer(lines):
+	result = []
+	for l in lines[1:]:
+			result += parseLine(l)
+	return result
+def pprint(data):
+	for i,v in enumerate(['wall','user','system','cputime']):
+		print "\t\t %s average %f stdev %f total %f "%(v,data[0+i*3],data[1+i*3],data[2+i*3])
+
 def sim(path,window,avg,iterations,msgs,depth=31,numtags=1):
 	rate = 1.0/avg;
 	p = Popen(path, stdin=PIPE, stdout = PIPE, bufsize=1)
@@ -43,18 +58,21 @@ def sim(path,window,avg,iterations,msgs,depth=31,numtags=1):
 		p.stdin.write("%d\n"%arg)
 	p.stdin.close()
 	p.wait()
-	DeriveTime = p.stdout.readline()
-	DecTime =  p.stdout.readline()
-	PunTime = p.stdout.readline()
-	MaxSize = p.stdout.readline();
-	dert,derdev = itemgetter(2,4)(DeriveTime.split())
-	dect,decdev = itemgetter(2,4)(DecTime.split())
-	punt,pundev = itemgetter(2,4)(PunTime.split())
-	maxs = float(MaxSize.split()[1]);
-	print DeriveTime
-	print DecTime
-	print PunTime
-	print MaxSize
-	return [window,avg,float(dert),float(derdev),float(dect),float(decdev),float(punt),float(pundev),float(maxs)]
+	lines = p.stdout.readlines()
+	results = []
+	results += parseTimer(lines[0:5])
+	results += parseTimer(lines[5:10])
+	results += parseTimer(lines[10:15])
+	results.append(float(lines[15].split()[1]))
+	for l in lines:
+		print l
+	print "Dertime"
+	pprint(results)
+	print "DecTime"
+	pprint(results[3:])
+	print "PunTime"
+	pprint(results[6:])
+	print "Maxsize \t%f"%(results[-1])
+	return results
 if __name__ == "__main__":
 	main(argv)
