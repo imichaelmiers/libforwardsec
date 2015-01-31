@@ -4,12 +4,11 @@
 #include <cereal/archives/portable_binary.hpp>
 #include <cereal/archives/binary.hpp>
 #include <cereal/archives/json.hpp>
+#include <algorithm>    // std::max
 #include "locale"
 #include "gmpfse.h"
-#include "Benchmark.h"
 #include <fstream>
-#include <algorithm>    // std::max
-
+#include "sim.h"
 using namespace std;
 using namespace forwardsec;
 using namespace relicxx;
@@ -22,6 +21,8 @@ std::vector<string>makeTags(unsigned int n,unsigned int startintag){
 	}
 	return tags;
 }
+
+
  void sim(){
 	 unsigned int windowsize;
 	 unsigned int depth;
@@ -30,7 +31,7 @@ std::vector<string>makeTags(unsigned int n,unsigned int startintag){
 	 std::cin >> windowsize >> depth >> numtags >> iterations;
 	 cerr << "window size: " << windowsize << " depth: " << depth << " numtags: " 
 	 	<< numtags << " iterations: " << iterations << endl;
-	 Benchmark dec,punc,derive;
+	 CPUTimeAndAvg dec,punc,derive;
 	 
 	 GMPfse test(depth,numtags);
 	 GMPfsePublicKey pk;
@@ -68,7 +69,7 @@ std::vector<string>makeTags(unsigned int n,unsigned int startintag){
  	 			derive.start();
  	 			test.deriveKeyFor(pk,skcpy,msg_interval);
  	 			derive.stop();
- 	 			derive.computeTimeInMilliseconds();
+ 	 			derive.reg();
  	 		}
  	 		sk=skcpy;
 		}
@@ -77,7 +78,7 @@ std::vector<string>makeTags(unsigned int n,unsigned int startintag){
  		 	dec.start();
  			bytes result = test.decrypt(pk,sk,ct);
  	 		dec.stop();
-	 	 	dec.computeTimeInMilliseconds();
+	 	 	dec.reg();
 	 	 }
  	 	for(auto t: tags){
  	 		GMPfsePrivateKey skcpy;
@@ -87,12 +88,12 @@ std::vector<string>makeTags(unsigned int n,unsigned int startintag){
 	 	 			derive.start();
 	 	 			test.prepareIntervalAfter(pk,skcpy,msg_interval);
 	 	 			derive.stop();
-	 	 			derive.computeTimeInMilliseconds();
+	 	 			derive.reg();
 	 	 		}
  	 			punc.start();
  	 			test.puncture(pk,skcpy,msg_interval,t);
  	 			punc.stop();
- 	 			punc.computeTimeInMilliseconds();
+ 	 			punc.reg();
  	 		}
  	 		sk=skcpy;
  	 	}
@@ -103,10 +104,12 @@ std::vector<string>makeTags(unsigned int n,unsigned int startintag){
 		}
 		skSize = std::max<int>(skSize,(unsigned int)ss.tellp());
 	}
-	cout << "DeriveTime \t" << derive << endl;
-	cout << "DecTime \t" << dec << endl;
-	cout << "PunTime \t" << punc << endl;
-	cout << "MaxSize \t" << skSize << endl;
+	cerr << endl;
+
+	cout << "DeriveTime\n\t" << derive << endl;
+	cout << "DecTime\n\t" << dec << endl;
+	cout << "PunTime\n\t" << punc << endl;
+	cout << "MaxSize\t" << skSize << endl;
  }
  int main(){
  	relicResourceHandle h;

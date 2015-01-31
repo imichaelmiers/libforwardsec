@@ -4,8 +4,8 @@ from operator import itemgetter
 import random , math, itertools
 from numpy  import array,save,vstack
 def main(argv):
-	rates = [.01,.1,.5,1,10]
-	windows = [60,60*60,60*60*12]
+	rates = [.01,.1,1,10,100,1000]
+	windows = [1,60,60*60,60*60*12]
 	results = []
 	iterations = int(argv[3])
 	duration = int(argv[2])
