@@ -256,7 +256,7 @@ unsigned int treeSize(unsigned int k){
     return (2 <<(k)) -1;
 }
 void bencKeySize(unsigned int tag , unsigned int depth,unsigned int puncturesperinterval){
-	    GMPfse test(depth,tag);
+	    GMPfse test(30,tag);
 		GMPfsePublicKey pk;
 		GMPfsePrivateKey sk;
 		test.keygen(pk,sk);
@@ -289,7 +289,7 @@ void bencKeySize(unsigned int tag , unsigned int depth,unsigned int puncturesper
 int main(){
 		relicResourceHandle h; 
 		cout << "endl" << endl;
-	bencKeySize(1,10,10);
+	bencKeySize(1,10,1);
 }
 int main2()
 {

@@ -1,20 +1,28 @@
 from subprocess import PIPE, Popen
 from sys import argv
 from operator import itemgetter
-import random , math, itertools
-from numpy  import array,save,vstack
+import   math, itertools
+from random import expovariate
+from numpy  import array,save,vstack,random,arange
 from collections import namedtuple
 dertab = {0.0: 75.8102, 1.0: 73.2636, 2.0: 70.8082, 3.0: 68.196, 4.0: 65.5956, 5.0: 63.1057, 6.0: 60.4677, 7.0: 58.0124, 8.0: 55.4729, 9.0: 52.8553, 10.0: 50.3524, 11.0: 47.7824, 12.0: 45.2485, 13.0: 42.6671, 14.0: 40.1075, 15.0: 37.5513, 16.0: 34.9894, 17.0: 32.4707, 18.0: 29.8858, 19.0: 27.4, 20.0: 24.8432, 21.0: 22.2391, 22.0: 19.6562, 23.0: 17.1255, 24.0: 14.581, 25.0: 12.0261, 26.0: 9.47223, 27.0: 6.91889, 28.0: 4.36226, 29: 2.0, 30: 1.0, 31:.5}
 
 def simPunc(keys,path):
-	keys[path]+=1 
+	keys[path]= keys[path]+1
 	return 10.69
 
 def simDec(numPunctures):
 	r= 21.36+6.21911*numPunctures
 	return r 
-def simDer(path):
-	return dertab[len(path)]
+def simDer(path,depth):
+	x = depth - len(path) -1
+	print "calculatd x %s"%x
+
+	if( x < 0):
+		raise Exception("PathLess Than zero")
+
+	return 2.55146*x+9.47223
+	#return dertab[len(path)]
 
 def treeSize(k):
     return (2**(k+1))-1
@@ -40,9 +48,9 @@ def indexToPath(index,l):
 def pathToIndex(path,l):
     index = 0;
     for level in xrange(len(path)):
-        if path[level] == 0:
+        if path[level] == '0':
             index +=1
-        elif path[level] == 1:
+        elif path[level] == '1':
            #If we go right,
 
           #Preorder normally goes left, visiting all the nodes
@@ -58,34 +66,63 @@ def pathToIndex(path,l):
                   #Add one for the node we just visited.
                   index += 1
     return index;
-
-def simDerKeys(keys,path):
-	derTime = 0
+def findlastAncestor(keys,path):
 	ancestor = path
 	while ancestor not in keys:
 		ancestor=ancestor[:-1]
 		if(len(ancestor)==0):
 			raise Exception("Cannot derive key")
-		
-
+	return ancestor
+def simFastDir(keys,path):
+	ancestor = findlastAncestor(keys,path)
+	derTime += simDer(path)
+	sibling= ""
+	derTime += simDer(sibling)
+	keys[sibling] = 0
+	if(path[-1] == '0'):
+		sibling = path[:-1] +'1'
+	else:
+		sibling = path[:-1] +'0'
+	assert(ancestor not in keys or keys[ancestor] == 0)
+	keys[ancestor]+=1
 	while len(ancestor) < len(path):
 		ancestor += path[len(ancestor)]
-		derTime += simDer(ancestor)
+		keys[ancestor] = 1
+
+	return derTime
+def simDerKeys(keys,path):
+	if path in keys:
+		return 0
+
+	derTime = 0
+	ancestor = findlastAncestor(keys,path)
+	while len(ancestor) < len(path):
+		ancestor += path[len(ancestor)]
+		derTime += simDer(ancestor,depth)
 		keys[ancestor] = 0
 		sibling= ""
 		if(ancestor[-1] == '0'):
 			sibling = ancestor[:-1] +'1'
 		else:
 			sibling = ancestor[:-1] +'0'
-		derTime += simDer(sibling)
+		derTime += simDer(sibling,depth)
 		keys[sibling] = 0
-
 	return derTime
 
 
-def simacc(path,window,avg,iterations,msgs,depth=31,numtags=1):
-	rate = 1.0/avg;
-	#print p.stdout.readline()
+def sim_intervals(msgs_per_second):
+	intervalsizes = [.001,.01,.05,.1,.5,1,5,10]
+	depths  = []
+	results = []
+	for i in intervalsizes:
+		rs =simacc(path = '', window = 1,
+		 	avg = msgs_per_second*i, interval_length = i, numintervals = 1000 )
+		results.append(rs)
+	np = array(results)
+	return np
+def simacc(path,window,avg,interval_length,numintervals,depth=31,numtags=1):
+	latency = 0
+	print avg
 	keys={'0':0,'1':1}
 	t=1;
 	DecTime = 0
@@ -93,35 +130,50 @@ def simacc(path,window,avg,iterations,msgs,depth=31,numtags=1):
 	PunTime = 0
 	MaxDer = 0
 	MaxDec = 0
-	ctr =0
-	for i in xrange(msgs):
-		ctr+=1
-		t += random.expovariate(rate);
-		if(t - math.floor(t)) > 1:
-			overlap = ctr - window
-			for i in xrange(overlap):
-				if i in keys:
-					del d[i]
-
-		interval = int(math.floor(t))
+	intetvalctr =1
+	interval = 0
+	intervals = random.poisson(avg,numintervals)
+	msg_ctr=0
+	for arrived_msgs in intervals:
+		interval +=1
+		#print "avg: %s , pois : %s"%(avg,arrived_msgs)
+		if (arrived_msgs ==0):
+			continue
 		path = "".join(str(x) for x in indexToPath(interval,depth))
-
 		d = simDerKeys(keys,path)
-		dd = simDec(keys[path])
-		PunTime += simPunc(keys,path)
-
-		MaxDer = max(MaxDer,d)
-		MaxDec = max(MaxDec,dd)
-
 		Dertime +=d
-		DecTime +=dd
+		for foo in xrange(arrived_msgs):
+			intetvalctr+=1
+			dd = simDec(keys[path])
+			PunTime += simPunc(keys,path)
 
+			MaxDer = max(MaxDer,d)
+			MaxDec = max(MaxDec,dd)
 
-	return [DecTime,Dertime,PunTime,MaxDer,MaxDec]
+			DecTime +=dd
+			msg_ctr+=1
+	#print max(keys.iteritems(), key=itemgetter(1))
+	#print "maxdec %s"%MaxDec
+	int_length_in_ms =  (interval_length*1000) 
+	ms = 1# max(1,interval) #  int_length_in_ms  #int_length_in_ms * numintervals
+	print "int length %s dertime  %s result %s "%(int_length_in_ms,Dertime, Dertime/int_length_in_ms)
+	return [window,int_length_in_ms,depth,latency,DecTime/ms,Dertime/interval,PunTime/ms,MaxDer,MaxDec]
+def run_sim_acc(duration):
+	rates = arange(.1,10,.1)
+	windows =  [1]# [1,60,60*60,60*60*12]
+	results = []
+	iterations = 0
+	for window,rate in itertools.product(windows,rates):
+		rs =simacc(path = '', window = 1,
+		 	avg = rate, iterations = iterations, msgs = duration )
+		results.append(rs)
+
+	np = array(results)
+	return np
 
 def main(argv):
-	rates = [.01,.1,1,10,100,1000]
-	windows =   [1,60,60*60,60*60*12]
+	rates = [.0001] #[ .01,.1,1,10,100,1000]
+	windows =  [1]# [1,60,60*60,60*60*12]
 	results = []
 	iterations = int(argv[3])
 	duration = int(argv[2])
@@ -135,7 +187,7 @@ def main(argv):
 		print "w: %s r:%s"%(window,rate)
 
 
-		rs =simacc(path = path, window = window,
+		rs =sim_new(path = path, window = window,
 		 	avg = rate, iterations = iterations, msgs = duration )
 		results.append(rs)
 
@@ -164,10 +216,10 @@ def sim(path,window,avg,iterations,msgs,depth=31,numtags=1):
 	#print p.stdout.readline()
 	t=1;
 	for i in xrange(msgs):
-		t += random.expovariate(rate);
+		t += rrr.expovariate(rate);
 		if(t - math.floor(t)) > 1:
 			p.stdin.write("0\n") 
-
+		print t 
 		arg = int(math.floor(t))
 		p.stdin.write("%d\n"%arg)
 	p.stdin.close()
@@ -189,5 +241,39 @@ def sim(path,window,avg,iterations,msgs,depth=31,numtags=1):
 	# pprint(results[6:])
 	# print "Maxsize \t%f"%(results[-1])
 	return results
+def sim_new(window,avg,msgs,depth=31,numtags=1):
+	latency=0
+	rate = 1.0/avg
+	#print p.stdout.readline()
+	t=1;
+	for i in xrange(msgs):
+		t += expovariate(rate);
+		#if(t - math.floor(t)) > 1:
+		#	p.stdin.write("0\n") 
+		print t 
+	# 	arg = int(math.floor(t))
+	# 	p.stdin.write("%d\n"%arg)
+	# p.stdin.close()
+	# p.wait()
+	# lines = p.stdout.readlines()
+	# results = [window,avg,depth,latency]
+	# results += parseTimer(lines[0:5])
+	# results += parseTimer(lines[5:10])
+	# results += parseTimer(lines[10:15])
+	# results.append(float(lines[15].split()[1]))
+
 if __name__ == "__main__":
-	main(argv)
+	# keys={'0':0,'1':1}
+	# print simDerKeys(keys,'1'*31)
+	# s = 0
+	# for i in dertab:
+	# 	s+= 2*dertab[i]
+	# print s
+	depth = 30
+	for i in xrange(depth):
+		path = "".join(str(x) for x in indexToPath(i,depth))
+		print "path len %s"%len(path)
+		print simDer(path,depth)
+		print dertab[i]
+		print '\n'
+	#main(argv)
