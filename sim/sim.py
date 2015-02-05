@@ -110,8 +110,8 @@ def simDerKeys(keys,path,depth):
 
 
 def sim_intervals(msgs_per_second):
-	intervalsizes = [.001,.01,.1,1,10]
-	depths  = [35,32,29,26,23]
+	intervalsizes = [.001,.01,.1,1,10,100,1000]
+	depths  = [35,32,29,25,22,19,15]
 	results = []
 	for i,d in zip(intervalsizes,depths):
 		rs =simacc(path = '', window = 1,
