@@ -15,13 +15,12 @@ def simDec(numPunctures):
 	r= 21.36+6.21911*numPunctures
 	return r 
 def simDer(path,depth):
-	x = depth - len(path) -1
-	print "calculatd x %s"%x
+	x =len(path) - (depth-31)
+	#	print "calculatd x %s"%x
 
-	if( x < 0):
-		raise Exception("PathLess Than zero")
-
-	return 2.55146*x+9.47223
+#	if( x < 0):
+#		raise Exception("PathLess Than zero")
+	return 75.682-2.422*x 
 	#return dertab[len(path)]
 
 def treeSize(k):
@@ -90,7 +89,7 @@ def simFastDir(keys,path):
 		keys[ancestor] = 1
 
 	return derTime
-def simDerKeys(keys,path):
+def simDerKeys(keys,path,depth):
 	if path in keys:
 		return 0
 
@@ -111,12 +110,12 @@ def simDerKeys(keys,path):
 
 
 def sim_intervals(msgs_per_second):
-	intervalsizes = [.001,.01,.05,.1,.5,1,5,10]
-	depths  = []
+	intervalsizes = [.001,.01,.1,1,10]
+	depths  = [35,32,29,26,23]
 	results = []
-	for i in intervalsizes:
+	for i,d in zip(intervalsizes,depths):
 		rs =simacc(path = '', window = 1,
-		 	avg = msgs_per_second*i, interval_length = i, numintervals = 1000 )
+		 	avg = msgs_per_second*i, interval_length = i, numintervals = 1000/i,depth = d)
 		results.append(rs)
 	np = array(results)
 	return np
@@ -127,10 +126,11 @@ def simacc(path,window,avg,interval_length,numintervals,depth=31,numtags=1):
 	t=1;
 	DecTime = 0
 	Dertime = 0
+	avgDer = 0
 	PunTime = 0
 	MaxDer = 0
 	MaxDec = 0
-	intetvalctr =1
+	intetvalctr =0
 	interval = 0
 	intervals = random.poisson(avg,numintervals)
 	msg_ctr=0
@@ -140,7 +140,7 @@ def simacc(path,window,avg,interval_length,numintervals,depth=31,numtags=1):
 		if (arrived_msgs ==0):
 			continue
 		path = "".join(str(x) for x in indexToPath(interval,depth))
-		d = simDerKeys(keys,path)
+		d = simDerKeys(keys,path,depth)
 		Dertime +=d
 		for foo in xrange(arrived_msgs):
 			intetvalctr+=1
@@ -152,115 +152,116 @@ def simacc(path,window,avg,interval_length,numintervals,depth=31,numtags=1):
 
 			DecTime +=dd
 			msg_ctr+=1
+
 	#print max(keys.iteritems(), key=itemgetter(1))
 	#print "maxdec %s"%MaxDec
 	int_length_in_ms =  (interval_length*1000) 
 	ms = 1# max(1,interval) #  int_length_in_ms  #int_length_in_ms * numintervals
 	print "int length %s dertime  %s result %s "%(int_length_in_ms,Dertime, Dertime/int_length_in_ms)
-	return [window,int_length_in_ms,depth,latency,DecTime/ms,Dertime/interval,PunTime/ms,MaxDer,MaxDec]
-def run_sim_acc(duration):
-	rates = arange(.1,10,.1)
-	windows =  [1]# [1,60,60*60,60*60*12]
-	results = []
-	iterations = 0
-	for window,rate in itertools.product(windows,rates):
-		rs =simacc(path = '', window = 1,
-		 	avg = rate, iterations = iterations, msgs = duration )
-		results.append(rs)
+	return [window,int_length_in_ms,depth,latency,DecTime/ms,Dertime/ms,PunTime/ms,MaxDer,MaxDec]
+# def run_sim_acc(duration):
+# 	rates = arange(.1,10,.1)
+# 	windows =  [1]# [1,60,60*60,60*60*12]
+# 	results = []
+# 	iterations = 0
+# 	for window,rate in itertools.product(windows,rates):
+# 		rs =simacc(path = '', window = 1,
+# 		 	avg = rate, iterations = iterations, msgs = duration )
+# 		results.append(rs)
 
-	np = array(results)
-	return np
+# 	np = array(results)
+# 	return np
 
-def main(argv):
-	rates = [.0001] #[ .01,.1,1,10,100,1000]
-	windows =  [1]# [1,60,60*60,60*60*12]
-	results = []
-	iterations = int(argv[3])
-	duration = int(argv[2])
-	path = argv[1]
-	savename = argv[4]
-	print "iterations: %d "%iterations
-	print "duration: %d"%duration 
-	print "path: %s"%path
+# def main(argv):
+# 	rates = [.0001] #[ .01,.1,1,10,100,1000]
+# 	windows =  [1]# [1,60,60*60,60*60*12]
+# 	results = []
+# 	iterations = int(argv[3])
+# 	duration = int(argv[2])
+# 	path = argv[1]
+# 	savename = argv[4]
+# 	print "iterations: %d "%iterations
+# 	print "duration: %d"%duration 
+# 	print "path: %s"%path
 
-	for window,rate in itertools.product(windows,rates):
-		print "w: %s r:%s"%(window,rate)
+# 	for window,rate in itertools.product(windows,rates):
+# 		print "w: %s r:%s"%(window,rate)
 
 
-		rs =sim_new(path = path, window = window,
-		 	avg = rate, iterations = iterations, msgs = duration )
-		results.append(rs)
+# 		rs =sim_new(path = path, window = window,
+# 		 	avg = rate, iterations = iterations, msgs = duration )
+# 		results.append(rs)
 
-	np = array(results)
-	print np
-	#save(savename,np)
-def parseLine(line):
-	a,b,c = itemgetter(2,4,6)(line.split())
-	return [float(a),float(b),float(c)]
-def parseTimer(lines):
-	result = []
-	for l in lines[1:]:
-			result += parseLine(l)
-	return result
-def pprint(data):
-	for i,v in enumerate(['wall','user','system','cputime']):
-		print "\t\t %s average %f stdev %f total %f "%(v,data[0+i*3],data[1+i*3],data[2+i*3])
+# 	np = array(results)
+# 	print np
+# 	#save(savename,np)
+# def parseLine(line):
+# 	a,b,c = itemgetter(2,4,6)(line.split())
+# 	return [float(a),float(b),float(c)]
+# def parseTimer(lines):
+# 	result = []
+# 	for l in lines[1:]:
+# 			result += parseLine(l)
+# 	return result
+# def pprint(data):
+# 	for i,v in enumerate(['wall','user','system','cputime']):
+# 		print "\t\t %s average %f stdev %f total %f "%(v,data[0+i*3],data[1+i*3],data[2+i*3])
 
-def sim(path,window,avg,iterations,msgs,depth=31,numtags=1):
-	latency=0
-	rate = 1.0/avg;
-	p = Popen(path, stdin=PIPE, stdout = PIPE, bufsize=1)
-	args = "%d %s %d %d \n"%(window,30,numtags,iterations)
-	print args
-	p.stdin.write(args)
-	#print p.stdout.readline()
-	t=1;
-	for i in xrange(msgs):
-		t += rrr.expovariate(rate);
-		if(t - math.floor(t)) > 1:
-			p.stdin.write("0\n") 
-		print t 
-		arg = int(math.floor(t))
-		p.stdin.write("%d\n"%arg)
-	p.stdin.close()
-	p.wait()
-	lines = p.stdout.readlines()
-	results = [window,avg,depth,latency]
-	results += parseTimer(lines[0:5])
-	results += parseTimer(lines[5:10])
-	results += parseTimer(lines[10:15])
-	results.append(float(lines[15].split()[1]))
+# def sim(path,window,avg,iterations,msgs,depth=31,numtags=1):
+# 	latency=0
+# 	rate = 1.0/avg;
+# 	p = Popen(path, stdin=PIPE, stdout = PIPE, bufsize=1)
+# 	args = "%d %s %d %d \n"%(window,30,numtags,iterations)
+# 	print args
+# 	p.stdin.write(args)
+# 	#print p.stdout.readline()
+# 	t=1;
+# 	for i in xrange(msgs):
+# 		t += rrr.expovariate(rate);
+# 		if(t - math.floor(t)) > 1:
+# 			p.stdin.write("0\n") 
+# 		print t 
+# 		arg = int(math.floor(t))
+# 		p.stdin.write("%d\n"%arg)
+# 	p.stdin.close()
+# 	p.wait()
+# 	lines = p.stdout.readlines()
+# 	results = [window,avg,depth,latency]
+# 	results += parseTimer(lines[0:5])
+# 	results += parseTimer(lines[5:10])
+# 	results += parseTimer(lines[10:15])
+# 	results.append(float(lines[15].split()[1]))
 
-	# for l in lines:
-	# 	print l
-	# print "Dertime"
-	# pprint(results)
-	# print "DecTime"
-	# pprint(results[3:])
-	# print "PunTime"
-	# pprint(results[6:])
-	# print "Maxsize \t%f"%(results[-1])
-	return results
-def sim_new(window,avg,msgs,depth=31,numtags=1):
-	latency=0
-	rate = 1.0/avg
-	#print p.stdout.readline()
-	t=1;
-	for i in xrange(msgs):
-		t += expovariate(rate);
-		#if(t - math.floor(t)) > 1:
-		#	p.stdin.write("0\n") 
-		print t 
-	# 	arg = int(math.floor(t))
-	# 	p.stdin.write("%d\n"%arg)
-	# p.stdin.close()
-	# p.wait()
-	# lines = p.stdout.readlines()
-	# results = [window,avg,depth,latency]
-	# results += parseTimer(lines[0:5])
-	# results += parseTimer(lines[5:10])
-	# results += parseTimer(lines[10:15])
-	# results.append(float(lines[15].split()[1]))
+# 	# for l in lines:
+# 	# 	print l
+# 	# print "Dertime"
+# 	# pprint(results)
+# 	# print "DecTime"
+# 	# pprint(results[3:])
+# 	# print "PunTime"
+# 	# pprint(results[6:])
+# 	# print "Maxsize \t%f"%(results[-1])
+# 	return results
+# def sim_new(window,avg,msgs,depth=31,numtags=1):
+# 	latency=0
+# 	rate = 1.0/avg
+# 	#print p.stdout.readline()
+# 	t=1;
+# 	for i in xrange(msgs):
+# 		t += expovariate(rate);
+# 		#if(t - math.floor(t)) > 1:
+# 		#	p.stdin.write("0\n") 
+# 		print t 
+# 	# 	arg = int(math.floor(t))
+# 	# 	p.stdin.write("%d\n"%arg)
+# 	# p.stdin.close()
+# 	# p.wait()
+# 	# lines = p.stdout.readlines()
+# 	# results = [window,avg,depth,latency]
+# 	# results += parseTimer(lines[0:5])
+# 	# results += parseTimer(lines[5:10])
+# 	# results += parseTimer(lines[10:15])
+# 	# results.append(float(lines[15].split()[1]))
 
 if __name__ == "__main__":
 	# keys={'0':0,'1':1}
@@ -269,11 +270,11 @@ if __name__ == "__main__":
 	# for i in dertab:
 	# 	s+= 2*dertab[i]
 	# print s
-	depth = 30
+	depth = 64
 	for i in xrange(depth):
 		path = "".join(str(x) for x in indexToPath(i,depth))
 		print "path len %s"%len(path)
-		print simDer(path,depth)
-		print dertab[i]
+		print "extrapolated %s"%simDer(path,depth)
+		#print "empircal %s"%dertab[i]
 		print '\n'
 	#main(argv)
