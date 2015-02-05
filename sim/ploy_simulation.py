@@ -32,14 +32,16 @@ def plot(data):
 	# plt.plot(rate,decTime,'r-',label='% Decrypt Times')
 	# plt.plot(rate,PunTime,'g-',label='% Puncture Times')
 
-	plt.plot(rate,dirTimes,'bo-',label='Key Derivation ')
-	plt.plot(rate,decTime,'ro-',label='Decrypt Times')
-	plt.plot(rate,PunTime,'go-',label='Pun Times')
-	plt.plot(rate,totalTime,'ko-',label='Total')
 
+	plt.plot(rate,dirTimes,'bv-',label='Key Derivation ')
+	plt.plot(rate,decTime,'rs-',label='Decrypt Times')
+	plt.plot(rate,PunTime,'gp-',label='Pun Times')
+	plt.plot(rate,totalTime,'ko-',label='Total')
+	plt.title('Performance vs interval size for 1000 seconds at 1 message a second')
 	plt.gca().legend(loc='upper right',shadow=True)
-	plt.xlabel('interval size(ms)')
-	plt.ylabel('total time(ms) ')
+	plt.gca().set_xscale('log')
+	plt.xlabel('interval size(s)')
+	plt.ylabel('total time(s) ')
 	plt.show()
 if __name__ == "__main__":
 	main(argv)

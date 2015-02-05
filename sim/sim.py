@@ -126,7 +126,6 @@ def simacc(path,window,avg,interval_length,numintervals,depth=31,numtags=1):
 	t=1;
 	DecTime = 0
 	Dertime = 0
-	avgDer = 0
 	PunTime = 0
 	MaxDer = 0
 	MaxDec = 0
@@ -156,9 +155,9 @@ def simacc(path,window,avg,interval_length,numintervals,depth=31,numtags=1):
 	#print max(keys.iteritems(), key=itemgetter(1))
 	#print "maxdec %s"%MaxDec
 	int_length_in_ms =  (interval_length*1000) 
-	ms = 1# max(1,interval) #  int_length_in_ms  #int_length_in_ms * numintervals
+	ms = 1000# max(1,interval) #  int_length_in_ms  #int_length_in_ms * numintervals
 	print "int length %s dertime  %s result %s "%(int_length_in_ms,Dertime, Dertime/int_length_in_ms)
-	return [window,int_length_in_ms,depth,latency,DecTime/ms,Dertime/ms,PunTime/ms,MaxDer,MaxDec]
+	return [window/ms,int_length_in_ms/ms,depth,latency/ms,DecTime/ms,Dertime/ms,PunTime/ms,MaxDer/ms,MaxDec/ms]
 # def run_sim_acc(duration):
 # 	rates = arange(.1,10,.1)
 # 	windows =  [1]# [1,60,60*60,60*60*12]
