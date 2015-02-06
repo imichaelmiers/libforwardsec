@@ -165,7 +165,7 @@ def sim(path,window,avg,interval_length,numintervals,depth=31,numtags=1,iteratio
 	interval = 0
 	intervals = random.poisson(avg,numintervals)
 	p = Popen(path, stdin=PIPE, stdout = PIPE, bufsize=1)
-	args = "%d %s %d %d \n"%(window,30,numtags,iterations)
+	args = "%d %s %d %d \n"%(window,depth,numtags,iterations)
 	print args
 	p.stdin.write(args)
 	#print p.stdout.readline()
@@ -177,13 +177,19 @@ def sim(path,window,avg,interval_length,numintervals,depth=31,numtags=1,iteratio
 				p.stdin.write("%d\n"%interval)
 
 			p.stdin.write("0\n") # write a 0 to indicate advancing one interval
-			
+
 	p.stdin.close()
 	p.wait()
-	outputstring = p.stdout.readline()
-	print outputstring
-	return int(outputstring)
-
+	results = []
+	lines = p.stdout.readlines()
+	results = [window,avg,depth,latency]
+	results += parseTimer(lines[0:5])
+	results += parseTimer(lines[5:10])
+	results += parseTimer(lines[10:15])
+	results.append(float(lines[15].split()[1]))
+	print "Ads"
+	print lines[15]
+	return results
 # def run_sim_acc(duration):
 # 	rates = arange(.1,10,.1)
 # 	windows =  [1]# [1,60,60*60,60*60*12]
@@ -198,34 +204,36 @@ def sim(path,window,avg,interval_length,numintervals,depth=31,numtags=1,iteratio
 # 	return np
 
 def main(argv):
-	intervalsizes = [1]#[.001,.01,.1,1,10,100,1000]
-	depths  =[29] #[35,32,29,25,22,19,15]
+	intervalsizes = [100]#[.001,.01,.1,1,10,100,1000]
+	depths  =[19] #[35,32,29,25,22,19,15]
 	path = argv[1]
 	#savename = argv[4]
 	print "path: %s"%path
 	msgs_per_second =  1 
+	window = 10
+	results=[]
 	for i,d in zip(intervalsizes,depths):
-		rs =sim(path = path, window = 100000/i,# window is about 1 day
-		 	avg = msgs_per_second*i, interval_length = i, numintervals = 100000/i,depth = d)
-		print "bytes %s"%rs
-		print "kb %s\n\n"%(rs/1024)
+		rs =sim(path = path, window = window/i,# window is about 1 day
+		 	avg = msgs_per_second*i, interval_length = i, numintervals = window/i,depth = d)
+		print "bytes %s"%rs[-1]
+		print "kb %s\n\n"%(rs[-1]/1024)
 		results.append(rs)
 	#np = array(results)
 
-# 	np = array(results)
-# 	print np
-# 	#save(savename,np)
-# def parseLine(line):
-# 	a,b,c = itemgetter(2,4,6)(line.split())
-# 	return [float(a),float(b),float(c)]
-# def parseTimer(lines):
-# 	result = []
-# 	for l in lines[1:]:
-# 			result += parseLine(l)
-# 	return result
-# def pprint(data):
-# 	for i,v in enumerate(['wall','user','system','cputime']):
-# 		print "\t\t %s average %f stdev %f total %f "%(v,data[0+i*3],data[1+i*3],data[2+i*3])
+	np = array(results)
+	print np
+	#save(savename,np)
+def parseLine(line):
+	a,b,c = itemgetter(2,4,6)(line.split())
+	return [float(a),float(b),float(c)]
+def parseTimer(lines):
+	result = []
+	for l in lines[1:]:
+			result += parseLine(l)
+	return result
+def pprint(data):
+	for i,v in enumerate(['wall','user','system','cputime']):
+		print "\t\t %s average %f stdev %f total %f "%(v,data[0+i*3],data[1+i*3],data[2+i*3])
 
 # def sim(path,window,avg,iterations,msgs,depth=31,numtags=1):
 # 	latency=0

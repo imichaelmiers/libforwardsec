@@ -22,8 +22,8 @@ std::vector<string>makeTags(unsigned int n,unsigned int startintag){
 	return tags;
 }
 
-
- void sim(){
+ 
+ void sim(){ 
 	 unsigned int windowsize;
 	 unsigned int depth;
 	 unsigned int numtags;
@@ -46,7 +46,14 @@ std::vector<string>makeTags(unsigned int n,unsigned int startintag){
 	 while(std::cin >> msg_interval){
 	 	tagctr++;
 	 	if(msg_interval == 0 ){
+
 	 		cerr << ".";
+		stringstream ss;
+		{
+			cereal::PortableBinaryOutputArchive oarchive(ss);
+			oarchive(sk);
+		}
+		skSize = std::max<int>(skSize,(unsigned int)ss.tellp());
 	 		if(clockticks>windowsize){
 	 			for(unsigned int toDelete = clockticks - windowsize;toDelete<clockticks;toDelete++){
 		 			if(!sk.hasKey(toDelete)){
@@ -97,19 +104,14 @@ std::vector<string>makeTags(unsigned int n,unsigned int startintag){
  	 		}
  	 		sk=skcpy;
  	 	}
-		stringstream ss;
-		{
-			cereal::PortableBinaryOutputArchive oarchive(ss);
-			oarchive(sk);
-		}
-		skSize = std::max<int>(skSize,(unsigned int)ss.tellp());
 	}
 	cerr << endl;
 
-	// cout << "DeriveTime\n\t" << derive << endl;
-	// cout << "DecTime\n\t" << dec << endl;
-	// cout << "PunTime\n\t" << punc << endl;
+	cout << "DeriveTime\n\t" << derive << endl;
+	cout << "DecTime\n\t" << dec << endl;
+	cout << "PunTime\n\t" << punc << endl;
 	cout << "MaxSize\t" << skSize << endl;
+	
  }
  int main(){
  	relicResourceHandle h;
