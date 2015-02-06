@@ -165,15 +165,11 @@ void GMPfse::prepareIntervalAfter(const GMPfsePublicKey & pk, GMPfsePrivateKey &
 void GMPfse::deriveKeyFor(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,const unsigned int& i,
 		const bool& storeIntermediateKeys, const bool & neuter) const{
 	std::vector<ZR> path = indexToPath(i,depth);
-	std::vector<ZR> ancestor,ancestorprime;
-	while(ancestor.size()<path.size()){
-		ancestorprime = std::vector<ZR>(path.begin(),path.begin()+ancestor.size()+1);
-        if(sk.hasKey(pathToIndex(ancestorprime,depth))){
-            ancestor = ancestorprime;
-        }else{
-            break;
-        }
-	}
+    std::vector<ZR> ancestor = path;
+    while(!sk.hasKey(pathToIndex(ancestor,depth))){
+        ancestor.resize(ancestor.size()-1);
+    }
+
     std::vector<ZR>  lastAncestor = ancestor;
     const GMPfseIntervalKey & k = sk.getKey(pathToIndex(ancestor,depth));
     if(k.punctured()){
@@ -189,12 +185,12 @@ void GMPfse::deriveKeyFor(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,const
 			 sk.addkey(pathToIndex(curid,depth),newkey);
 		}
         curid[curid.size()-1] = curid[curid.size()-1] == 0 ? 1 : 0;
+        ancestor = curid;
         hibe.keygen(pk,curk,curid,orphanedkey);
         if(storeIntermediateKeys){
              sk.addkey(pathToIndex(curid,depth),orphanedkey);
         }
         curk = newkey;
-        ancestor = curid;
 	}
 
     while(lastAncestor.size()<path.size()){

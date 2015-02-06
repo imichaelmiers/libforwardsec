@@ -158,6 +158,31 @@ def simacc(path,window,avg,interval_length,numintervals,depth=31,numtags=1):
 	ms = 1000# max(1,interval) #  int_length_in_ms  #int_length_in_ms * numintervals
 	print "int length %s dertime  %s result %s "%(int_length_in_ms,Dertime, Dertime/int_length_in_ms)
 	return [window/ms,int_length_in_ms/ms,depth,latency/ms,DecTime/ms,Dertime/ms,PunTime/ms,MaxDer/ms,MaxDec/ms]
+def sim(path,window,avg,interval_length,numintervals,depth=31,numtags=1,iterations=1):
+	latency = 0
+	print avg
+	interval = 0
+	intervals = random.poisson(avg,numintervals)
+	p = Popen(path, stdin=PIPE, stdout = PIPE, bufsize=1)
+	args = "%d %s %d %d \n"%(window,30,numtags,iterations)
+	print args
+	p.stdin.write(args)
+	#print p.stdout.readline()
+	for arrived_msgs in intervals:
+		interval +=1
+		#print "avg: %s , pois : %s"%(avg,arrived_msgs)
+		if (arrived_msgs ==0):
+			continue
+		for foo in xrange(arrived_msgs):
+			p.stdin.write("%d\n"%interval)
+
+		p.stdin.write("0\n") # write a 0 to indicate advancing one interval
+	p.stdin.close()
+	p.wait()
+	outputstring = p.stdout.readline()
+	print outputstring
+	return int(outputstring)
+
 # def run_sim_acc(duration):
 # 	rates = arange(.1,10,.1)
 # 	windows =  [1]# [1,60,60*60,60*60*12]
@@ -171,25 +196,20 @@ def simacc(path,window,avg,interval_length,numintervals,depth=31,numtags=1):
 # 	np = array(results)
 # 	return np
 
-# def main(argv):
-# 	rates = [.0001] #[ .01,.1,1,10,100,1000]
-# 	windows =  [1]# [1,60,60*60,60*60*12]
-# 	results = []
-# 	iterations = int(argv[3])
-# 	duration = int(argv[2])
-# 	path = argv[1]
-# 	savename = argv[4]
-# 	print "iterations: %d "%iterations
-# 	print "duration: %d"%duration 
-# 	print "path: %s"%path
-
-# 	for window,rate in itertools.product(windows,rates):
-# 		print "w: %s r:%s"%(window,rate)
-
-
-# 		rs =sim_new(path = path, window = window,
-# 		 	avg = rate, iterations = iterations, msgs = duration )
-# 		results.append(rs)
+def main(argv):
+	intervalsizes = [1]#[.001,.01,.1,1,10,100,1000]
+	depths  =[29] #[35,32,29,25,22,19,15]
+	path = argv[1]
+	#savename = argv[4]
+	print "path: %s"%path
+	msgs_per_second =  1 
+	for i,d in zip(intervalsizes,depths):
+		rs =sim(path = path, window = 100000/i,# window is about 1 day
+		 	avg = msgs_per_second*i, interval_length = i, numintervals = 1000/i,depth = d)
+		print "bytes %s"%rs
+		print "kb %s\n\n"%(rs/1024)
+		results.append(rs)
+	#np = array(results)
 
 # 	np = array(results)
 # 	print np
@@ -269,11 +289,11 @@ if __name__ == "__main__":
 	# for i in dertab:
 	# 	s+= 2*dertab[i]
 	# print s
-	depth = 64
-	for i in xrange(depth):
-		path = "".join(str(x) for x in indexToPath(i,depth))
-		print "path len %s"%len(path)
-		print "extrapolated %s"%simDer(path,depth)
-		#print "empircal %s"%dertab[i]
-		print '\n'
-	#main(argv)
+	# depth = 64
+	# for i in xrange(depth):
+	# 	path = "".join(str(x) for x in indexToPath(i,depth))
+	# 	print "path len %s"%len(path)
+	# 	print "extrapolated %s"%simDer(path,depth)
+	# 	#print "empircal %s"%dertab[i]
+	# 	print '\n'
+	main(argv)
