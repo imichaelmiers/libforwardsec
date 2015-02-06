@@ -5,6 +5,7 @@ import   math, itertools
 from random import expovariate
 from numpy  import array,save,vstack,random,arange
 from collections import namedtuple
+import click
 dertab = {0.0: 75.8102, 1.0: 73.2636, 2.0: 70.8082, 3.0: 68.196, 4.0: 65.5956, 5.0: 63.1057, 6.0: 60.4677, 7.0: 58.0124, 8.0: 55.4729, 9.0: 52.8553, 10.0: 50.3524, 11.0: 47.7824, 12.0: 45.2485, 13.0: 42.6671, 14.0: 40.1075, 15.0: 37.5513, 16.0: 34.9894, 17.0: 32.4707, 18.0: 29.8858, 19.0: 27.4, 20.0: 24.8432, 21.0: 22.2391, 22.0: 19.6562, 23.0: 17.1255, 24.0: 14.581, 25.0: 12.0261, 26.0: 9.47223, 27.0: 6.91889, 28.0: 4.36226, 29: 2.0, 30: 1.0, 31:.5}
 
 def simPunc(keys,path):
@@ -168,13 +169,15 @@ def sim(path,window,avg,interval_length,numintervals,depth=31,numtags=1,iteratio
 	print args
 	p.stdin.write(args)
 	#print p.stdout.readline()
-	for arrived_msgs in intervals:
-		interval +=1
-		#print "avg: %s , pois : %s"%(avg,arrived_msgs)
-		for foo in xrange(arrived_msgs):
-			p.stdin.write("%d\n"%interval)
+	with click.progressbar(intervals) as intvasl:
+		for arrived_msgs in intvasl:
+			interval +=1
+			#print "avg: %s , pois : %s"%(avg,arrived_msgs)
+			for foo in xrange(arrived_msgs):
+				p.stdin.write("%d\n"%interval)
 
-		p.stdin.write("0\n") # write a 0 to indicate advancing one interval
+			p.stdin.write("0\n") # write a 0 to indicate advancing one interval
+			
 	p.stdin.close()
 	p.wait()
 	outputstring = p.stdout.readline()
