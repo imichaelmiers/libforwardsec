@@ -46,8 +46,9 @@ std::vector<string>makeTags(unsigned int n,unsigned int startintag){
 	 while(std::cin >> msg_interval){
 	 	tagctr++;
 	 	if(msg_interval == 0 ){
-
-	 		cerr << ".";
+	 	if(tagctr%100==0){
+		 	cerr << ".";
+		 }
 		stringstream ss;
 		{
 			cereal::PortableBinaryOutputArchive oarchive(ss);
@@ -111,7 +112,7 @@ std::vector<string>makeTags(unsigned int n,unsigned int startintag){
 	cout << "DecTime\n\t" << dec << endl;
 	cout << "PunTime\n\t" << punc << endl;
 	cout << "MaxSize\t" << skSize << endl;
-	
+
  }
  int main(){
  	relicResourceHandle h;
