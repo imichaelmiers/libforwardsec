@@ -16,5 +16,13 @@ for r,i in itertools.product(rates,intervals):
 	lost = (r*i - poisson.pmf(1,r*i))*spy/i
 	expected = r*i*spy/i
 	print "\t expected poission %s"%lost
+	print "\t percent lost  %s"%lost
+
 	lost_bb = special.binom(spy*r,2) *1.0/ (spy/i)
 	print "\t balls and bins expected %s"%lost_bb
+
+h=32
+s=0
+for k in xrange(1,h):
+	s+=k*(2**(h+k-1)-2**(h-k))/(2**h-1)**2
+print s

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import sim
 def main(argv):
-	rate = .01
+	rate = .1
 	data = sim.sim_intervals(rate)
 	print "got data"
 	plot(data,rate)
