@@ -171,8 +171,6 @@ def sim(path,window,avg,interval_length,numintervals,depth=31,numtags=1,iteratio
 	for arrived_msgs in intervals:
 		interval +=1
 		#print "avg: %s , pois : %s"%(avg,arrived_msgs)
-		if (arrived_msgs ==0):
-			continue
 		for foo in xrange(arrived_msgs):
 			p.stdin.write("%d\n"%interval)
 
@@ -205,7 +203,7 @@ def main(argv):
 	msgs_per_second =  1 
 	for i,d in zip(intervalsizes,depths):
 		rs =sim(path = path, window = 100000/i,# window is about 1 day
-		 	avg = msgs_per_second*i, interval_length = i, numintervals = 1000/i,depth = d)
+		 	avg = msgs_per_second*i, interval_length = i, numintervals = 100000/i,depth = d)
 		print "bytes %s"%rs
 		print "kb %s\n\n"%(rs/1024)
 		results.append(rs)
