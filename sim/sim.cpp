@@ -29,8 +29,8 @@ std::vector<string>makeTags(unsigned int n,unsigned int startintag){
 	 unsigned int numtags;
 	 unsigned int iterations;
 	 std::cin >> windowsize >> depth >> numtags >> iterations;
-	 cerr << "window size: " << windowsize << " depth: " << depth << " numtags: " 
-	 	<< numtags << " iterations: " << iterations << endl;
+	// cerr << "window size: " << windowsize << " depth: " << depth << " numtags: " 
+	// 	<< numtags << " iterations: " << iterations << endl;
 	 CPUTimeAndAvg dec,punc,derive;
 	 
 	 GMPfse test(depth,numtags);
@@ -46,8 +46,11 @@ std::vector<string>makeTags(unsigned int n,unsigned int startintag){
 	unsigned int clockticks = 0;
 	 while(std::cin >> msg_interval){
 	 	tagctr++;
+	 	if(tagctr%10 == 0){
+	 		cout << "." << endl;
+	 	}
 	 	if(msg_interval>previnterval ){
-			cerr << ".";
+			//cerr << ".";
 	 		clockticks++;
 			stringstream ss;
 			{

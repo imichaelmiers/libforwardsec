@@ -161,12 +161,16 @@ def simacc(path,window,avg,interval_length,numintervals,depth=31,numtags=1):
 	return [window/ms,int_length_in_ms/ms,depth,latency/ms,DecTime/ms,Dertime/ms,PunTime/ms,MaxDer/ms,MaxDec/ms]
 def sim(path,window,avg,interval_length,timeduration,depth=31,numtags=1,iterations=1):
 	latency = 0
-	print avg
 	interval = 0
 	#print p.stdout.readline()
 	elapsed_time = 0
 	intervals = []
-	ctr=0
+	print "window %s seconds"%window
+	print "avg %s msgs per second "%avg
+	print "interval length: %s seconds"%interval_length
+	print "duration %s seconds "%timeduration
+	print "tree dpeth %s"%depth
+	print "iterations %s"%iterations
 	while elapsed_time < timeduration:
 		elapsed_time += expovariate(avg)
 		interval = int(math.floor(elapsed_time)/interval_length)+1 
@@ -174,18 +178,19 @@ def sim(path,window,avg,interval_length,timeduration,depth=31,numtags=1,iteratio
 		intervals.append(interval)
 
 	args = "%d %s %d %d \n"%(window,depth,numtags,iterations)
-	print args
-	print ' '.join(str(x) for x in intervals)
-	print len(intervals)
-	return 
+	#print ' '.join(str(x) for x in intervals)
+	print "total number of messages = %s"%len(intervals)
 	p = Popen(path, stdin=PIPE, stdout = PIPE, bufsize=1)
 	p.stdin.write(args)
+	ctr=0
 	with click.progressbar(intervals,
                        label='%d msgs a second for %d seconds with %d size intervals'%(avg,timeduration,interval_length)
                        ) as bar:
 		for i in bar:
 			p.stdin.write("%d\n"%i)
-
+			ctr +=1
+			if ctr%10 ==0:
+				p.stdout.readline()
 	p.stdin.close()
 	p.wait()
 	results = []
@@ -195,7 +200,6 @@ def sim(path,window,avg,interval_length,timeduration,depth=31,numtags=1,iteratio
 	results += parseTimer(lines[5:10])
 	results += parseTimer(lines[10:15])
 	results.append(float(lines[15].split()[1])/1024)
-	print "Ads"
 	print lines[15]
 	return results
 # def run_sim_acc(duration):
@@ -212,17 +216,17 @@ def sim(path,window,avg,interval_length,timeduration,depth=31,numtags=1,iteratio
 # 	return np
 
 def main(argv):
-	intervalsizes = [1]#[.001,.01,.1,1,10,100,1000]
+	intervalsizes = [.001]#[.001,.01,.1,1,10,100,1000]
 	depths  =[19] #[35,32,29,25,22,19,15]
 	path = argv[1]
 	#savename = argv[4]
 	print "path: %s"%path
-	msgs_per_second =  100
-	window = 1.0
+	msgs_per_second =  1
+	window = 1000.0
 	results=[]
 	for i,d in zip(intervalsizes,depths):
 		rs =sim(path = path, window = window,
-		 	avg = msgs_per_second*i, interval_length = i, timeduration =2*window ,depth = d)
+		 	avg = msgs_per_second, interval_length = i, timeduration =2*window ,depth = d)
 		print "bytes %s"%rs[-1]
 		results.append(rs)
 	#np = array(results)
