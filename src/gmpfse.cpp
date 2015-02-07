@@ -166,7 +166,13 @@ void GMPfse::deriveKeyFor(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,const
 		const bool& storeIntermediateKeys, const bool & neuter) const{
 	std::vector<ZR> path = indexToPath(i,depth);
     std::vector<ZR> ancestor = path;
+    if(i<0){
+        throw invalid_argument("Interval must be >0 : not " + std::to_string(i));
+    }
     while(!sk.hasKey(pathToIndex(ancestor,depth))){
+        if(ancestor.size() <2){
+            throw invalid_argument("something went very wrong" + std::to_string(pathToIndex(ancestor,depth)));
+        }
         ancestor.resize(ancestor.size()-1);
     }
 
