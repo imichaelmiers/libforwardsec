@@ -39,35 +39,38 @@ std::vector<string>makeTags(unsigned int n,unsigned int startintag){
 	 test.keygen(pk,sk);
 	 bytes msg = {{0x3a, 0x5d, 0x7a, 0x42, 0x44, 0xd3, 0xd8, 0xaf, 0xf5, 0xf3, 0xf1, 0x87, 0x81, 0x82, 0xb2,
 						  0x53, 0x57, 0x30, 0x59, 0x75, 0x8d, 0xe6, 0x18, 0x17, 0x14, 0xdf, 0xa5, 0xa4, 0x0b,0x43,0xAD,0xBC}};
-	int msg_interval;
+	int previnterval=0;
+	int msg_interval=0;
 	int tagctr = 42;
 	unsigned int skSize = 0;
-	unsigned int clockticks = 1;
+	unsigned int clockticks = 0;
 	 while(std::cin >> msg_interval){
 	 	tagctr++;
-	 	if(msg_interval == 0 ){
-	 	if(tagctr%100==0){
-		 	cerr << ".";
-		 }
-		stringstream ss;
-		{
-			cereal::PortableBinaryOutputArchive oarchive(ss);
-			oarchive(sk);
-		}
-		skSize = std::max<int>(skSize,(unsigned int)ss.tellp());
+	 	if(msg_interval>previnterval ){
+			cerr << ".";
+	 		clockticks++;
+			stringstream ss;
+			{
+				cereal::PortableBinaryOutputArchive oarchive(ss);
+				oarchive(sk);
+			}
+			skSize = std::max<int>(skSize,(unsigned int)ss.tellp());
 	 		if(clockticks>windowsize){
 	 			for(unsigned int toDelete = clockticks - windowsize;toDelete<clockticks;toDelete++){
 		 			if(!sk.hasKey(toDelete)){
 		 				continue;
 		 			}
 		 			if(sk.needsChildKeys(toDelete)){
+		 	 			derive.start();
 		 				test.prepareIntervalAfter(pk,sk,toDelete);
+		 	 			derive.stop();
+ 	 					derive.reg();
 		 			}
 		 			sk.erase(toDelete);
 	 			}
 	 		}
-	 		continue;
 	 	}
+	 	previnterval = msg_interval;
 	 	auto tags = makeTags(numtags,tagctr);
  	// 	GMPfseCiphertext ct = test.encrypt(pk,msg,msg_interval,tags);
 		if(!sk.hasKey(msg_interval)){

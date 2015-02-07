@@ -159,24 +159,32 @@ def simacc(path,window,avg,interval_length,numintervals,depth=31,numtags=1):
 	ms = 1000# max(1,interval) #  int_length_in_ms  #int_length_in_ms * numintervals
 	print "int length %s dertime  %s result %s "%(int_length_in_ms,Dertime, Dertime/int_length_in_ms)
 	return [window/ms,int_length_in_ms/ms,depth,latency/ms,DecTime/ms,Dertime/ms,PunTime/ms,MaxDer/ms,MaxDec/ms]
-def sim(path,window,avg,interval_length,numintervals,depth=31,numtags=1,iterations=1):
+def sim(path,window,avg,interval_length,timeduration,depth=31,numtags=1,iterations=1):
 	latency = 0
 	print avg
 	interval = 0
-	intervals = random.poisson(avg,numintervals)
-	p = Popen(path, stdin=PIPE, stdout = PIPE, bufsize=1)
+	#print p.stdout.readline()
+	elapsed_time = 0
+	intervals = []
+	ctr=0
+	while elapsed_time < timeduration:
+		elapsed_time += expovariate(avg)
+		interval = int(math.floor(elapsed_time)/interval_length)+1 
+		#print "avg: %s , pois : %s"%(avg,arrived_msgs)
+		intervals.append(interval)
+
 	args = "%d %s %d %d \n"%(window,depth,numtags,iterations)
 	print args
+	print ' '.join(str(x) for x in intervals)
+	print len(intervals)
+	return 
+	p = Popen(path, stdin=PIPE, stdout = PIPE, bufsize=1)
 	p.stdin.write(args)
-	#print p.stdout.readline()
-	with click.progressbar(intervals) as intvasl:
-		for arrived_msgs in intvasl:
-			interval +=1
-			#print "avg: %s , pois : %s"%(avg,arrived_msgs)
-			for foo in xrange(arrived_msgs):
-				p.stdin.write("%d\n"%interval)
-
-			p.stdin.write("0\n") # write a 0 to indicate advancing one interval
+	with click.progressbar(intervals,
+                       label='%d msgs a second for %d seconds with %d size intervals'%(avg,timeduration,interval_length)
+                       ) as bar:
+		for i in bar:
+			p.stdin.write("%d\n"%i)
 
 	p.stdin.close()
 	p.wait()
@@ -186,7 +194,7 @@ def sim(path,window,avg,interval_length,numintervals,depth=31,numtags=1,iteratio
 	results += parseTimer(lines[0:5])
 	results += parseTimer(lines[5:10])
 	results += parseTimer(lines[10:15])
-	results.append(float(lines[15].split()[1]))
+	results.append(float(lines[15].split()[1])/1024)
 	print "Ads"
 	print lines[15]
 	return results
@@ -204,19 +212,18 @@ def sim(path,window,avg,interval_length,numintervals,depth=31,numtags=1,iteratio
 # 	return np
 
 def main(argv):
-	intervalsizes = [100]#[.001,.01,.1,1,10,100,1000]
+	intervalsizes = [1]#[.001,.01,.1,1,10,100,1000]
 	depths  =[19] #[35,32,29,25,22,19,15]
 	path = argv[1]
 	#savename = argv[4]
 	print "path: %s"%path
-	msgs_per_second =  1 
-	window = 10
+	msgs_per_second =  100
+	window = 1.0
 	results=[]
 	for i,d in zip(intervalsizes,depths):
-		rs =sim(path = path, window = window/i,# window is about 1 day
-		 	avg = msgs_per_second*i, interval_length = i, numintervals = window/i,depth = d)
+		rs =sim(path = path, window = window,
+		 	avg = msgs_per_second*i, interval_length = i, timeduration =2*window ,depth = d)
 		print "bytes %s"%rs[-1]
-		print "kb %s\n\n"%(rs[-1]/1024)
 		results.append(rs)
 	#np = array(results)
 
@@ -225,7 +232,7 @@ def main(argv):
 	#save(savename,np)
 def parseLine(line):
 	a,b,c = itemgetter(2,4,6)(line.split())
-	return [float(a),float(b),float(c)]
+	return [float(a)/1000,float(b)/1000,float(c)/1000]
 def parseTimer(lines):
 	result = []
 	for l in lines[1:]:
