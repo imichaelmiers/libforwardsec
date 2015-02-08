@@ -258,7 +258,8 @@ def sim(path,window,avg,interval_length,timeduration,depth=31,numtags=1,iteratio
 	p.wait()
 	results = []
 	lines = p.stdout.readlines()
-	print lines
+	while 'DeriveTime' not in lines[0]:
+		lines = lines[1:]
 	results = [window,avg,depth,interval_length,timeduration,latency]
 	results += parseTimer(lines[0:5])
 	results += parseTimer(lines[5:10])
@@ -286,7 +287,7 @@ def main(argv):
 	name = argv[2]
 	print "path: %s"%path
 	msgs_per_second =  1
-	rates = [1,.01,.001,.0001]
+	rates = [.01,.001,.0001,1]
 	window = 1000.0
 	results=[]
 	with click.progressbar(itertools.product(zip(intervalsizes,depths),rates)) as foo:
