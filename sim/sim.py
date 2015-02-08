@@ -6,8 +6,14 @@ from random import expovariate
 from numpy  import array,save,vstack,random,arange
 from collections import namedtuple
 import click
-dertab = {0.0: 75.8102, 1.0: 73.2636, 2.0: 70.8082, 3.0: 68.196, 4.0: 65.5956, 5.0: 63.1057, 6.0: 60.4677, 7.0: 58.0124, 8.0: 55.4729, 9.0: 52.8553, 10.0: 50.3524, 11.0: 47.7824, 12.0: 45.2485, 13.0: 42.6671, 14.0: 40.1075, 15.0: 37.5513, 16.0: 34.9894, 17.0: 32.4707, 18.0: 29.8858, 19.0: 27.4, 20.0: 24.8432, 21.0: 22.2391, 22.0: 19.6562, 23.0: 17.1255, 24.0: 14.581, 25.0: 12.0261, 26.0: 9.47223, 27.0: 6.91889, 28.0: 4.36226, 29: 2.0, 30: 1.0, 31:.5}
+mili_p_s = 1000
+s_p_m = 60
+m_p_h = 60
+h_p_d = 24
+d_p_y  = 365
 
+milipy = mili_p_s*s_p_m*m_p_h*h_p_d*d_p_y
+spy = s_p_m*m_p_h*h_p_d*d_p_y
 def simPunc(keys,path):
 	keys[path]= keys[path]+1
 	return 10.69
@@ -112,13 +118,7 @@ def simDerKeys(keys,path,depth):
 
 def sim_intervals(msgs_per_second):
 	mili_p_s = 1000
-	s_p_m = 60
-	m_p_h = 60
-	h_p_d = 24
-	d_p_y  = 365
 
-	milipy = mili_p_s*s_p_m*m_p_h*h_p_d*d_p_y
-	spy = s_p_m*m_p_h*h_p_d*d_p_y
 	intervalsizes = [.001,.01,.1,1,10,100,1000,10000]
 	depths = [int(math.ceil(math.log(spy/i,2))) for i in intervalsizes]
 	print depths
@@ -228,12 +228,12 @@ def sim(path,window,avg,interval_length,timeduration,depth=31,numtags=1,iteratio
 	#print p.stdout.readline()
 	elapsed_time = 0
 	intervals = []
-	print "window %s seconds"%window
-	print "avg %s msgs per second "%avg
-	print "interval length: %s seconds"%interval_length
-	print "duration %s seconds "%timeduration
-	print "tree dpeth %s"%depth
-	print "iterations %s"%iterations
+	# print "window %s seconds"%window
+	# print "avg %s msgs per second "%avg
+	# print "interval length: %s seconds"%interval_length
+	# print "duration %s seconds "%timeduration
+	# print "tree dpeth %s"%depth
+	# print "iterations %s"%iterations
 	while elapsed_time < timeduration:
 		elapsed_time += expovariate(avg)
 		interval = int(math.floor(elapsed_time)/interval_length)+1 
@@ -242,12 +242,12 @@ def sim(path,window,avg,interval_length,timeduration,depth=31,numtags=1,iteratio
 
 	args = "%d %s %d %d \n"%(window,depth,numtags,iterations)
 	#print ' '.join(str(x) for x in intervals)
-	print "total number of messages = %s"%len(intervals)
+	#print "total number of messages = %s"%len(intervals)
 	p = Popen(path, stdin=PIPE, stdout = PIPE, bufsize=1)
 	p.stdin.write(args)
 	ctr=0
 	with click.progressbar(intervals,
-                       label='%d msgs a second for %d seconds with %d size intervals'%(avg,timeduration,interval_length)
+                       label='%d msgs a second for %d seconds with %f size intervals'%(avg,timeduration,interval_length)
                        ) as bar:
 		for i in bar:
 			p.stdin.write("%d\n"%i)
@@ -258,12 +258,12 @@ def sim(path,window,avg,interval_length,timeduration,depth=31,numtags=1,iteratio
 	p.wait()
 	results = []
 	lines = p.stdout.readlines()
-	results = [window,avg,depth,latency]
+	results = [window,avg,depth,interval_length,timeduration,latency]
 	results += parseTimer(lines[0:5])
 	results += parseTimer(lines[5:10])
 	results += parseTimer(lines[10:15])
 	results.append(float(lines[15].split()[1])/1024)
-	print lines[15]
+	#print lines[15]
 	return results
 # def run_sim_acc(duration):
 # 	rates = arange(.1,10,.1)
@@ -279,24 +279,25 @@ def sim(path,window,avg,interval_length,timeduration,depth=31,numtags=1,iteratio
 # 	return np
 
 def main(argv):
-	intervalsizes = [.001]#[.001,.01,.1,1,10,100,1000]
-	depths  =[19] #[35,32,29,25,22,19,15]
+	intervalsizes = [.001,.01,.1,1,10,100,1000]
+	depths = [min(30,int(math.ceil(math.log(spy/i,2)))) for i in intervalsizes]
 	path = argv[1]
-	#savename = argv[4]
+	savename = argv[2]
 	print "path: %s"%path
 	msgs_per_second =  1
-	window = 1000.0
+	window = 50.0
 	results=[]
-	for i,d in zip(intervalsizes,depths):
-		rs =sim(path = path, window = window,
-		 	avg = msgs_per_second, interval_length = i, timeduration =2*window ,depth = d)
-		print "bytes %s"%rs[-1]
-		results.append(rs)
+	with click.progressbar(zip(intervalsizes,depths)) as foo:
+		for i,d in foo:
+			rs =sim(path = path, window = window,
+			 	avg = msgs_per_second, interval_length = i, timeduration =2*window ,depth = d)
+			results.append(rs)
+			np = array(results)
+			save(savename,np)
+
 	#np = array(results)
 
-	np = array(results)
 	print np
-	#save(savename,np)
 def parseLine(line):
 	a,b,c = itemgetter(2,4,6)(line.split())
 	return [float(a)/1000,float(b)/1000,float(c)/1000]
