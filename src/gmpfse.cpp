@@ -25,7 +25,10 @@ GMPfseIntervalKey GMPfsePrivateKey::getKey(unsigned int i)  const{
 
 		if(y == unpucturedHIBEKeys.end() ){
 			libforwardsec_DBG(cout << "did not find   keys for interval " << i << endl;)
+              if(!this->hasKey(i)){
+                    throw invalid_argument("Has key says we have this, but we don't: " + std::to_string(i));
 
+              }
   			  throw invalid_argument("No key for this interval: " + std::to_string(i));
 		}
 		libforwardsec_DBG(cout << "found key in unpunctured keys for interval " << i << endl;)
