@@ -2,31 +2,43 @@ import numpy as np
 from sys import argv
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import sim
 def main(argv):
-	print "trying to load data"
 	data = np.load(argv[1])
-	print "data lodaed"
 	plot(data)
 def plot(data):
-	dirTimes = data[:,2]
-	dirStdev = data[:,3]
-	decTime = data[:,4]
-	decStdev = data[:,5]
-	PunTime = data[:,6]
-	PunStdev  = data[:,7]
-	maxSize = data[:,8]
+	windowIndex = 0
+	msgrateIndex = 1
+	intervalLengthIndex = 3
+	dirCPUTOTALIndex=11+6
+	DecCPUTotalIndex=23+6
+	PunCPUToTalIndex=35+6
+	MaxSize=36+6
+	subRows=[]
+	target = 0.001
+	for r in data:
+		if r[msgrateIndex] == target:
+			subRows.append(r)
+	subRows = np.array(subRows)
+	dirTimes = subRows[:,dirCPUTOTALIndex]
+	decTime = subRows[:,DecCPUTotalIndex]
+	PunTime = subRows[:,PunCPUToTalIndex]
 	totalTime = np.add(dirTimes,decTime)
 	totalTime = np.add(totalTime,PunTime)
-	
-	windows = data[:,0]
-	rate = data[:,1]
-	fig = plt.figure()
-	ax = fig.add_subplot(111, projection='3d')
+	rate = subRows[:,intervalLengthIndex]
+	sizes = subRows[:,MaxSize]
+	plt.plot(rate,sizes,'bv-',label='size')
 
-	ax.scatter(rate,windows,totalTime)
-	ax.set_xlabel('Average message rate (msg/interval)')
-	ax.set_ylabel('Window size (intervals)')
-	ax.set_zlabel('time (ms)')
+	# plt.plot(rate,dirTimes,'bv-',label='Key Derivation ')
+	# plt.plot(rate,decTime,'rs-',label='Decrypt Times')
+	# plt.plot(rate,PunTime,'gp-',label='Pun Times')
+	# plt.plot(rate,totalTime,'ko-',label='Total')
+	plt.title('Performance vs interval size for %s at %s message a second'%(data[0,4],target))
+	plt.gca().legend(loc='upper right',shadow=True)
+	plt.gca().set_xscale('log')
+	plt.xlabel('interval size(s)')
+	plt.ylabel('total time(s) ')
 	plt.show()
+
 if __name__ == "__main__":
 	main(argv)

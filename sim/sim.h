@@ -100,6 +100,9 @@ public:
 	void resume(){
 		t.resume();
 	}
+    void reset(){
+        stoped = true;
+    }
 	bool stoped = true;
 	cpu_timer t;
 	RunningStat wall;

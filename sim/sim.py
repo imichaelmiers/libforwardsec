@@ -290,8 +290,8 @@ def main(argv):
 	rates = [.01,.001,.0001,1]
 	window = 1000.0
 	results=[]
-	with click.progressbar(itertools.product(zip(intervalsizes,depths),rates)) as foo:
-		for ((i,d),r) in foo:
+	with click.progressbar(itertools.product(rates,zip(intervalsizes,depths))) as foo:
+		for (r,(i,d)) in foo:
 			rs =sim(path = path, window = window,
 			 	avg = r, interval_length = i, timeduration =2*window ,depth = d)
 			results.append(rs)
@@ -301,6 +301,22 @@ def main(argv):
 	#np = array(results)
 
 	print np
+#'DeriveTime\n',
+ # '\t\t wall average 580.628 stdev 540.212 total 16838.2\n',
+ # '\t\t user average 578.966 stdev 539.546 total 16790\n',
+ # '\t\t system average 0.344828 stdev 1.85695 total 10\n',
+ # '\t\tcputime average 579.31 stdev 539.689 total 16800\n',
+ # 'DecTime\n',
+ # '\t\t wall average 32.3056 stdev 0.138637 total 613.807\n',
+ # '\t\t user average 32.6316 stdev 4.52414 total 620\n',
+ # '\t\t system average 0 stdev 0 total 0\n',
+ # '\t\tcputime average 32.6316 stdev 4.52414 total 620\n',
+ # 'PunTime\n',
+ # '\t\t wall average 38.6533 stdev 0.250229 total 734.413\n',
+ # '\t\t user average 39.4737 stdev 2.29416 total 750\n',
+ # '\t\t system average 0 stdev 0 total 0\n',
+ # '\t\tcputime average 39.4737 stdev 2.29416 total 750\n',
+ # 'MaxSize\t641560\n']
 def parseLine(line):
 	a,b,c = itemgetter(2,4,6)(line.split())
 	return [float(a)/1000,float(b)/1000,float(c)/1000]

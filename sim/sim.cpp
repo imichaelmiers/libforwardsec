@@ -5,6 +5,8 @@
 #include <cereal/archives/binary.hpp>
 #include <cereal/archives/json.hpp>
 #include <algorithm>    // std::max
+#include <iostream>
+#include <fstream>
 #include "locale"
 #include "gmpfse.h"
 #include <fstream>
@@ -45,72 +47,103 @@ std::vector<string>makeTags(unsigned int n,unsigned int startintag){
 	unsigned int skSize = 0;
 	unsigned int clockticks = 0;
 	 while(std::cin >> msg_interval){
-	 	tagctr++;
-	 	if(tagctr%10 == 0){
-	 		cout << "." << endl;
-	 	}
-	 	if(msg_interval>previnterval ){
-			//cerr << ".";
-	 		clockticks++;
-			stringstream ss;
-			{
-				cereal::PortableBinaryOutputArchive oarchive(ss);
-				oarchive(sk);
-			}
-			skSize = std::max<int>(skSize,(unsigned int)ss.tellp());
-	 		if(clockticks>windowsize){
-	 			for(unsigned int toDelete = clockticks - windowsize;toDelete<clockticks;toDelete++){
-		 			if(!sk.hasKey(toDelete)){
-		 				continue;
+	 	int exceptionctr=0;
+		 	tagctr++;
+		 	if(tagctr%10 == 0){
+		 		cout << "." << endl;
+		 	}
+		 	if(msg_interval>previnterval ){
+				//cerr << ".";
+		 		clockticks++;
+				stringstream ss;
+				{
+					cereal::PortableBinaryOutputArchive oarchive(ss);
+					oarchive(sk);
+				}
+				skSize = std::max<int>(skSize,(unsigned int)ss.tellp());
+		 		if(clockticks>windowsize){
+		 			for(unsigned int toDelete = clockticks - windowsize;toDelete<clockticks;toDelete++){
+			 			if(!sk.hasKey(toDelete)){
+			 				continue;
+			 			}
+			 			if(sk.needsChildKeys(toDelete)){
+			 	 			derive.start();
+			 				test.prepareIntervalAfter(pk,sk,toDelete);
+			 	 			derive.stop();
+	 	 					derive.reg();
+			 			}
+			 			sk.erase(toDelete);
 		 			}
-		 			if(sk.needsChildKeys(toDelete)){
-		 	 			derive.start();
-		 				test.prepareIntervalAfter(pk,sk,toDelete);
-		 	 			derive.stop();
- 	 					derive.reg();
-		 			}
-		 			sk.erase(toDelete);
-	 			}
-	 		}
-	 	}
-	 	previnterval = msg_interval;
-	 	auto tags = makeTags(numtags,tagctr);
- 	 	GMPfseCiphertext ct = test.encrypt(pk,msg,msg_interval,tags);
-		if(!sk.hasKey(msg_interval)){
- 	 		GMPfsePrivateKey skcpy;
-	 	 	for(unsigned int i =0;i<iterations;i++){
-	 	 		skcpy = sk;
- 	 			derive.start();
- 	 			test.deriveKeyFor(pk,skcpy,msg_interval);
- 	 			derive.stop();
- 	 			derive.reg();
- 	 		}
- 	 		sk=skcpy;
-		}
+		 		}
+		 	}
+		 	previnterval = msg_interval;
+		 	auto tags = makeTags(numtags,tagctr);
+	 	 	GMPfseCiphertext ct = test.encrypt(pk,msg,msg_interval,tags);
+			if(!sk.hasKey(msg_interval)){
+	 	 		GMPfsePrivateKey skcpy;
+		 	 	for(unsigned int i =0;i<iterations;i++){
+		 	 		skcpy = sk;
+		 	 		try{
+	 	 				derive.start();
+	 	 				test.deriveKeyFor(pk,skcpy,msg_interval);
+	 	 				derive.stop();
+	 	 				derive.reg();
+	 	 			} catch (std::exception e) {
+				 		exceptionctr++;
+						derive.reset();
+						string what = e.what();
+						ofstream errorfile;
+						errorfile.open("error_der_"+std::to_string(exceptionctr),ios::binary|ios::out);
+						cereal::PortableBinaryOutputArchive oarchive(errorfile);
+						oarchive(what,msg_interval,pk,skcpy);
+						cerr << "Exception during keyder " << what << endl;
+						  errorfile.close();
 
- 	 	for(unsigned int i =0;i<iterations;i++){
- 		 	dec.start();
- 			bytes result = test.decrypt(pk,sk,ct);
- 	 		dec.stop();
-	 	 	dec.reg();
-	 	 }
- 	 	for(auto t: tags){
- 	 		GMPfsePrivateKey skcpy;
-	 	 	for(unsigned int i =0;i<iterations;i++){
-	 	 		skcpy=sk;
-	 	 		if(skcpy.needsChildKeys(msg_interval)){
-	 	 			derive.start();
-	 	 			test.prepareIntervalAfter(pk,skcpy,msg_interval);
-	 	 			derive.stop();
-	 	 			derive.reg();
+						continue;
+					}
 	 	 		}
- 	 			punc.start();
- 	 			test.puncture(pk,skcpy,msg_interval,t);
- 	 			punc.stop();
- 	 			punc.reg();
- 	 		}
- 	 		sk=skcpy;
- 	 	}
+	 	 		sk=skcpy;
+			}
+
+	 	 	for(unsigned int i =0;i<iterations;i++){
+	 	 		try{
+		 		 	dec.start();
+		 			bytes result = test.decrypt(pk,sk,ct);
+		 	 		dec.stop();
+			 	 	dec.reg();
+		 	 	} catch (std::exception e) {
+		 		exceptionctr++;
+				dec.reset();
+				string what = e.what();
+				ofstream errorfile;
+				errorfile.open("error_dec_"+std::to_string(exceptionctr),ios::binary|ios::out);
+				cereal::PortableBinaryOutputArchive oarchive(errorfile);
+				oarchive(what,msg_interval,pk,sk,ct);
+				cerr << "Exception during decrypt " << what << endl;
+ 	    		errorfile.close();
+				continue;
+
+				}
+		 	 }
+	 	 	for(auto t: tags){
+	 	 		GMPfsePrivateKey skcpy;
+		 	 	for(unsigned int i =0;i<iterations;i++){
+		 	 		skcpy=sk;
+		 	 		if(skcpy.needsChildKeys(msg_interval)){
+		 	 			derive.start();
+		 	 			test.prepareIntervalAfter(pk,skcpy,msg_interval);
+		 	 			derive.stop();
+		 	 			derive.reg();
+		 	 		}
+	 	 			punc.start();
+	 	 			test.puncture(pk,skcpy,msg_interval,t);
+	 	 			punc.stop();
+	 	 			punc.reg();
+	 	 		}
+	 	 		sk=skcpy;
+	 	 	}
+
+
 	}
 	cerr << endl;
 
