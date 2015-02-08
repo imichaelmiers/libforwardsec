@@ -285,7 +285,7 @@ def main(argv):
 	savename = argv[2]
 	print "path: %s"%path
 	msgs_per_second =  1
-	window = 50.0
+	window = 1000.0
 	results=[]
 	with click.progressbar(zip(intervalsizes,depths)) as foo:
 		for i,d in foo:
