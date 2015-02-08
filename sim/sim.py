@@ -247,7 +247,7 @@ def sim(path,window,avg,interval_length,timeduration,depth=31,numtags=1,iteratio
 	p.stdin.write(args)
 	ctr=0
 	with click.progressbar(intervals,
-                       label='%d msgs a second for %d seconds with %f size intervals'%(avg,timeduration,interval_length)
+                       label='%f msgs a second for %d seconds with %f size intervals'%(avg,timeduration,interval_length)
                        ) as bar:
 		for i in bar:
 			p.stdin.write("%d\n"%i)
@@ -258,6 +258,7 @@ def sim(path,window,avg,interval_length,timeduration,depth=31,numtags=1,iteratio
 	p.wait()
 	results = []
 	lines = p.stdout.readlines()
+	print lines
 	results = [window,avg,depth,interval_length,timeduration,latency]
 	results += parseTimer(lines[0:5])
 	results += parseTimer(lines[5:10])
@@ -282,18 +283,19 @@ def main(argv):
 	intervalsizes = [.001,.01,.1,1,10,100,1000]
 	depths = [min(30,int(math.ceil(math.log(spy/i,2)))) for i in intervalsizes]
 	path = argv[1]
-	savename = argv[2]
+	name = argv[2]
 	print "path: %s"%path
 	msgs_per_second =  1
+	rates = [1,.01,.001,.0001]
 	window = 1000.0
 	results=[]
-	with click.progressbar(zip(intervalsizes,depths)) as foo:
-		for i,d in foo:
+	with click.progressbar(itertools.product(zip(intervalsizes,depths),rates)) as foo:
+		for ((i,d),r) in foo:
 			rs =sim(path = path, window = window,
-			 	avg = msgs_per_second, interval_length = i, timeduration =2*window ,depth = d)
+			 	avg = r, interval_length = i, timeduration =2*window ,depth = d)
 			results.append(rs)
 			np = array(results)
-			save(savename,np)
+			save(name,np)
 
 	#np = array(results)
 

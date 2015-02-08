@@ -75,7 +75,7 @@ std::vector<string>makeTags(unsigned int n,unsigned int startintag){
 	 	}
 	 	previnterval = msg_interval;
 	 	auto tags = makeTags(numtags,tagctr);
- 	// 	GMPfseCiphertext ct = test.encrypt(pk,msg,msg_interval,tags);
+ 	 	GMPfseCiphertext ct = test.encrypt(pk,msg,msg_interval,tags);
 		if(!sk.hasKey(msg_interval)){
  	 		GMPfsePrivateKey skcpy;
 	 	 	for(unsigned int i =0;i<iterations;i++){
@@ -88,12 +88,12 @@ std::vector<string>makeTags(unsigned int n,unsigned int startintag){
  	 		sk=skcpy;
 		}
 
- 	 	// for(unsigned int i =0;i<iterations;i++){
- 		 // 	dec.start();
- 			// bytes result = test.decrypt(pk,sk,ct);
- 	 	// 	dec.stop();
-	 	 // 	dec.reg();
-	 	 // }
+ 	 	for(unsigned int i =0;i<iterations;i++){
+ 		 	dec.start();
+ 			bytes result = test.decrypt(pk,sk,ct);
+ 	 		dec.stop();
+	 	 	dec.reg();
+	 	 }
  	 	for(auto t: tags){
  	 		GMPfsePrivateKey skcpy;
 	 	 	for(unsigned int i =0;i<iterations;i++){
