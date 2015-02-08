@@ -71,7 +71,7 @@ def findlastAncestor(keys,path):
 	while ancestor not in keys:
 		ancestor=ancestor[:-1]
 		if(len(ancestor)==0):
-			raise Exception("Cannot derive key")
+			raise Exception("Cannot derive key %s"%len(path))
 	return ancestor
 def simFastDir(keys,path):
 	ancestor = findlastAncestor(keys,path)
@@ -111,15 +111,78 @@ def simDerKeys(keys,path,depth):
 
 
 def sim_intervals(msgs_per_second):
-	intervalsizes = [.001,.01,.1,1,10,100,1000]
-	depths  = [35,32,29,25,22,19,15]
+	mili_p_s = 1000
+	s_p_m = 60
+	m_p_h = 60
+	h_p_d = 24
+	d_p_y  = 365
+
+	milipy = mili_p_s*s_p_m*m_p_h*h_p_d*d_p_y
+	spy = s_p_m*m_p_h*h_p_d*d_p_y
+	intervalsizes = [.001,.01,.1,1,10,100,1000,10000]
+	depths = [int(math.ceil(math.log(spy/i,2))) for i in intervalsizes]
+	print depths
 	results = []
 	for i,d in zip(intervalsizes,depths):
-		rs =simacc(path = '', window = 1,
-		 	avg = msgs_per_second*i, interval_length = i, numintervals = 1000/i,depth = d)
+		rs =sim_acc_fast(path = '', window = 1,
+		 	avg = msgs_per_second, interval_length = i, timeduration = 100000,depth = d)
 		results.append(rs)
 	np = array(results)
 	return np
+
+def sim_acc_fast(path,window,avg,interval_length,timeduration,depth=31,numtags=1,iterations=1):
+	latency = 0
+	interval = 0
+	#print p.stdout.readline()
+	elapsed_time = 0
+	intervals = []
+	print "window %s seconds"%window
+	print "avg %s msgs per second "%avg
+	print "interval length: %s seconds"%interval_length
+	print "duration %s seconds "%timeduration
+	print "tree dpeth %s"%depth
+	print "iterations %s"%iterations
+	while elapsed_time < timeduration:
+		elapsed_time += expovariate(avg)
+		interval = int(math.floor(elapsed_time)/interval_length)+1 
+		#print "avg: %s , pois : %s"%(avg,arrived_msgs)
+		intervals.append(interval)
+
+	#print ' '.join(str(x) for x in intervals)
+	print "total number of messages = %s"%len(intervals)
+	keys={'0':0,'1':0}
+	ctr=0
+	prev =0
+	intetvalctr = 0
+	msg_ctr = 0
+	DecTime = 0
+	Dertime = 0
+	PunTime = 0
+	MaxDer = 0
+	MaxDec = 0
+
+	with click.progressbar(intervals,
+                       label='%d msgs a second for %d seconds with %d size intervals'%(avg,timeduration,interval_length)
+                       ) as bar:
+		for i in bar:
+			if i != prev:
+				prev = i
+				path = "".join(str(x) for x in indexToPath(i,depth))
+				d= simDerKeys(keys,path,depth)
+				Dertime += d
+				intetvalctr+=1
+			msg_ctr+=1
+			dd = simDec(keys[path])
+			PunTime += simPunc(keys,path)
+
+			MaxDer = max(MaxDer,d)
+			MaxDec = max(MaxDec,dd)
+
+			DecTime +=dd
+			msg_ctr+=1
+	ms = 1000# max(1,interval) #  int_length_in_ms  #interval_length * numintervals
+	return [window/ms,interval_length,depth,latency/ms,DecTime/ms,Dertime/ms,PunTime/ms,MaxDer/ms,MaxDec/ms]
+
 def simacc(path,window,avg,interval_length,numintervals,depth=31,numtags=1):
 	latency = 0
 	print avg

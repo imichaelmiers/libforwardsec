@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import sim
 def main(argv):
-	rate = .1
+	rate = 1
 	data = sim.sim_intervals(rate)
 	print "got data"
 	plot(data,rate)
@@ -38,7 +38,7 @@ def plot(data,r):
 	plt.plot(rate,decTime,'rs-',label='Decrypt Times')
 	plt.plot(rate,PunTime,'gp-',label='Pun Times')
 	plt.plot(rate,totalTime,'ko-',label='Total')
-	plt.title('Performance vs interval size for 1000 seconds at %s message a second'%r)
+	plt.title('Performance vs interval size for 100,000 seconds at %s message a second'%r)
 	plt.gca().legend(loc='upper right',shadow=True)
 	plt.gca().set_xscale('log')
 	plt.xlabel('interval size(s)')
