@@ -119,7 +119,7 @@ def simDerKeys(keys,path,depth):
 def sim_intervals(msgs_per_second):
 	mili_p_s = 1000
 
-	intervalsizes = [.001,.01,.1,1,10,100,1000,10000]
+	intervalsizes = [.001,.01,.1,1,10,100,1000]
 	depths = [int(math.ceil(math.log(spy/i,2))) for i in intervalsizes]
 	print depths
 	results = []
