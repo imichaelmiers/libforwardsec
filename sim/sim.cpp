@@ -30,7 +30,8 @@ std::vector<string>makeTags(unsigned int n,unsigned int startintag){
 	 unsigned int depth;
 	 unsigned int numtags;
 	 unsigned int iterations;
-	 std::cin >> windowsize >> depth >> numtags >> iterations;
+	 string dbgstr;
+	 std::cin >> windowsize >> depth >> numtags >> iterations >> dbgstr;
 	// cerr << "window size: " << windowsize << " depth: " << depth << " numtags: " 
 	// 	<< numtags << " iterations: " << iterations << endl;
 	 CPUTimeAndAvg dec,punc,derive;
@@ -46,8 +47,8 @@ std::vector<string>makeTags(unsigned int n,unsigned int startintag){
 	int tagctr = 42;
 	unsigned int skSize = 0;
 	unsigned int clockticks = 0;
+	 int exceptionctr=0;
 	 while(std::cin >> msg_interval){
-	 	int exceptionctr=0;
 		 	tagctr++;
 		 	if(tagctr%10 == 0){
 		 		cout << "." << endl;
@@ -81,50 +82,54 @@ std::vector<string>makeTags(unsigned int n,unsigned int startintag){
 	 	 	GMPfseCiphertext ct = test.encrypt(pk,msg,msg_interval,tags);
 			if(!sk.hasKey(msg_interval)){
 	 	 		GMPfsePrivateKey skcpy;
-		 	 	for(unsigned int i =0;i<iterations;i++){
-		 	 		skcpy = sk;
-		 	 		try{
+	 	 		try{
+		 	 		for(unsigned int i =0;i<iterations;i++){
+			 	 		skcpy = sk;
 	 	 				derive.start();
 	 	 				test.deriveKeyFor(pk,skcpy,msg_interval);
 	 	 				derive.stop();
 	 	 				derive.reg();
-	 	 			} catch (std::exception e) {
-				 		exceptionctr++;
-						derive.reset();
-						string what = e.what();
-						ofstream errorfile;
-						errorfile.open("error_der_"+std::to_string(exceptionctr),ios::binary|ios::out);
-						cereal::PortableBinaryOutputArchive oarchive(errorfile);
-						oarchive(what,msg_interval,pk,skcpy);
-						cerr << "Exception during keyder " << what << endl;
-						  errorfile.close();
-
-						continue;
+	 	 			}
+	 	 			sk=skcpy;
+ 				} catch (std::invalid_argument e) {
+			 		exceptionctr++;
+					derive.reset();
+					string what = e.what();
+					ofstream errorfile;
+					errorfile.open("error_der_"+dbgstr,ios::binary|ios::out);
+					{
+					cereal::PortableBinaryOutputArchive oarchive(errorfile);
+					oarchive(what,msg_interval,pk,skcpy,ct);
+					cerr << "Exception during keyder on msg_interval" << msg_interval << " " <<what << endl;
 					}
-	 	 		}
-	 	 		sk=skcpy;
+					errorfile.close();
+					continue;
+				}
 			}
 
-	 	 	for(unsigned int i =0;i<iterations;i++){
-	 	 		try{
+			try{
+	 	 		for(unsigned int i =0;i<iterations;i++){
 		 		 	dec.start();
 		 			bytes result = test.decrypt(pk,sk,ct);
 		 	 		dec.stop();
 			 	 	dec.reg();
-		 	 	} catch (std::exception e) {
+		 	 	}
+ 			} catch (std::invalid_argument e) {
 		 		exceptionctr++;
 				dec.reset();
 				string what = e.what();
 				ofstream errorfile;
-				errorfile.open("error_dec_"+std::to_string(exceptionctr),ios::binary|ios::out);
+
+				errorfile.open("error_der_"+dbgstr,ios::binary|ios::out);
+				{
 				cereal::PortableBinaryOutputArchive oarchive(errorfile);
 				oarchive(what,msg_interval,pk,sk,ct);
-				cerr << "Exception during decrypt " << what << endl;
+				cerr << "Exception during decrypt for interval " << msg_interval << " " <<  what << endl;
+ 	    		}
  	    		errorfile.close();
 				continue;
 
-				}
-		 	 }
+			 }
 	 	 	for(auto t: tags){
 	 	 		GMPfsePrivateKey skcpy;
 		 	 	for(unsigned int i =0;i<iterations;i++){

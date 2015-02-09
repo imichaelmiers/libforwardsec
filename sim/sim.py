@@ -1,7 +1,7 @@
 from subprocess import PIPE, Popen
 from sys import argv
 from operator import itemgetter
-import   math, itertools
+import   math, itertools, time
 from random import expovariate
 from numpy  import array,save,vstack,random,arange
 from collections import namedtuple
@@ -234,13 +234,16 @@ def sim(path,window,avg,interval_length,timeduration,depth=31,numtags=1,iteratio
 	# print "duration %s seconds "%timeduration
 	# print "tree dpeth %s"%depth
 	# print "iterations %s"%iterations
+	dbgstr = lambda: int(round(time.time() * 1000))
+
+
 	while elapsed_time < timeduration:
 		elapsed_time += expovariate(avg)
 		interval = int(math.floor(elapsed_time)/interval_length)+1 
 		#print "avg: %s , pois : %s"%(avg,arrived_msgs)
 		intervals.append(interval)
 
-	args = "%d %s %d %d \n"%(window,depth,numtags,iterations)
+	args = "%d %s %d %d %d\n"%(window,depth,numtags,iterations,dbgstr)
 	#print ' '.join(str(x) for x in intervals)
 	#print "total number of messages = %s"%len(intervals)
 	p = Popen(path, stdin=PIPE, stdout = PIPE, bufsize=1)
@@ -287,7 +290,7 @@ def main(argv):
 	name = argv[2]
 	print "path: %s"%path
 	msgs_per_second =  1
-	rates = [.01,.001,.0001,1]
+	rates = [.0001,.001,.01,.1,1]
 	window = 1000.0
 	results=[]
 	with click.progressbar(itertools.product(rates,zip(intervalsizes,depths))) as foo:
