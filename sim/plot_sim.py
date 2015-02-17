@@ -5,7 +5,42 @@ from mpl_toolkits.mplot3d import Axes3D
 import sim
 def main(argv):
 	data = np.load(argv[1])
+	#data1 = np.load(argv[2])
+	#dataa = np.append(data,data1,axis=0)
 	plot_sizezvsrate(data)
+
+
+def plot3d(data):
+	windowIndex = 0
+	msgrateIndex = 1
+	intervalLengthIndex = 3
+	dirCPUTOTALIndex=11+6
+	DecCPUTotalIndex=23+6
+	PunCPUToTalIndex=35+6
+	MaxSize=36+6
+
+
+	intervals = data[:,intervalLengthIndex]
+	dirTimes = data[:,dirCPUTOTALIndex]
+	decTime = data[:,DecCPUTotalIndex]
+	PunTime = data[:,PunCPUToTalIndex]
+	totalTime = np.add(dirTimes,decTime)
+	totalTime = np.add(totalTime,PunTime)
+	rate = data[:,intervalLengthIndex]
+
+	sizes = data[:,MaxSize]
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111, projection='3d')
+
+	ax.scatter(rate,intervals,totalTime)
+	ax.set_xlabel(' Message rate (msg/s)')
+	ax.set_ylabel('interval')
+	ax.set_zlabel('time (s)')
+	ax.xaxis.set_scale('log')
+	ax.yaxis.set_scale('log')
+
+	plt.show()	
 def plot(data):
 	windowIndex = 0
 	msgrateIndex = 1
@@ -17,7 +52,7 @@ def plot(data):
 	subRows=[]
 	other=[]
 	oo= []
-	target = 0.001
+	target = .01
 	for r in data:
 		if r[msgrateIndex] == target:
 			subRows.append(r)
@@ -67,21 +102,22 @@ def plot_sizezvsrate(data):
 	subRows=[]
 	target = 0.001
 	for r in data:
-		print r[intervalLengthIndex]
-		print r[msgrateIndex]
-		print " "
 		if r[intervalLengthIndex] == r[msgrateIndex]:
+			print "\tintervalenth %s"%r[intervalLengthIndex]
+			print "\tmsg rate %s"%r[msgrateIndex]
+			print "\tkeysize %s"% r[MaxSize]
 			subRows.append(r)
+			print ""
 	print(len(subRows))
-
+	return 
 	subRows = np.array(subRows)
-
+	print subRows
 	dirTimes = subRows[:,dirCPUTOTALIndex]
 	decTime = subRows[:,DecCPUTotalIndex]
 	PunTime = subRows[:,PunCPUToTalIndex]
 	totalTime = np.add(dirTimes,decTime)
 	totalTime = np.add(totalTime,PunTime)
-	rate = subRows[:,intervalLengthIndex]
+	rate = subRows[:,msgrateIndex]
 
 	sizes = subRows[:,MaxSize]
 

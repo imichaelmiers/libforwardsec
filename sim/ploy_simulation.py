@@ -4,10 +4,28 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import sim
 def main(argv):
+	tex=False
+	if tex:
+		plt.rc('text', usetex=True)
+		plt.rc('font', family='serif')
 	rate = 1
 	data = sim.sim_intervals(rate)
-	print "got data"
+	plt.figure(figsize=(20,5))
+	plt.subplot(131)
 	plot(data,rate)
+	rate = .1
+	data = sim.sim_intervals(rate)
+	plt.subplot(132)
+	plot(data,rate)
+	rate = .01
+	data = sim.sim_intervals(rate)
+	plt.subplot(133)
+	lines = plot(data,rate)
+	plt.gca().legend(loc='upper right',shadow=True)
+	plt.gcf().suptitle("Performance vs Interval Size", fontsize=14)
+	#plt.figlegend(lines,('Key Derivation','Decrypt','Puncture','total'),'upper right')
+	plt.savefig('perf_v_interval_3fold.pdf',format='pdf',bbox_inches='tight')
+	plt.show()
 def plot(data,r):
 	print (data.shape)
 	decTime = data[:,4]
@@ -34,15 +52,14 @@ def plot(data,r):
 	# plt.plot(rate,PunTime,'g-',label='% Puncture Times')
 
 
-	plt.plot(rate,dirTimes,'bv-',label='Key Derivation ')
-	plt.plot(rate,decTime,'rs-',label='Decrypt Times')
-	plt.plot(rate,PunTime,'gp-',label='Pun Times')
-	plt.plot(rate,totalTime,'ko-',label='Total')
-	plt.title('Performance vs interval size for 100,000 seconds at %s message a second'%r)
-	plt.gca().legend(loc='upper right',shadow=True)
+	a=plt.plot(rate,dirTimes,'bv-',label='Key Derivation ')
+	b=plt.plot(rate,decTime,'rs-',label='Decrypt ')
+	c=plt.plot(rate,PunTime,'gp-',label='Puncture')
+	d=plt.plot(rate,totalTime,'ko-',label='Total')
+	plt.title('%s message/second'%r)
 	plt.gca().set_xscale('log')
 	plt.xlabel('interval size(s)')
 	plt.ylabel('total time(s) ')
-	plt.show()
+	return a,b,c,d
 if __name__ == "__main__":
 	main(argv)

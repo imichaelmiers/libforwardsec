@@ -119,7 +119,7 @@ def simDerKeys(keys,path,depth):
 def sim_intervals(msgs_per_second):
 	mili_p_s = 1000
 
-	intervalsizes = [.001,.01,.1,1,10,100,1000]
+	intervalsizes =[.001,.01,.1,1,10,100,1000]
 	depths = [int(math.ceil(math.log(spy/i,2))) for i in intervalsizes]
 	print depths
 	results = []
@@ -234,16 +234,16 @@ def sim(path,window,avg,interval_length,timeduration,depth=31,numtags=1,iteratio
 	# print "duration %s seconds "%timeduration
 	# print "tree dpeth %s"%depth
 	# print "iterations %s"%iterations
-	dbgstr = lambda: int(round(time.time() * 1000))
+	current_milli_time = lambda: int(round(time.time() * 1000))
 
 
 	while elapsed_time < timeduration:
-		elapsed_time += expovariate(avg)
+		elapsed_time += avg #expovariate(avg)
 		interval = int(math.floor(elapsed_time)/interval_length)+1 
 		#print "avg: %s , pois : %s"%(avg,arrived_msgs)
 		intervals.append(interval)
 
-	args = "%d %s %d %d %d\n"%(window,depth,numtags,iterations,dbgstr)
+	args = "%d %s %d %d %d\n"%(window,depth,numtags,iterations,current_milli_time())
 	#print ' '.join(str(x) for x in intervals)
 	#print "total number of messages = %s"%len(intervals)
 	p = Popen(path, stdin=PIPE, stdout = PIPE, bufsize=1)
@@ -284,17 +284,20 @@ def sim(path,window,avg,interval_length,timeduration,depth=31,numtags=1,iteratio
 # 	return np
 
 def main(argv):
-	intervalsizes = [.001,.01,.1,1,10,100,1000]
+	intervalsizes = [1,10,100,1000]
 	depths = [min(30,int(math.ceil(math.log(spy/i,2)))) for i in intervalsizes]
 	path = argv[1]
 	name = argv[2]
 	print "path: %s"%path
 	msgs_per_second =  1
-	rates = [.0001,.001,.01,.1,1]
+	rates = [1.0 /x for x in intervalsizes]
 	window = 1000.0
+	windows = [1000,2000,3000]
 	results=[]
-	with click.progressbar(itertools.product(rates,zip(intervalsizes,depths))) as foo:
-		for (r,(i,d)) in foo:
+	exps= zip(rates,zip(intervalsizes,depths))
+	exps = itertools.product(windows,exps)
+	with click.progressbar(exps) as foo:
+		for (w,(r,(i,d))) in foo:
 			rs =sim(path = path, window = window,
 			 	avg = r, interval_length = i, timeduration =2*window ,depth = d)
 			results.append(rs)

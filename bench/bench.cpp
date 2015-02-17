@@ -182,7 +182,7 @@ void relicSizes(){
 	cout << "\t GT: " << gt.getBytes(true).size() << endl;
 }
 template <class T>
-void sizes(const unsigned int d =31,const unsigned int n = 1){
+void sizes(const unsigned int d =30,const unsigned int n = 1){
 	GMPfse test(d,n);
 	GMPfsePublicKey pk;
 	GMPfsePrivateKey sk;
@@ -289,8 +289,16 @@ void bencKeySize(unsigned int tag , unsigned int depth,unsigned int puncturesper
 int main(){
 		relicResourceHandle h; 
 		cout << "endl" << endl;
-	bencKeySize(1,10,1);
-}
+	//bencKeySize(1,10,1);
+std::locale::global(std::locale(""));
+    std::cout.imbue(std::locale());
+    relicSizes();
+    cout <<"Sizes(BinaryOutputArchive) POINT_COMPRESSION=" << POINT_COMPRESS << ":"<< endl;
+    sizes<cereal::BinaryOutputArchive>();
+    cout <<"Sizes(PortableBinaryOutputArchive) POINT_COMPRESSION=" << POINT_COMPRESS << ":"<< endl;
+    sizes<cereal::PortableBinaryOutputArchive>();
+    cout <<"Sizes(JSONOutputArchive) POINT_COMPRESSION=" << POINT_COMPRESS << ":"<< endl;
+    sizes<cereal::JSONOutputArchive>();}
 int main2()
 {
 	relicResourceHandle h;
