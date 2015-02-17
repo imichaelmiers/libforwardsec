@@ -238,7 +238,7 @@ def sim(path,window,avg,interval_length,timeduration,depth=31,numtags=1,iteratio
 
 
 	while elapsed_time < timeduration:
-		elapsed_time += avg #expovariate(avg)
+		elapsed_time += expovariate(avg)
 		interval = int(math.floor(elapsed_time)/interval_length)+1 
 		#print "avg: %s , pois : %s"%(avg,arrived_msgs)
 		intervals.append(interval)
@@ -284,25 +284,24 @@ def sim(path,window,avg,interval_length,timeduration,depth=31,numtags=1,iteratio
 # 	return np
 
 def main(argv):
-	intervalsizes = [1,10,100,1000]
+	intervalsizes = [.001,.01,.1,1,10,100,1000,10000]
 	depths = [min(30,int(math.ceil(math.log(spy/i,2)))) for i in intervalsizes]
 	path = argv[1]
 	name = argv[2]
 	print "path: %s"%path
 	msgs_per_second =  1
-	rates = [1.0 /x for x in intervalsizes]
+	seconds_per_msg = [1,10,100,1000]
 	window = 1000.0
-	windows = [1000,2000,3000]
 	results=[]
-	exps= zip(rates,zip(intervalsizes,depths))
-	exps = itertools.product(windows,exps)
+	exps = itertools.product(seconds_per_msg,zip(intervalsizes,depths))
 	with click.progressbar(exps) as foo:
-		for (w,(r,(i,d))) in foo:
-			rs =sim(path = path, window = window,
-			 	avg = r, interval_length = i, timeduration =2*window ,depth = d)
-			results.append(rs)
-			np = array(results)
-			save(name,np)
+		for (r,(i,d)) in foo:
+			for sdf in xrange(10):
+				rs =sim(path = path, window = window,
+				 	avg = r, interval_length = i, timeduration =2*window ,depth = d)
+				results.append(rs)
+				np = array(results)
+				save(name,np)
 
 	#np = array(results)
 
