@@ -37,7 +37,7 @@ cmake --help
 
 
 
- Instaling  dependencies
+ Installing  dependencies
 ----------------------------
 
 # Relic (note, depends on gmp)
@@ -65,3 +65,20 @@ Cereal is a header only library.  Try your local package manager or
     #from the root of the libforwardsec project
     git submodule init
     git submodule update
+
+Android BUILD
+0) Build gmp for android or download libgmp arm binary
+1) build relic 
+
+2)
+make a standalone toolchain using clang and libc++
+./make-standalone-toolchain.sh  --platform=android-21 --install-dir=/home/ian/android_standalone/ --ndk-dir=/home/ian/androidndk/android-ndk-r10d/ --arch=arm --system=linux-x86_64  --toolchain=arm-linux-androideabi-clang3.5 --stl=libc++
+3)
+
+ cmake -DCMAKE_TOOLCHAIN_FILE=../android.toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DANDROID_ABI="armeabi-v7a with NEON" -DANDROID_STANDALONE_TOOLCHAIN=/home/ian/android_standalone/   ../
+(GCC)
+
+or (CLANG/LLVM)
+ian@secdev:~/libforwardsec/build$ cmake -DCMAKE_TOOLCHAIN_FILE=../android.toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DANDROID_ABI="armeabi-v7a with NEON" -DANDROID_STANDALONE_TOOLCHAIN=/home/ian/android_standalone/  -DANDROID_TOOLCHAIN_NAME=standalone-clang  ../
+
+

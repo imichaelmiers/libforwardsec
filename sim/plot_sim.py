@@ -5,18 +5,19 @@ from mpl_toolkits.mplot3d import Axes3D
 import sim
 def main(argv):
 	data = np.load(argv[1])
+	print data.shape
 	#data1 = np.load(argv[2])
 	#dataa = np.append(data,data1,axis=0)
-	plot_sizezvsrate(data)
-
+	#plot_sizezvsrate(data)
+	plot(data)
 
 def plot3d(data):
 	windowIndex = 0
 	msgrateIndex = 1
 	intervalLengthIndex = 3
-	dirCPUTOTALIndex=11+6
-	DecCPUTotalIndex=23+6
-	PunCPUToTalIndex=35+6
+	dirCPUTOTALIndex=11+6 -2
+	DecCPUTotalIndex=23+6 -2
+	PunCPUToTalIndex=35+6 -2 
 	MaxSize=36+6
 
 
@@ -45,25 +46,24 @@ def plot(data):
 	windowIndex = 0
 	msgrateIndex = 1
 	intervalLengthIndex = 3
-	dirCPUTOTALIndex=11+6
-	DecCPUTotalIndex=23+6
-	PunCPUToTalIndex=35+6
+	dirCPUTOTALIndex=11+6 -2
+	DecCPUTotalIndex=23+6 -2
+	PunCPUToTalIndex=35+6 -2 
 	MaxSize=36+6
 	subRows=[]
-	other=[]
-	oo= []
-	target = .01
+	print set(data[:,msgrateIndex])
+	target = int(argv[2])
+	for r in data:
+		if r[msgrateIndex]  == r[intervalLengthIndex]:
+			print "\tintervalenth %s"%r[intervalLengthIndex]
+			print "\tmsg rate %s"%(1.0/r[msgrateIndex])
+			print "\tkeysize %s"% r[MaxSize]
+			print ""
 	for r in data:
 		if r[msgrateIndex] == target:
 			subRows.append(r)
-		if r[msgrateIndex] == 0.01:
-			other.append(r)
-		if r[msgrateIndex] == 0.0001:
-			oo.append(r)
 
 	subRows = np.array(subRows)
-	other = np.array(other)
-	oo = np.array(oo)
 	dirTimes = subRows[:,dirCPUTOTALIndex]
 	decTime = subRows[:,DecCPUTotalIndex]
 	PunTime = subRows[:,PunCPUToTalIndex]
@@ -72,11 +72,6 @@ def plot(data):
 	rate = subRows[:,intervalLengthIndex]
 
 	sizes = subRows[:,MaxSize]
-	osize = other[:,MaxSize]
-	orate = other[:,intervalLengthIndex]
-	oor = oo[:,intervalLengthIndex]
-	oos = oo[:,MaxSize]
-
 	# plt.plot(oor,oos,'go-',label='0.0001 msgs per second')
 	# plt.plot(rate,sizes,'bv-',label='0.001 msgs per second')
 	# plt.plot(orate,osize,'rs-',label='0.01 msgs per second')
@@ -89,8 +84,9 @@ def plot(data):
 	plt.gca().legend(loc='upper right',shadow=True)
 	plt.gca().set_xscale('log')
 	plt.xlabel('interval size(s)')
-	plt.ylabel('keySize KB')
+	plt.ylabel('time (s)')
 	plt.show()
+
 def plot_sizezvsrate(data):
 	windowIndex = 0
 	msgrateIndex = 1
@@ -102,14 +98,13 @@ def plot_sizezvsrate(data):
 	subRows=[]
 	target = 0.001
 	for r in data:
-		if r[intervalLengthIndex] == r[msgrateIndex]:
+		if r[intervalLengthIndex] == 1 :
 			print "\tintervalenth %s"%r[intervalLengthIndex]
 			print "\tmsg rate %s"%r[msgrateIndex]
 			print "\tkeysize %s"% r[MaxSize]
 			subRows.append(r)
 			print ""
-	print(len(subRows))
-	return 
+
 	subRows = np.array(subRows)
 	print subRows
 	dirTimes = subRows[:,dirCPUTOTALIndex]

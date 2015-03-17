@@ -4,6 +4,8 @@
 #include <cereal/archives/portable_binary.hpp>
 #include <cereal/archives/binary.hpp>
 #include <cereal/archives/json.hpp>
+#include <cmath>
+
 #include "locale"
 #include "gmpfse.h"
 #include "Benchmark.h"
@@ -114,7 +116,7 @@ Benchmark benchNextInterval(const unsigned int iterations, const unsigned int d 
 	   return benchN;
 
 }
-std::vector<Benchmark> benchNextIntFull(const unsigned int iterations, const unsigned int d =31,
+std::vector<Benchmark> benchNextIntFull(const unsigned int iterations, const unsigned int d =32,
 		const unsigned int n = 1){
 
     std::vector<Benchmark>  b(d);
@@ -252,8 +254,14 @@ void sizes(const unsigned int d =30,const unsigned int n = 1){
 		cout << "\tCT size:\t" << ss.tellp() <<" bytes " << endl;
 	}
 }
+
 unsigned int treeSize(unsigned int k){
-    return (2 <<(k)) -1;
+    if(k>31){
+        throw invalid_argument ("tree depth must be less than 32, not " + std::to_string(k));
+    }else if(k==31){
+         return 4294967295; // 2^32 -1 = maxint.
+    }
+    return pow(2.0,k+1)-1;
 }
 void bencKeySize(unsigned int tag , unsigned int depth,unsigned int puncturesperinterval){
 	    GMPfse test(30,tag);
@@ -286,7 +294,7 @@ void bencKeySize(unsigned int tag , unsigned int depth,unsigned int puncturesper
 		
 }
 
-int main(){
+int main_(){
 		relicResourceHandle h; 
 		cout << "endl" << endl;
 	//bencKeySize(1,10,1);
@@ -299,10 +307,10 @@ std::locale::global(std::locale(""));
     sizes<cereal::PortableBinaryOutputArchive>();
     cout <<"Sizes(JSONOutputArchive) POINT_COMPRESSION=" << POINT_COMPRESS << ":"<< endl;
     sizes<cereal::JSONOutputArchive>();}
-int main2()
+int main()
 {
 	relicResourceHandle h;
-	unsigned int i = 500;
+	unsigned int i = 50;
 	unsigned int d = 31;
 	unsigned int n = 1;
     Benchmark K,E,D,PF,PS,N,DP;
