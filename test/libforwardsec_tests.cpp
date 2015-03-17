@@ -147,7 +147,7 @@ TEST_F(GMPfseTests,DecryptOnPuncture){
     EXPECT_EQ(testkey,result1) ;
 }
 TEST(GMPfseTestsss,DecryptFarFuture){
-		unsigned int target=30;
+		unsigned int target=31;
 		unsigned int offset =31;
 	GMPfse test1(target);
 	GMPfsePublicKey pk;

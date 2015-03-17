@@ -1,5 +1,6 @@
 #include<assert.h>
 #include"util.h"
+#include <cmath>
 using namespace std;
 namespace forwardsec{
 using namespace relicxx;
@@ -16,7 +17,12 @@ bytes xorarray(const bytes & l,const bytes & r){
 }
 
 unsigned int treeSize(unsigned int k){
-    return (2 <<(k+1)) -1;
+    if(k>31){
+        throw invalid_argument ("tree depth must be less than 32, not " + std::to_string(k));
+    }else if(k==31){
+         return 4294967295; // 2^32 -1 = maxint.
+    }
+    return pow(2.0,k+1)-1;
 }
 
 std::vector<ZR>  indexToPath(const unsigned int &index,const unsigned int & treeDepth){
@@ -24,10 +30,10 @@ std::vector<ZR>  indexToPath(const unsigned int &index,const unsigned int & tree
     unsigned int nodesSoFar = 0;
     unsigned int level;
     if(index >= treeSize(treeDepth)){
-        throw invalid_argument ("index out of bounds of tree");
+        throw invalid_argument ("index out of bounds of tree: tree supports at most " + std::to_string(treeSize(treeDepth)) +" -1 nodes, not " + std::to_string(index));
     }
     for(level =0 ; level < treeDepth ; level++){
-        unsigned int subtree_height = treeSize(treeDepth-level-2);
+        unsigned int subtree_height = treeSize(treeDepth-level -1);
         if (nodesSoFar == index){
             return path;
         }else if(index <= (subtree_height + nodesSoFar)){
@@ -56,7 +62,7 @@ unsigned int pathToIndex(const std::vector<ZR> & path, const unsigned int & tree
 
           unsigned int left_subtree_level = level + 1;
           unsigned int left_subtree_height = treeDepth - left_subtree_level;
-          unsigned int left_subtree_size = treeSize(left_subtree_height-1);
+          unsigned int left_subtree_size = treeSize(left_subtree_height);
 
           index += left_subtree_size;
 
