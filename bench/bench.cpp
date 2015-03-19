@@ -311,7 +311,7 @@ int main()
 {
 	relicResourceHandle h;
 	unsigned int i = 50;
-	unsigned int d = 31;
+	unsigned int d = 32;
 	unsigned int n = 1;
     Benchmark K,E,D,PF,PS,N,DP;
     cout << "Benchmarking " << i << " iterations of Puncturable forward secure encryption with depth " <<
