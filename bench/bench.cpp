@@ -116,7 +116,7 @@ Benchmark benchNextInterval(const unsigned int iterations, const unsigned int d 
 	   return benchN;
 
 }
-std::vector<Benchmark> benchNextIntFull(const unsigned int iterations, const unsigned int d =32,
+std::vector<Benchmark> benchNextIntFull(const unsigned int iterations, const unsigned int d =31,
 		const unsigned int n = 1){
 
     std::vector<Benchmark>  b(d);
@@ -126,7 +126,10 @@ std::vector<Benchmark> benchNextIntFull(const unsigned int iterations, const uns
 		GMPfsePublicKey pk;
 		GMPfsePrivateKey sk;
 		test.keygen(pk,sk);
-		for(unsigned int dd = 0;dd<d;dd++){
+		for(unsigned int dd = 0;dd<d-2;dd++){ 
+			// we keygen derives the left and right child of root.
+			// it also derives the children of left (i.e. interval 1)
+			// so that it is currently in use.
 			b[dd].start();
 	        test.prepareNextInterval(pk,sk);
 	        b[dd].stop();
