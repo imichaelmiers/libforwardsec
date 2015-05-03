@@ -73,7 +73,9 @@ void BBGHibe::keygen(const BBGHibePublicKey & pk,const  BBGHibePrivateKey & sk, 
     G2 hprod;
     for (unsigned int i = 0; i < k ; i++)
     {
-        hprod = group.mul(hprod, group.exp(pk.hG2[i], id[i]));
+        if(id.at(i)==1){
+           hprod = group.mul(hprod, pk.hG2[i]);
+        }
     }
     hprod = group.exp(group.mul(hprod, pk.g3G2), t);
     hprod = group.mul(hprod,group.exp(sk.bG2[0],(id[k-1])));
@@ -98,6 +100,7 @@ BBGHibeCiphertext BBGHibe::encrypt(const BBGHibePublicKey & pk, const GT & M, co
     ZR s = group.randomZR();
 
      BBGHibeCiphertext ct =blind(pk,s,id);
+     //FIXME remove pairing.
      ct.A = group.mul(group.exp(group.pair(pk.g2G1, pk.hibeg1), s), M);
      return ct;
 }

@@ -5,13 +5,13 @@ Libforwardsec. A library for puncturable forward secure encryption.
 Dependencies
 -----------------------------
 * For math: 
-	* relic (https://github.com/relic-toolkit/relic) 
-	* gmp (assuming relic is configured to use it) 
+    * relic (https://github.com/relic-toolkit/relic) 
+    * gmp (assuming relic is configured to use it) 
 * For serialization:
-	*  cereal(https://github.com/USCiLab/cereal) 
+    *  cereal(https://github.com/USCiLab/cereal) 
 * For testing:
-	* Google test (https://code.google.com/p/googletest/) 
-	
+    * Google test (https://code.google.com/p/googletest/) 
+    
 
 Build
 ----------------------------
@@ -48,10 +48,10 @@ cmake --help
     cmake -G "Unix Makefiles" -DMULTI=OPENMP -DCOMP="-O2 -funroll-loops -fomit-frame-pointer" -DARCH="X64"  -DRAND="UDEV" -DWITH="BN;DV;FP;FPX;EP;EPX;PP;PC;MD" -DCHECK=off -DVERBS=off -DDEBUG=on -DBENCH=0 -DTESTS=1 -DARITH=gmp -DFP_PRIME=256 -DFP_QNRES=off -DFP_METHD="BASIC;COMBA;COMBA;MONTY;LOWER;SLIDE" -DFPX_METHD="INTEG;INTEG;LAZYR" -DPP_METHD="LAZYR;OATEP"
     make 
     make install 
-	
+    
 # GMP
 Install using your package manager.
-	
+    
 # Cereal
 Cereal is a header only library.  Try your local package manager or 
     
@@ -60,58 +60,73 @@ Cereal is a header only library.  Try your local package manager or
     cd cereal
     git checkout v1.0.0
     cp -R ./include/* /usr/local/include/
- 	
+
 # Google test
     #from the root of the libforwardsec project
     git submodule init
     git submodule update
 
 Android BUILD
-0 Make a standalone toolchain 
-./make-standalone-toolchain.sh  --platform=android-21 --install-dir=/home/ian/android_standalone/ --ndk-dir=/home/ian/androidndk/android-ndk-r10d/ --arch=arm --system=linux-x86_64  --toolchain=arm-linux-androideabi-clang3.5 --stl=libc++
+----------------------------
+1.  Make a standalone toolchain 
 
-1 Build gmp (note using the copy form https://github.com/Rupan/gmp doens't work)
+    #from a suitable directory
+    git clone https://github.com/USCiLab/cereal.git
+    ./make-standalone-toolchain.sh  --platform=android-21 --install-dir=/home/ian/android_standalone/ --ndk-dir=/home/ian/androidndk/android-ndk-r10d/ --arch=arm --system=linux-x86_64  --toolchain=arm-linux-androideabi-clang3.5 --stl=libc++
+     
+2. Build gmp (note using the copy form https://github.com/Rupan/gmp doens't work)
 
-    a) make export the standalone toolchain
+    1. make export the standalone toolchain
 
-        export STANDALONE_TOOLCHAIN="/PATH/TO/TOOLCHAIN"
-        export CC="$STANDALONE_TOOLCHAIN/bin/arm-linux-androideabi-gcc --sysroot=$STANDALONE_TOOLCHAIN/sysroot"
-        export CXX="$STANDALONE_TOOLCHAIN/bin/arm-linux-androideabi-g++ --sysroot=$STANDALONE_TOOLCHAIN/sysroot"
-        export AR="$STANDALONE_TOOLCHAIN/bin/arm-linux-androideabi-ar"
-        export RANLIB="$STANDALONE_TOOLCHAIN/bin/arm-linux-androideabi-ranlib"
-        export SYSROOT="$STANDALONE_TOOLCHAIN/sysroot"
+    export STANDALONE_TOOLCHAIN="/PATH/TO/TOOLCHAIN"
+    export CC="$STANDALONE_TOOLCHAIN/bin/arm-linux-androideabi-gcc --sysroot=$STANDALONE_TOOLCHAIN/sysroot"
+    export CXX="$STANDALONE_TOOLCHAIN/bin/arm-linux-androideabi-g++ --sysroot=$STANDALONE_TOOLCHAIN/sysroot"
+    export AR="$STANDALONE_TOOLCHAIN/bin/arm-linux-androideabi-ar"
+    export RANLIB="$STANDALONE_TOOLCHAIN/bin/arm-linux-androideabi-ranlib"
+    export SYSROOT="$STANDALONE_TOOLCHAIN/sysroot"
 
-    b)./configure --host=arm-linux-androideabi
-    c)  edit config.h and make sure the following is set to zero. (note, this is set by ./configure, so your change will be overwritten)
-    /* Define to 1 if you have the `localeconv' function. */
-    #define HAVE_LOCALECONV 0
-    d)
-    make 
+    2. Optimize compiler
+    
+         export CFLAGS="-O4 -flto -Ofast -mcpu=cortex-a15 -fprefetch-loop-arrays -mfpu=neon -funroll-all-loops -mtune=cortex-a15 -ftree-vectorize -fomit-frame-pointer -mvectorize-with-neon-quad -mthumb-interwork -finline-small-functions  -ffast-math -marm -ffunction-sections -fdata-sections -fomit-frame-pointer -finline-small-functions "
+    3. Configfure
+    
+        /configure --host=arm-linux-androideabi
+    
+    4.  edit config.h and make sure the following is set to zero. (note, this is set by ./configure, so your change will be overwritten)
+    
+    
+        /* Define to 1 if you have the `localeconv' function. */
+        #define HAVE_LOCALECONV 0
+    
 
--O4 -flto -Ofast -mcpu=cortex-a15 -fprefetch-loop-arrays -mfpu=neon -funroll-all-loops -mtune=cortex-a15 -ftree-vectorize -fomit-frame-pointer -mvectorize-with-neon-quad -mthumb-interwork -finline-small-functions  -ffast-math -marm -ffunction-sections -fdata-sections -fomit-frame-pointer -finline-small-functions
+    5. Build
+    
+          make -j
 
-2) build relic 
- a)
+
+2. build relic 
+    1. 
     remove src/CMakeLists.txt:153:      target_link_libraries(${LIBRARY} rt)
- b)
- cmake -DCMAKE_TOOLCHAIN_FILE=./android.toolchain.cmake -DANDROID_ABI="armeabi-v7a with NEON"  -DANDROID_STANDALONE_TOOLCHAIN=/home/ian/android_standalone/  -DCOMP="-O4 -flto -Ofast -mcpu=cortex-a15 -fprefetch-loop-arrays -mfpu=neon -mfloat-abi=hard -funroll-all-loops -mtune=cortex-a15 -ftree-vectorize -fomit-frame-pointer -mvectorize-with-neon-quad -mthumb-interwork -finline-small-functions  -ffast-math -marm -ffunction-sections -fdata-sections -fomit-frame-pointer -finline-small-functions" -DARCH="NONE"  -DRAND="UDEV" -DWITH="BN;DV;FP;FPX;EP;EPX;PP;PC;MD" -DCHECK=off -DVERBS=off -DDEBUG=on -DBENCH=0 -DTESTS=1 -DARITH=gmp -DFP_PRIME=256 -DFP_QNRES=off -DFP_METHD="BASIC;COMBA;COMBA;MONTY;LOWER;SLIDE" -DFPX_METHD="INTEG;INTEG;LAZYR" -DPP_METHD="LAZYR;OATEP" -DWORD="32" -DCHECK=off and -DTRACE=off -DCMAKE_BUILD_TYPE=Release
+     2. Configure
+    
+        cmake -DCMAKE_TOOLCHAIN_FILE=./android.toolchain.cmake -DANDROID_ABI="armeabi-v7a with NEON"  -DANDROID_STANDALONE_TOOLCHAIN=/home/ian/android_standalone/  -DCOMP="-O4 -flto -Ofast -mcpu=cortex-a15 -fprefetch-loop-arrays -mfpu=neon -mfloat-abi=hard -funroll-all-loops -mtune=cortex-a15 -ftree-vectorize -fomit-frame-pointer -mvectorize-with-neon-quad -mthumb-interwork -finline-small-functions  -ffast-math -marm -ffunction-sections -fdata-sections -fomit-frame-pointer -finline-small-functions" -DARCH="NONE"  -DRAND="UDEV" -DWITH="BN;DV;FP;FPX;EP;EPX;PP;PC;MD" -DCHECK=off -DVERBS=off -DDEBUG=on -DBENCH=0 -DTESTS=1 -DARITH=gmp -DFP_PRIME=256 -DFP_QNRES=off -DFP_METHD="BASIC;COMBA;COMBA;MONTY;LOWER;SLIDE" -DFPX_METHD="INTEG;INTEG;LAZYR" -DPP_METHD="LAZYR;OATEP" -DWORD="32" -DCHECK=off and -DTRACE=off -DCMAKE_BUILD_TYPE=Release
+    3. Build
+    
+        make -j 
 
-
-3) build libforwardsec
+3. build libforwardsec
 
  cmake -DCMAKE_TOOLCHAIN_FILE=../android.toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DANDROID_ABI="armeabi-v7a with NEON" -DANDROID_STANDALONE_TOOLCHAIN=/home/ian/android_standalone/   ../
 (GCC)
 
-or (CLANG/LLVM)
-ian@secdev:~/libforwardsec/build$ cmake -DCMAKE_TOOLCHAIN_FILE=../android.toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DANDROID_ABI="armeabi-v7a with NEON" -DANDROID_STANDALONE_TOOLCHAIN=/home/ian/android_standalone/  -DANDROID_TOOLCHAIN_NAME=standalone-clang  ../
 
-4) running (this should work without root)
+
+4. running (this should work without root)
 Load libmgp.so, librelic.so, libforwarsec.so, and an executable into /data/local/tmp/
-adb push FILE /data/local/tmp/
-adb shell 
-cd /data/local/tmp/
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/data/local/tmp/
-./executable
 
-
+    adb push FILE /data/local/tmp/
+    adb shell 
+    cd /data/local/tmp/
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/data/local/tmp/
+    ./executable
 

@@ -27,7 +27,7 @@ def bin_bals():
 	plt.show()
 	for i in xrange(len(rates)):
 		print "%s : %s"%(rates[i],collisions[i])
-def poison():
 
 
 if __name__ == "__main__":
+	bin_bals()
