@@ -1,6 +1,14 @@
 Libforwardsec. A library for puncturable forward secure encryption.
 ============================
+This library implements three schemes for fine grained forward secure encryption. Specifically the HIBE scheme due to Boneh Boyen Goh("Hierarchical identity based encryption with constant size ciphertext" EUROCRYPT 2005), and  the  Puncturable  Public key encryption and Puncturable Forward Secure Encryption schemes due to Green and Miers("Forward Secure Asynchronous Messaging from Puncturable Encryption" IEEES&P 2015)
 
+This is research code written by one graduate student built on top of a research  pairing library  (RELIC) written by some other (former) graduate student. We haven't even thoroughly reviewed this code ourselves. It might be secure enough to send cat pictures over the internet, but don't count on it.
+
+TODOs:
+* profile and optimize code. It's slower than we expect (i.e. the cost of pairings doesn't dominate)
+* remove extra group element in ciphertext for combined scheme
+* add symmetric encryption and ratcheting
+* replace all uses of [] in vectors with .at (since it's always bound checked)
 
 Dependencies
 -----------------------------
@@ -25,8 +33,7 @@ This project builds with cmake.
     make install 
 
 It is known to build and pass all tests on OSX 10.9.5  with Apple LLVM version 6.0 (clang-600.0.54) (based on LLVM 3.5svn) 
-and Ubuntu 14.04 with gcc version 4.8.2 (Ubuntu 4.8.2-19ubuntu1) 
-
+and Ubuntu 14.04 with gcc version 4.8.2 (Ubuntu 4.8.2-19ubuntu1). It is not known explicitly to fail on anything.
 
 Note, Cmake supports a bunch of other build systems via "cmake -G 'generator name' ../"
 Among them Ninja and project files for your favorite/
@@ -37,7 +44,7 @@ cmake --help
 
 
 
- Installing  dependencies
+Installing  dependencies
 ----------------------------
 
 # Relic (note, depends on gmp)
@@ -124,7 +131,7 @@ Android BUILD
 4. running (this should work without root)
 Load libmgp.so, librelic.so, libforwarsec.so, and an executable into /data/local/tmp/
 
-    adb push FILE /data/local/tmp/
+    adb push file /data/local/tmp/
     adb shell 
     cd /data/local/tmp/
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/data/local/tmp/
