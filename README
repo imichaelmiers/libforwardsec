@@ -1,5 +1,6 @@
 Libforwardsec. A library for puncturable forward secure encryption.
 ============================
+
 This library implements three schemes for fine grained forward secure encryption. Specifically the HIBE scheme due to Boneh Boyen Goh("Hierarchical identity based encryption with constant size ciphertext" EUROCRYPT 2005), and  the  Puncturable  Public key encryption and Puncturable Forward Secure Encryption schemes due to Green and Miers("Forward Secure Asynchronous Messaging from Puncturable Encryption" IEEES&P 2015)
 
 This is research code written by one graduate student built on top of a research  pairing library  (RELIC) written by some other (former) graduate student. We haven't even thoroughly reviewed this code ourselves. It might be secure enough to send cat pictures over the internet, but don't count on it.
@@ -56,10 +57,10 @@ Installing  dependencies
     make 
     make install 
     
-# GMP
+### GMP
 Install using your package manager.
     
-# Cereal
+### Cereal
 Cereal is a header only library.  Try your local package manager or 
     
     #from a suitable directory
@@ -68,7 +69,7 @@ Cereal is a header only library.  Try your local package manager or
     git checkout v1.0.0
     cp -R ./include/* /usr/local/include/
 
-# Google test
+### Google test
     #from the root of the libforwardsec project
     git submodule init
     git submodule update
@@ -116,24 +117,29 @@ Android BUILD
     remove src/CMakeLists.txt:153:      target_link_libraries(${LIBRARY} rt)
      2. Configure
     
+    
         cmake -DCMAKE_TOOLCHAIN_FILE=./android.toolchain.cmake -DANDROID_ABI="armeabi-v7a with NEON"  -DANDROID_STANDALONE_TOOLCHAIN=/home/ian/android_standalone/  -DCOMP="-O4 -flto -Ofast -mcpu=cortex-a15 -fprefetch-loop-arrays -mfpu=neon -mfloat-abi=hard -funroll-all-loops -mtune=cortex-a15 -ftree-vectorize -fomit-frame-pointer -mvectorize-with-neon-quad -mthumb-interwork -finline-small-functions  -ffast-math -marm -ffunction-sections -fdata-sections -fomit-frame-pointer -finline-small-functions" -DARCH="NONE"  -DRAND="UDEV" -DWITH="BN;DV;FP;FPX;EP;EPX;PP;PC;MD" -DCHECK=off -DVERBS=off -DDEBUG=on -DBENCH=0 -DTESTS=1 -DARITH=gmp -DFP_PRIME=256 -DFP_QNRES=off -DFP_METHD="BASIC;COMBA;COMBA;MONTY;LOWER;SLIDE" -DFPX_METHD="INTEG;INTEG;LAZYR" -DPP_METHD="LAZYR;OATEP" -DWORD="32" -DCHECK=off and -DTRACE=off -DCMAKE_BUILD_TYPE=Release
-    3. Build
+    
+    
+   4. 3. Build
+    
     
         make -j 
 
 3. build libforwardsec
 
- cmake -DCMAKE_TOOLCHAIN_FILE=../android.toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DANDROID_ABI="armeabi-v7a with NEON" -DANDROID_STANDALONE_TOOLCHAIN=/home/ian/android_standalone/   ../
-(GCC)
+ 
+    cmake -DCMAKE_TOOLCHAIN_FILE=../android.toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DANDROID_ABI="armeabi-v7a with NEON" -DANDROID_STANDALONE_TOOLCHAIN=/home/ian/android_standalone/   ../
+
 
 
 
 4. running (this should work without root)
 Load libmgp.so, librelic.so, libforwarsec.so, and an executable into /data/local/tmp/
 
+    
     adb push file /data/local/tmp/
     adb shell 
     cd /data/local/tmp/
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/data/local/tmp/
     ./executable
-
