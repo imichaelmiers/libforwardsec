@@ -1,7 +1,7 @@
 Libforwardsec. A library for puncturable forward secure encryption.
 ============================
 
-This library implements three schemes for fine grained forward secure encryption. Specifically the HIBE scheme due to Boneh Boyen Goh("Hierarchical identity based encryption with constant size ciphertext" EUROCRYPT 2005), and  the  Puncturable  Public key encryption and Puncturable Forward Secure Encryption schemes due to Green and Miers("Forward Secure Asynchronous Messaging from Puncturable Encryption" IEEES&P 2015)
+This library implements three schemes for fine grained forward secure encryption. Specifically the HIBE scheme due to Boneh Boyen Goh ("Hierarchical identity based encryption with constant size ciphertext" EUROCRYPT 2005), and  the  Puncturable  Public key encryption and Puncturable Forward Secure Encryption schemes due to Green and Miers ("Forward Secure Asynchronous Messaging from Puncturable Encryption" IEEES&P 2015)
 
 This is research code written by one graduate student built on top of a research  pairing library  (RELIC) written by some other (former) graduate student. We haven't even thoroughly reviewed this code ourselves. It might be secure enough to send cat pictures over the internet, but don't count on it.
 
@@ -48,7 +48,7 @@ cmake --help
 Installing  dependencies
 ----------------------------
 
-# Relic (note, depends on gmp)
+### Relic (note, depends on gmp)
     #from a suitable directory
     git clone https://github.com/relic-toolkit/relic.git
     cd relic
@@ -111,17 +111,17 @@ Android BUILD
              make -j
 
 2. build relic 
-    1. 
-    remove src/CMakeLists.txt:153:      
+    1. remove src/CMakeLists.txt:153:      
               
               target_link_libraries(${LIBRARY} rt)
-     2. Configure
+  
+   2. Configure
     
     
               cmake -DCMAKE_TOOLCHAIN_FILE=./android.toolchain.cmake -DANDROID_ABI="armeabi-v7a with NEON"  -DANDROID_STANDALONE_TOOLCHAIN=/home/ian/android_standalone/  -DCOMP="-O4 -flto -Ofast -mcpu=cortex-a15 -fprefetch-loop-arrays -mfpu=neon -mfloat-abi=hard -funroll-all-loops -mtune=cortex-a15 -ftree-vectorize -fomit-frame-pointer -mvectorize-with-neon-quad -mthumb-interwork -finline-small-functions  -ffast-math -marm -ffunction-sections -fdata-sections -fomit-frame-pointer -finline-small-functions" -DARCH="NONE"  -DRAND="UDEV" -DWITH="BN;DV;FP;FPX;EP;EPX;PP;PC;MD" -DCHECK=off -DVERBS=off -DDEBUG=on -DBENCH=0 -DTESTS=1 -DARITH=gmp -DFP_PRIME=256 -DFP_QNRES=off -DFP_METHD="BASIC;COMBA;COMBA;MONTY;LOWER;SLIDE" -DFPX_METHD="INTEG;INTEG;LAZYR" -DPP_METHD="LAZYR;OATEP" -DWORD="32" -DCHECK=off and -DTRACE=off -DCMAKE_BUILD_TYPE=Release
     
     
-   4. 3. Build
+   3. Build
    
                 make -j 
 
