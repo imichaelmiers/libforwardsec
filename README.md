@@ -77,16 +77,15 @@ Cereal is a header only library.  Try your local package manager or
 Android BUILD
 ----------------------------
 1.  Make a standalone toolchain 
-
-        #from a suitable directory
-        git clone https://github.com/USCiLab/cereal.git
-        ./make-standalone-toolchain.sh  --platform=android-21 --install-dir=/home/ian/android_standalone/ --ndk-dir=/home/ian/androidndk/android-ndk-r10d/ --arch=arm --system=linux-x86_64  --toolchain=arm-linux-androideabi-clang3.5 --stl=libc++
+      
+        #pick instal location
+        export STANDALONE_TOOLCHAIN="/PATH/TO/TOOLCHAIN"
+        ./make-standalone-toolchain.sh  --platform=android-21 --install-dir=$STANDALONE_TOOLCHAIN --ndk-dir=/PATH/TO/NDK/android-ndk-r10d/ --arch=arm --system=linux-x86_64  --toolchain=arm-linux-androideabi-clang3.5 --stl=libc++
      
 2. Build gmp (note using the copy form https://github.com/Rupan/gmp doens't work)
 
     1. make export the standalone toolchain
 
-            export STANDALONE_TOOLCHAIN="/PATH/TO/TOOLCHAIN"
             export CC="$STANDALONE_TOOLCHAIN/bin/arm-linux-androideabi-gcc --sysroot=$STANDALONE_TOOLCHAIN/sysroot"
             export CXX="$STANDALONE_TOOLCHAIN/bin/arm-linux-androideabi-g++ --sysroot=$STANDALONE_TOOLCHAIN/sysroot"
             export AR="$STANDALONE_TOOLCHAIN/bin/arm-linux-androideabi-ar"
@@ -127,7 +126,7 @@ Android BUILD
 
 3. build libforwardsec
 
-              cmake -DCMAKE_TOOLCHAIN_FILE=../android.toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DANDROID_ABI="armeabi-v7a with NEON" -DANDROID_STANDALONE_TOOLCHAIN=/home/ian/android_standalone/   ../
+              cmake -DCMAKE_TOOLCHAIN_FILE=../android.toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DANDROID_ABI="armeabi-v7a with NEON" -DANDROID_STANDALONE_TOOLCHAIN=$STANDALONE_TOOLCHAIN ../
 
 
 4. running (this should work without root)
