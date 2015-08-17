@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8.4)
+cmake_minimum_required (VERSION 2.8.11)
 project (libforwardsec C CXX)
 
 include(CheckCXXCompilerFlag)
@@ -100,6 +100,6 @@ add_subdirectory(src)
 add_subdirectory(googletest EXCLUDE_FROM_ALL)
 add_subdirectory(test)
 add_subdirectory(bench EXCLUDE_FROM_ALL)
-add_subdirectory(sim EXCLUDE_FROM_ALL)
+#add_subdirectory(sim EXCLUDE_FROM_ALL)
 
 install(DIRECTORY include/ DESTINATION include)

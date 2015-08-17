@@ -1,0 +1,51 @@
+language: cpp
+
+compiler:
+  - gcc
+before_install:
+  # g++4.8.1
+  - if [ "$CXX" == "g++" ]; then sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
+
+  # clang 3.4
+  - if [ "$CXX" == "clang++" ]; then sudo add-apt-repository -y ppa:h-rayflood/llvm; fi
+
+  - sudo apt-get update -qq
+install:
+  # g++4.8.1
+  - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8"; fi
+
+  # clang 3.4
+  - if [ "$CXX" == "clang++" ]; then sudo apt-get install --allow-unauthenticated -qq clang-3.; fi
+  - if [ "$CXX" == "clang++" ]; then export CXX="clang++-3.4"; fi
+
+  - git submodule init
+  - git submodule update
+  - git clone https://github.com/USCiLab/cereal.git
+  - cd cereal
+  - git checkout v1.0.0
+  - sudo cp -R ./include/* /usr/local/include/
+  - cd ../
+  - git clone https://github.com/relic-toolkit/relic.git
+  - cd relic
+  - git checkout relic-toolkit-0.4.0 
+  - cmake -G "Unix Makefiles" -DMULTI=OPENMP -DCOMP="-O2 -funroll-loops -fomit-frame-pointer" -DARCH="X64"  -DRAND="UDEV" -DWITH="BN;DV;FP;FPX;EP;EPX;PP;PC;MD" -DCHECK=off -DVERBS=off -DDEBUG=on -DBENCH=0 -DTESTS=1 -DARITH=gmp -DFP_PRIME=256 -DFP_QNRES=off -DFP_METHD="BASIC;COMBA;COMBA;MONTY;LOWER;SLIDE" -DFPX_METHD="INTEG;INTEG;LAZYR" -DPP_METHD="LAZYR;OATEP"
+  - make 
+  - sudo make install
+  - cd ../
+before_script:
+  - sudo add-apt-repository ppa:kalakris/cmake -y
+  - sudo apt-get update -q
+  - sudo apt-get install cmake
+script:
+  - $CXX --version
+  - cmake -DCMAKE_INCLUDE_PATH=./cereal/include/
+  - make 
+  - make check
+addons:
+  apt:
+    packages:
+    - cmake
+    - libgmp-dev
+
+#sudo: false
