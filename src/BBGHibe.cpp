@@ -48,7 +48,7 @@ void BBGHibe::keygen(const BBGHibePublicKey & pk, const G2 & msk, const std::vec
     const unsigned int k = id.size();
     for (unsigned int i = 0; i < k; i++)
     {
-        sk.a0 = group.mul(sk.a0, group.exp(pk.hG2[i], id[i]));
+        sk.a0 = group.mul(sk.a0, group.exp(pk.hG2.at(i), id.at(i)));
     }
     sk.a0 = group.exp(group.mul(sk.a0, pk.g3G2), r);
     sk.a0 = group.mul(msk, sk.a0);
@@ -59,9 +59,9 @@ void BBGHibe::keygen(const BBGHibePublicKey & pk, const G2 & msk, const std::vec
     sk.bG2.resize(s);
     for (unsigned int i =  k;i < pk.l; i++)
     {
-        sk.b[i - k] = group.exp(pk.hG1[i], r);
+        sk.b.at(i - k) = group.exp(pk.hG1.at(i), r);
 
-        sk.bG2[i - k] = group.exp(pk.hG2[i], r);
+        sk.bG2.at(i - k) = group.exp(pk.hG2.at(i), r);
     }
     return;
 }
@@ -74,11 +74,11 @@ void BBGHibe::keygen(const BBGHibePublicKey & pk,const  BBGHibePrivateKey & sk, 
     for (unsigned int i = 0; i < k ; i++)
     {
         if(id.at(i)==1){
-           hprod = group.mul(hprod, pk.hG2[i]);
+           hprod = group.mul(hprod, pk.hG2.at(i));
         }
     }
     hprod = group.exp(group.mul(hprod, pk.g3G2), t);
-    hprod = group.mul(hprod,group.exp(sk.bG2[0],(id[k-1])));
+    hprod = group.mul(hprod,group.exp(sk.bG2.at(0),(id.at(k-1))));
     skout.a0 = group.mul(hprod,sk.a0);
     skout.a1 = group.mul(sk.a1,group.exp(pk.gG2,t));
     const unsigned int s = pk.l - k;
@@ -90,7 +90,7 @@ void BBGHibe::keygen(const BBGHibePublicKey & pk,const  BBGHibePrivateKey & sk, 
     for (unsigned int i = k ; i < pk.l; i++)
     {
       //  skout.b[i - k] = group.mul(sk.b[i-k+1],group.exp(pk.hG1[i],t));
-        skout.bG2[i -k] = group.mul(sk.bG2[i -k+1],group.exp(pk.hG2[i],t));
+        skout.bG2.at(i -k) = group.mul(sk.bG2.at(i -k+1),group.exp(pk.hG2.at(i),t));
 
     }
     return;
@@ -116,7 +116,7 @@ BBGHibePartialCiphertext BBGHibe::blind(const BBGHibePublicKey & pk, const ZR & 
     G1 dotProd2;
     for (unsigned int i = 0; i < k; i++)
     {
-        dotProd2 = group.mul(dotProd2,group.exp(pk.hG1[i], id[i]));
+        dotProd2 = group.mul(dotProd2,group.exp(pk.hG1.at(i), id.at(i)));
     }
     ct.C = group.exp(group.mul(dotProd2, pk.g3G1), s);
     return ct;

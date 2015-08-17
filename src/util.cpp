@@ -9,9 +9,9 @@ bytes xorarray(const bytes & l,const bytes & r){
 	if(l.size()!=r.size()){
 		throw invalid_argument("Arrays must be be same size. Instead  l:" +std::to_string(l.size()) +  " r:" +std::to_string(r.size()));
 	}
-	bytes result(32);
+	bytes result(l.size());
 	for(unsigned int i=0;i<l.size();i++){
-		result[i] = l[i] ^ r[i];
+		result.at(i) = l.at(i) ^ r.at(i);
 	}
 	return result;
 }
@@ -56,9 +56,9 @@ unsigned int pathToIndex(const std::vector<ZR> & path, const unsigned int & tree
         throw invalid_argument("path too long for tree depth");
     }
     for(unsigned int level =0 ; level < pathsize ; level++){
-        if (path[level] == 0){
+        if (path.at(level) == 0){
             index ++;
-        }else if(path[level] == 1){
+        }else if(path.at(level) == 1){
 
           unsigned int left_subtree_level = level + 1;
           unsigned int left_subtree_height = treeDepth - left_subtree_level;
@@ -78,7 +78,7 @@ ZR LagrangeBasisCoefficients(const PairingGroup & group, const unsigned int & j,
     for(unsigned int  m=0;m<k;m++){
         if(j != m){
 			try{
-			ZR interim = group.div(group.sub(x,polynomial_xcordinates[m]),group.sub(polynomial_xcordinates[j],polynomial_xcordinates[m]));
+			ZR interim = group.div(group.sub(x,polynomial_xcordinates.at(m)),group.sub(polynomial_xcordinates.at(j),polynomial_xcordinates.at(m)));
 			prod = group.mul(prod,interim);
 			}catch(const RelicDividByZero & t){
 				throw logic_error("LagrangeBasisCoefficient calculation failed. RelicDividByZero"
@@ -97,7 +97,7 @@ ZR LagrangeInterp(const PairingGroup & group, const ZR &x , const vector<ZR> & p
     for(unsigned int j = 0; j < k;j++){
             ZR lagrangeBasisPolyatX = LagrangeBasisCoefficients(group,j,x,polynomial_xcordinates);
          //   cout << "y_ " << j << "= "<<polynomial_ycordinates[j] << " coef = " << lagrangeBasisPolyatX << " prod = " << prod<< endl;
-            prod =  group.add(prod,group.mul(lagrangeBasisPolyatX,polynomial_ycordinates[j]));
+            prod =  group.add(prod,group.mul(lagrangeBasisPolyatX,polynomial_ycordinates.at(j)));
 
     }
 

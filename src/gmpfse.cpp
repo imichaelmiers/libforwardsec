@@ -155,7 +155,7 @@ void GMPfse::prepareIntervalAfter(const GMPfsePublicKey & pk, GMPfsePrivateKey &
         hibe.keygen(pk,k.hibeSK,path,sklefthibe);
 
         // compute right key;
-        path[pathlength]=ZR(1);
+        path.at(pathlength)=ZR(1);
         int rightChildIndex = pathToIndex(path,depth);
         hibe.keygen(pk,k.hibeSK,path,skrighthibe);
 
@@ -169,7 +169,7 @@ void GMPfse::deriveKeyFor(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,const
 		const bool& storeIntermediateKeys, const bool & neuter) const{
 	std::vector<ZR> path = indexToPath(i,depth);
     std::vector<ZR> ancestor = path;
-    if(i<0){
+    if(i<1){
         throw invalid_argument("Interval must be >0 : not " + std::to_string(i));
     }
     while(!sk.hasKey(pathToIndex(ancestor,depth))){
@@ -193,7 +193,7 @@ void GMPfse::deriveKeyFor(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,const
 		if(storeIntermediateKeys || ancestor.size()==path.size()){
 			 sk.addkey(pathToIndex(curid,depth),newkey);
 		}
-        curid[curid.size()-1] = curid[curid.size()-1] == 0 ? 1 : 0;
+        curid.at(curid.size()-1) = curid.at(curid.size()-1) == 0 ? 1 : 0;
         ancestor = curid;
         hibe.keygen(pk,curk,curid,orphanedkey);
         if(storeIntermediateKeys){
@@ -219,7 +219,7 @@ void GMPfse::bindKey(const GMPfsePublicKey & pk,GMPfseIntervalKey & k) const{
 	k.hibeSK.a0 = group.mul(k.hibeSK.a0,group.exp(pk.g2G2,group.neg(gamma)));
 
 	GmppkePrivateKeyShare boundShare = ppke.skgen(pk,gamma);
-	const GmppkePrivateKeyShare & oldShare = k.ppkeSK.shares[0];
+	const GmppkePrivateKeyShare & oldShare = k.ppkeSK.shares.at(0);
 	boundShare.sk1 = group.mul(boundShare.sk1,oldShare.sk1);
 	boundShare.sk2 = group.mul(boundShare.sk2,oldShare.sk2);
 	boundShare.sk3 = group.mul(boundShare.sk3,oldShare.sk3);

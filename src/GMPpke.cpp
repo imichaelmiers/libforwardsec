@@ -111,7 +111,7 @@ void Gmppke::puncture(const GmppkePublicKey & pk, GmppkePrivateKey & sk, const s
 		throw invalid_argument("Invalid tag "+tag +". The tag " + NULLTAG + " is reserved and cannot be used.");
 	}
     GmppkePrivateKeyShare skentryn;
-    GmppkePrivateKeyShare & skentry0 = sk.shares[0];
+    GmppkePrivateKeyShare & skentry0 = sk.shares.at(0);
 
     const ZR r0 = group.randomZR();
     const ZR r1 = group.randomZR();
@@ -155,7 +155,7 @@ PartialGmmppkeCT Gmppke::blind(const GmppkePublicKey & pk, const ZR & s, const s
 
     for (unsigned int i = 0; i < pk.d; i++)
     {
-        G1 vofx = vx(pk.gqofxG1,tags[i]);
+        G1 vofx = vx(pk.gqofxG1,tags.at(i));
         ct.ct3.push_back(group.exp(vofx, s));
     }
     ct.tags = tags;
@@ -189,7 +189,7 @@ GT Gmppke::recoverBlind(const GmppkePublicKey & pk, const GmppkePrivateKey & sk,
     assert(ct.tags.size()==pk.d);
     vector<ZR> shareTags(ct.tags.size());
     for(unsigned int i=0;i<ct.tags.size();i++){
-    	shareTags[i] = group.hashListToZR(ct.tags[i]);
+    	shareTags.at(i) = group.hashListToZR(ct.tags.at(i));
     }
     const unsigned int numshares = sk.shares.size();
 
@@ -205,34 +205,34 @@ GT Gmppke::recoverBlind(const GmppkePublicKey & pk, const GmppkePrivateKey & sk,
     #pragma omp parallel for private(h) firstprivate(shareTags)
     for (unsigned int i = 0; i < numshares; i++)
     {
-        const GmppkePrivateKeyShare & s0 = sk.shares[i];
+        const GmppkePrivateKeyShare & s0 = sk.shares.at(i);
 
         // FIXME DO NOT COPY an entire  vector  if possible.
 
-        shareTags[shareTags.size()-1] = group.hashListToZR(s0.sk4);
+        shareTags.at(shareTags.size()-1) = group.hashListToZR(s0.sk4);
 
         vector<ZR> w;
 
         for(unsigned int j=0;j < shareTags.size(); j++){
             w.push_back(LagrangeBasisCoefficients(group,j,0,shareTags));
         }
-        const ZR wstar = w[w.size() - 1];
+        const ZR wstar = w.at(w.size() - 1);
 
         G1 ct3prod_j;
         for (unsigned int j = 0; j < pk.d; j++)
         {
-            ct3prod_j = group.mul(ct3prod_j, group.exp(ct.ct3[j],w[j])); // w[0] = wstar
+            ct3prod_j = group.mul(ct3prod_j, group.exp(ct.ct3.at(j),w.at(j))); // w[0] = wstar
 
         }
        GT denominator = group.mul(group.pair(ct3prod_j, s0.sk3), group.pair(group.exp(ct.ct2,wstar), s0.sk2));
        GT nominator = group.pair(ct.ct2, s0.sk1);
-       z[i]=group.div(nominator, denominator);
+       z.at(i)=group.div(nominator, denominator);
     }
 
     GT zprod;
     for (unsigned int i = 0; i < numshares; i++)
     {
-        zprod = group.mul(zprod, z[i]);
+        zprod = group.mul(zprod, z.at(i));
     }
     return zprod;
 }
