@@ -1,15 +1,27 @@
-Libforwardsec. A library for puncturable forward secure encryption.
+Libforwardsec. Forward secure encryption for asynchronous messaging. [![Build Status](https://travis-ci.org/imichaelmiers/libforwardsec.svg?branch=master)](https://travis-ci.org/imichaelmiers/libforwardsec)
 ============================
 
-This library implements three schemes for fine grained forward secure encryption. Specifically the HIBE scheme due to Boneh Boyen Goh ("Hierarchical identity based encryption with constant size ciphertext" EUROCRYPT 2005), and  the  Puncturable  Public key encryption and Puncturable Forward Secure Encryption schemes due to Green and Miers ("Forward Secure Asynchronous Messaging from Puncturable Encryption" IEEES&P 2015)
+This library provides efficient forward-secure public key encryption that is tolerant of clock skew and delayed messages. This can be used to send forward secure messages to another party who is offline.  It is based on a paper "Forward Secure Asynchronous Messaging from Puncturable Encryption" in IEEE Security and Privacy 2015.
 
-This is research code written by one graduate student built on top of a research  pairing library  (RELIC) written by some other (former) graduate student. We haven't even thoroughly reviewed this code ourselves. It might be secure enough to send cat pictures over the internet, but don't count on it.
+Authenticated ephemeral key exchanges (e.g TLS/ECHE, TextSecure/OTR) provides forward security if both parties are on-line. If the receiving party is off line, then unless they have a server acting as a proxy (e.g. as in TextSecure), these doesn't work. This is a problem for email and even chat protocols which aim to do off line message delivery. 
+
+Prior to now, the only approach when one party was off line relied on synchronized clocks:   Assign a public/private keypair to each time interval (e.g. one key pair per hour) and once a time interval is over, delete the private key for that interval. Advanced cryptographic techniques can be leveraged to compress this list of keys, resulting in a constant size public key (as opposed to n public keys for n time intervals) and a logarithmic sized private key. However, there is still a fundamental limitation: Deleting per time interval keys makes it impossible to decrypt late messages that were sent in the time interval but arrive after it ends. This forces the use of impractically long time intervals. 
+
+Puncturable encryption, instead of deleting keys when time intervals expire, allows keys to be updated ("punctured") so that they can't decrypt already received ciphtertexts. However, any other ciphertexts (e.g. that arrived late) can still be decrypted.  Combining this technique with existing approaches gives a scheme which is efficient under normal conditions and tolerant of late messages and clock skew.
+
+This library provides a high level solution (GMPfse) to forward secure encryption which is a combination of the puncturable encryption scheme (GMPpke) and the one key per time interval approach (BBHHibe). Each scheme can be used separately.  At the moment, the library only provides public key encryption of 256 bit values. This needs to be combined manually with a symmetric scheme or better yet a symmetric ratcheting scheme such as Axolotl. 
+
+While the code is in decent shape and certainly better than many academic libraries, We haven't even gone over it thoroughly ourselves.  If you are interested in using it, please contact us. We'd love to use it used and  willing to do a more thorough review and other work. At the moment, however, it might be secure enough to send cat pictures over the Internet, but don't count on it unless you are using it merely to add forward security and you're messages are encrypted with something else already.
+
+Security concerns:
+* This library uses RELIC for pairings which itself uses GMP. Both probably have timing issues.
+* Cereal(used for serialization) may or may not be secure for untrusted input.
+
 
 TODOs:
 * profile and optimize code. It's slower than we expect (i.e. the cost of pairings doesn't dominate)
 * remove extra group element in ciphertext for combined scheme
 * add symmetric encryption and ratcheting
-* replace all uses of [] in vectors with .at (since it's always bound checked)
 
 Dependencies
 -----------------------------
@@ -25,7 +37,6 @@ Dependencies
 Build
 ----------------------------
 This project builds with cmake.
-    
     cd build/ 
     cmake ../
     make 
@@ -76,15 +87,15 @@ Cereal is a header only library.  Try your local package manager or
 
 Android BUILD
 ----------------------------
-1.  Make a standalone toolchain 
+1.  Make a standalone toolchain using the script in the sdk
       
-        #pick instal location
+        #pick install location
         export STANDALONE_TOOLCHAIN="/PATH/TO/TOOLCHAIN"
         ./make-standalone-toolchain.sh  --platform=android-21 --install-dir=$STANDALONE_TOOLCHAIN --ndk-dir=/PATH/TO/NDK/android-ndk-r10d/ --arch=arm --system=linux-x86_64  --toolchain=arm-linux-androideabi-clang3.5 --stl=libc++
      
 2. Build gmp (note using the copy form https://github.com/Rupan/gmp doens't work)
 
-    1. make export the standalone toolchain
+    1. make/export the standalone toolchain
 
             export CC="$STANDALONE_TOOLCHAIN/bin/arm-linux-androideabi-gcc --sysroot=$STANDALONE_TOOLCHAIN/sysroot"
             export CXX="$STANDALONE_TOOLCHAIN/bin/arm-linux-androideabi-g++ --sysroot=$STANDALONE_TOOLCHAIN/sysroot"
@@ -132,7 +143,7 @@ Android BUILD
 4. running (this should work without root)
 Load libmgp.so, librelic.so, libforwarsec.so, and an executable into /data/local/tmp/
     
-         adb push file /data/local/tmp/
+         adb push file /data/local/tmp/ # for ibmgp.so, librelic.so, libforwarsec.so
          adb shell 
          cd /data/local/tmp/
          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/data/local/tmp/
