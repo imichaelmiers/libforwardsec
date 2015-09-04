@@ -1,7 +1,10 @@
 cmake_minimum_required (VERSION 2.8.11)
 project (libforwardsec C CXX)
-
 include(CheckCXXCompilerFlag)
+if(APPLE) #hack to deal wint OSX 10.10 YOSIMTE 
+	include_directories("/usr/local/include", "/usr/include")
+endif(APPLE)
+
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
 if(COMPILER_SUPPORTS_CXX11)
