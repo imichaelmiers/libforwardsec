@@ -201,12 +201,14 @@ void GMPfse::deriveKeyFor(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,const
         }
         curk = newkey;
 	}
-
-    while(lastAncestor.size()<path.size()){
-        lastAncestor = std::vector<ZR>(path.begin(),path.begin()+lastAncestor.size()+1);
-        const unsigned int index  = pathToIndex(ancestor,depth);
-        if(!sk.needsChildKeys(index)){
-            sk.neuter(index);
+    
+    if(neuter){
+        while(lastAncestor.size()<path.size()){
+            lastAncestor = std::vector<ZR>(path.begin(),path.begin()+lastAncestor.size()+1);
+            const unsigned int index  = pathToIndex(ancestor,depth);
+            if(!sk.needsChildKeys(index)){
+                sk.neuter(index);
+            }
         }
     }
 }
