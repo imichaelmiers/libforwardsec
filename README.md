@@ -38,9 +38,6 @@ Dependencies
 Build
 ----------------------------
 This project builds with cmake.
-    # FOR OSX only : OSX 10.10  defaults to frameworks for sysroot and doesn't include. There should be a better way to fix this
-    /usr/local/include or /usr/local. This is a hack to fix that.
-    /usr/local/include
 
     #For everything:
     cd build/ 
