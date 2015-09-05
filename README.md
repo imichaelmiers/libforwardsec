@@ -3,13 +3,16 @@ Libforwardsec. Forward secure encryption for asynchronous messaging. [![Build St
 
 Libforwardsec provides efficient forward-secure public key encryption that tolerates clock skew and delayed messages. Using it, one can send forward secure messages even when the recipient is offline. The cryptographic details and performance are examined in  the paper "Forward Secure Asynchronous Messaging from Puncturable Encryption" in IEEE Security and Privacy 2015.
 
-
+The crypto
+----------
 Authenticated ephemeral key exchange (e.g TLS, TextSecure/OTR) provides forward security if both parties are online. Unless the receiving party has a server acting as a proxy (e.g. as in TextSecure), messages can't be sent when the receiver is offline. This is a problem for email and even chat protocols which do store and forward delivery. Encryption schemes don't have this problem. However, until now the only approaches to forward secure encryption required senders to know  when, according to the recipient's clock, their message would arrive. Given clock skew and network jitter this approach is impractical.
 
 The existing approach to forward secure encryption assigns a public/private key-pair to each time interval (e.g. one key pair per hour) and once a time interval is over, deletes the private key for that interval. Advanced cryptographic techniques  compress this list of keys, resulting in a constant size public key (as opposed to n public keys for n time intervals) and a logarithmic sized private key, so the scheme is actually practical. But once a recipient deletes the key for an interval, no future messages sent to that interval can be decrypted. This forces the use of long intervals to minimize the chance that delays or clock skew cause messages to arrive after their interval expires. Since long intervals expose more messages in the event of compromise, this is a major issue.
 
 Puncturable encryption, instead of deleting keys when time intervals expire, updates ("punctures") keys so that they can't decrypt already received ciphtertexts. Any other ciphertexts (e.g. that arrived late) are still decryptable. Combining this technique with existing approaches gives a scheme which is efficient under normal conditions and tolerant of late messages and clock skew. Key material should still be deleted after a long period (e.g. 24 hours) to ensure actively intercepted and not delivered messages are also forward secure, but this is optional and crucially that time interval for this is determined merely by the user's thread model and not by network conditions and clock accuracy.
 
+The library
+-----------
 This library provides a high level solution (GMPfse) to forward secure encryption which is a combination of the puncturable encryption scheme (GMPpke) and the one key per time interval approach (BBHHibe). Each scheme can be used separately.  At the moment, the library only provides public key encryption of 256 bit values. This needs to be combined manually with a symmetric scheme or better yet a symmetric ratcheting scheme such as Axolotl. 
 
 While the code is in decent shape and certainly better than many academic libraries, We haven't even gone over it thoroughly ourselves.  If you are interested in using it, please contact us. We'd love to use it used and  willing to do a more thorough review and other work. At the moment, however, it might be secure enough to send cat pictures over the Internet, but don't count on it unless you are using it merely to add forward security and you're messages are encrypted with something else already.
