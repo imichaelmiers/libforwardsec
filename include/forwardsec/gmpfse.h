@@ -68,6 +68,7 @@ public:
 	friend bool operator!=(const GMPfseCiphertext& l,const GMPfseCiphertext& r){
 		return !(l==r);
 	}
+	std::vector<std::string> getTags() const;
 	unsigned int interval;
 protected:
 	relicxx::GT ct0;
@@ -205,8 +206,8 @@ public:
 	 */
 	void puncture(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk, std::string str) const;
 private:
-	relicxx::PairingGroup group;
 	relicxx::relicResourceHandle handle;
+	relicxx::PairingGroup group;
 	BBGHibe hibe;
 	Gmppke ppke;
 	unsigned int depth;

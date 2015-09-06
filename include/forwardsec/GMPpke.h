@@ -129,6 +129,7 @@ protected:
 	friend class cereal::access;
 	friend class Gmppke;
 	friend class GMPfse;
+	friend class GMPfseCiphertext;
 };
 
 class GmmppkeCT: public PartialGmmppkeCT{

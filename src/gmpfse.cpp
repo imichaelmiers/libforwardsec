@@ -99,6 +99,9 @@ GMPfse::GMPfse(unsigned int d, unsigned int numtags):hibe(),ppke(),depth(d){
     // cout << "depth" << depth << endl;
 }
 
+std::vector<std::string> GMPfseCiphertext::getTags() const{
+    return this->ppkeCT.tags;
+}
 
 void GMPfse::keygen( GMPfsePublicKey & pk,  GMPfsePrivateKey &sk) const{
     G2 msk;
