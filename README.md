@@ -3,6 +3,8 @@ Libforwardsec. Forward secure encryption for asynchronous messaging. [![Build St
 
 Libforwardsec provides efficient forward-secure public key encryption that tolerates clock skew and delayed messages. Using it, one can send forward secure messages even when the recipient is offline. The cryptographic details and performance are examined in  the paper "Forward Secure Asynchronous Messaging from Puncturable Encryption" in IEEE Security and Privacy 2015.
 
+see example/example.cpp for usage.
+
 The crypto
 ----------
 Authenticated ephemeral key exchange (e.g TLS, TextSecure/OTR) provides forward security if both parties are online. Unless the receiving party has a server acting as a proxy (e.g. as in TextSecure), messages can't be sent when the receiver is offline. This is a problem for email and even chat protocols which do store and forward delivery. Encryption schemes don't have this problem. However, until now the only approaches to forward secure encryption required senders to know  when, according to the recipient's clock, their message would arrive. Given clock skew and network jitter this approach is impractical.
