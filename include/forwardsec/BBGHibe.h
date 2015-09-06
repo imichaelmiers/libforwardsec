@@ -11,7 +11,7 @@
 #include <cereal/access.hpp>
 #include <cereal/types/vector.hpp>
 
-#include "relic_wrapper/relic_api.h"
+#include "relic_api.h"
 
 #include "forwardsec.h"
 namespace forwardsec{

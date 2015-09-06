@@ -118,6 +118,8 @@ private:
 	friend class ::cereal::access;
 };
 
+typedef  std::vector<uint8_t> bytes;
+
 /**
 Implements Puncturable forward secure encryption. We have one puncturable key per time interval.
 */

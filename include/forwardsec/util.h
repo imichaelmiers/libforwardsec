@@ -2,7 +2,7 @@
 #define SRC_UTIL_H_
 #include <vector>
 #include <array>
-#include"relic_wrapper/relic_api.h"
+#include "relic_api.h"
 namespace forwardsec{
 std::vector<relicxx::ZR>  indexToPath(const unsigned int &index,const unsigned int & treeDepth);
 unsigned int pathToIndex(const std::vector<relicxx::ZR> & path, const unsigned int & treeDepth);

@@ -7,10 +7,11 @@
 
 #ifndef SRC_FORWARDSEC_H_
 #define SRC_FORWARDSEC_H_
-#include "relic_wrapper/relic_api.h"
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/base_class.hpp>
 #include <cereal/access.hpp>
+
+#include "relic_api.h"
 
 namespace forwardsec{
 class BadCiphertext : public std::invalid_argument
