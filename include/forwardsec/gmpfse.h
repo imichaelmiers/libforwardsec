@@ -118,13 +118,19 @@ private:
 	friend class ::cereal::access;
 };
 
+/**
+Implements Puncturable forward secure encryption. We have one puncturable key per time interval.
+*/
 class GMPfse
 {
 public:
-	GMPfse(unsigned int d,unsigned int numtags = 1);
-	 /**Generates the public and private key. These are stored in  the object.
-	  *
-	  *
+	/** Constructor
+	* @param treeDepth  The depth of the  of the tree. We support 2^treeDepth intervals. 
+	* @param numtags  The number of tags each ciphertext has. If you are just using this scheme
+	* 					for forward security, use the default of one
+	*/
+	GMPfse(unsigned int treeDepth,unsigned int numtags = 1);
+	 /**Generates the public and private keys which are stored in the passed in parameters
 	  * @param pk the public key
 	  * @param sk the private key
 	  */
@@ -138,7 +144,7 @@ public:
 	 * @param tags the tags for the message
 	 * @return the ciphertext
 	 */
-	GMPfseCiphertext encrypt(const GMPfsePublicKey & pk, const bytes msg, const unsigned int interval, const std::vector<std::string> tags) const;
+	GMPfseCiphertext encrypt(const GMPfsePublicKey & pk, const forwardsec::bytes msg, const unsigned int interval, const std::vector<std::string> tags) const;
 
 	/**Decrypt a message using the provided public and private keys.
 	 *
@@ -147,10 +153,11 @@ public:
 	 * @param ct the ciphertext
 	 * @return the message
 	 */
-	bytes decrypt(const GMPfsePublicKey & pk, const GMPfsePrivateKey &sk, const GMPfseCiphertext &ct) const;
+	forwardsec::bytes decrypt(const GMPfsePublicKey & pk, const GMPfsePrivateKey &sk, const GMPfseCiphertext &ct) const;
 	
 	/**Derives keys from the current interval and updates the provided
-	 * secret key to store them.
+	 * secret key to store them. This or prepareNextInterval must be run
+	 * to allow the current interval  to be punctured. 
 	 *
 	 * @param pk the public key
 	 * @param sk the private key.
@@ -159,7 +166,7 @@ public:
 
 	/** Derives  keys from the specified interval  and updates the provided
 	 * secret key to store them. This or prepareNextInterval must be run
-	 * to allow interval i to be punctured.
+	 * to allow interval i to be punctured. 
 	 *
 	 *
 	 * @param pk the public key
@@ -169,12 +176,13 @@ public:
 	void prepareIntervalAfter(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,const unsigned int &i) const;
 
 	/** Derives the key for the given interval and updates sk to store it
+	 *  To puncture the newly derived interval key, you must run prepareIntervalAfter first.
 	 *
 	 * @param pk the public key
-	 * @param sk the private ky
-	 * @param i the interval
+	 * @param sk the private key
+	 * @param i the interval to derive
 	 * @param storeIntermediateKeys (defaults to true) whether the intermediate keys derived along the way are stored
-	 * @param neuter whether to make keys undelegatable form as we go. Defaults to true
+	 * @param neuter whether to make keys undelegatable from as we go. Defaults to true
 	 */
 	void deriveKeyFor(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk,const unsigned int &i, const bool & storeIntermediateKeys = true, 
 		const bool &neuter = true)const;
@@ -196,6 +204,7 @@ public:
 	void puncture(const GMPfsePublicKey & pk, GMPfsePrivateKey &sk, std::string str) const;
 private:
 	relicxx::PairingGroup group;
+	relicxx::relicResourceHandle handle;
 	BBGHibe hibe;
 	Gmppke ppke;
 	unsigned int depth;
@@ -203,15 +212,15 @@ private:
 
 	void bindKey(const GMPfsePublicKey & pk,GMPfseIntervalKey & k) const;
 
-	GMPfseCiphertext encryptFO(const GMPfsePublicKey & pk, const bytes & bitmsg,
+	GMPfseCiphertext encryptFO(const GMPfsePublicKey & pk, const forwardsec::bytes & bitmsg,
 			              const unsigned int interval, const std::vector<std::string>  & tags) const;
-	GMPfseCiphertext encryptFO( const GMPfsePublicKey & pk, const bytes & bitmsg,
+	GMPfseCiphertext encryptFO( const GMPfsePublicKey & pk, const forwardsec::bytes & bitmsg,
 			const relicxx::GT & x, const unsigned int interval, const std::vector<std::string>  & tags) const;
 	GMPfseCiphertext encryptGT( const GMPfsePublicKey & pk, const relicxx::GT & M,const relicxx::ZR & s,
 			const unsigned int interval, const std::vector<std::string>  & tags) const;
 
 
-	bytes decryptFO(const GMPfsePublicKey & pk, const GMPfseIntervalKey &ski, const GMPfseCiphertext &ct) const;
+	forwardsec::bytes decryptFO(const GMPfsePublicKey & pk, const GMPfseIntervalKey &ski, const GMPfseCiphertext &ct) const;
 	relicxx::GT decryptGT(const GMPfsePublicKey & pk, const GMPfseIntervalKey & ski, const GMPfseCiphertext &ct) const;
 };
 }
