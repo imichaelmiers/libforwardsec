@@ -37,7 +37,7 @@ Dependencies
 * For serialization:
     *  cereal(https://github.com/USCiLab/cereal) 
 * For testing:
-    * Google test (https://code.google.com/p/googletest/) 
+    * Google test (https://github.com/google/googletest) 
     
 
 Build
