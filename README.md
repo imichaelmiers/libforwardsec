@@ -11,7 +11,7 @@ Authenticated ephemeral key exchange (e.g TLS, TextSecure/OTR) provides forward 
 
 The existing approach to forward secure encryption assigns a public/private key-pair to each time interval (e.g. one key pair per hour) and once a time interval is over, deletes the private key for that interval. Advanced cryptographic techniques  compress this list of keys, resulting in a constant size public key (as opposed to n public keys for n time intervals) and a logarithmic sized private key, so the scheme is actually practical. But once a recipient deletes the key for an interval, no future messages sent to that interval can be decrypted. This forces the use of long intervals to minimize the chance that delays or clock skew cause messages to arrive after their interval expires. Since long intervals expose more messages in the event of compromise, this is a major issue.
 
-Puncturable encryption, instead of deleting keys when time intervals expire, updates ("punctures") keys so that they can't decrypt already received ciphtertexts. Any other ciphertexts (e.g. that arrived late) are still decryptable. Combining this technique with existing approaches gives a scheme which is efficient under normal conditions and tolerant of late messages and clock skew. Key material should still be deleted after a long period (e.g. 24 hours) to ensure actively intercepted and not delivered messages are also forward secure, but this is optional and crucially that time interval for this is determined merely by the user's thread model and not by network conditions and clock accuracy.
+Puncturable encryption, instead of deleting keys when time intervals expire, updates ("punctures") keys so that they can't decrypt already received ciphtertexts. Any other ciphertexts (e.g. that arrived late) are still decryptable. Combining this technique with existing approaches gives a scheme which is efficient under normal conditions and tolerant of late messages and clock skew. Key material should still be deleted after a long period (e.g. 24 hours) to ensure actively intercepted and not delivered messages are also forward secure, but this is optional and crucially that time interval for this is determined merely by the user's threat model and not by network conditions and clock accuracy.
 
 The library
 -----------
@@ -37,7 +37,7 @@ Dependencies
 * For serialization:
     *  cereal(https://github.com/USCiLab/cereal) 
 * For testing:
-    * Google test (https://code.google.com/p/googletest/) 
+    * Google test (https://github.com/google/googletest) 
     
 
 Build
