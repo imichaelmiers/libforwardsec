@@ -5,20 +5,20 @@
 
 int main(){
 	// The scheme takes two parameters: the number of intervals to have in the key 
-	// and the number number of tags a ciphertext has.
+	// and the  number of tags a ciphertext has.
 	// We explicitly set the number of tags to 1 here for clarity, but this is the default.
-	// We only need one tag for forward security. Tag's are what we puncture on
+	// We only need one tag for forward security. Tag's are what we puncture on.
 	// if the key has been punctured on any tag in a message, the message
 	// can't be decrypted. 
 
-	// These parameters need to be the same for both the object constructed for encryption.
+	// These parameters need to be the same for both the object constructed for encryption and decrypton.
 	forwardsec::GMPfse forwardSecureEncryption(31,1);
 	forwardsec::GMPfsePublicKey pk; //  the public key 
 	forwardsec::GMPfsePrivateKey sk; //  the private key
 
-	forwardSecureEncryption.keygen(pk,sk); // Generate the keys and stores them in pk and sk
+	forwardSecureEncryption.keygen(pk,sk); // Generate the keys and stores them in pk and sk.
 
-	// a message. This is just a byte vector. For real messages, it should be a random AES key
+	// a message. This is just a byte vector. For real messages, it should be a random AES key.
  	forwardsec::bytes msg = {{0x3a, 0x5d, 0x7a, 0x42, 0x44, 0xd3, 0xd8, 0xaf, 0xf5, 0xf3, 0xf1, 0x87, 0x81, 0x82, 0xb2,
 						  0x53, 0x57, 0x30, 0x59, 0x75, 0x8d, 0xe6, 0x18, 0x17, 0x14, 0xdf, 0xa5, 0xa4, 0x0b,0x43,0xAD,0xBC}};
 	
@@ -38,7 +38,7 @@ int main(){
 	forwardsec::bytes decrypted_msg = forwardSecureEncryption.decrypt(pk,sk,ct);
 	assert(decrypted_msg==msg);
 
-	// now that we decrypted the message we need to remove are ability to do so
+	// Now that we decrypted the message we need to remove are ability to do so
 	/// to ensure forward security of that message.
 
 	// To do so we need the tag for the message. Again, because we only configured 
@@ -51,7 +51,7 @@ int main(){
 	// When this interval is over we can derive the next interval 
 	forwardSecureEncryption.prepareNextInterval(pk,sk);
 	// if at some point you need to derive some interval in the future
-	// e.g. your intervals are one second long , but you for 30 seconds got no traffic,
+	// e.g. your intervals are one second long , but for 30 seconds you got no traffic,
 	// then use 
 
 	forwardSecureEncryption.deriveKeyFor(pk,sk,31);
