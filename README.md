@@ -1,7 +1,7 @@
 Libforwardsec. Forward secure encryption for asynchronous messaging. [![Build Status](https://travis-ci.org/imichaelmiers/libforwardsec.svg?branch=master)](https://travis-ci.org/imichaelmiers/libforwardsec)
 ============================
 
-Libforwardsec provides efficient forward-secure public key encryption that tolerates clock skew and delayed messages. Using it, one can send forward secure messages even when the recipient is offline. The cryptographic details and performance are examined in  the paper "Forward Secure Asynchronous Messaging from Puncturable Encryption" in IEEE Security and Privacy 2015 (see [here](http://cs.jhu.edu/~imiers/pdfs/forwardsec.pdf) for a copy of the paper.)
+Libforwardsec provides efficient forward-secure public key encryption that tolerates clock skew and delayed or lost messages. Using it, one can build forward secure O-RTT key-exchange or  send forward secure messages even when the recipient is offline. The cryptographic details and performance are examined in the paper "Forward Secure Asynchronous Messaging from Puncturable Encryption" in IEEE Security and Privacy 2015 (see [here](http://cs.jhu.edu/~imiers/pdfs/forwardsec.pdf) for a copy of the paper.)
 
 see example/example.cpp for usage.
 
